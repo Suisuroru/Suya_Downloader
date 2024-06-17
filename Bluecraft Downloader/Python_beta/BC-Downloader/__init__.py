@@ -1,3 +1,5 @@
+current_version = "0.0.0.1"
+
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 import requests
@@ -11,13 +13,12 @@ from PIL import Image, ImageTk
 # 初始化pygame音乐模块
 pygame.mixer.init()
 
-def check_for_updates():
+def check_for_updates(current_version):
     """检查更新并弹窗提示"""
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
         response = requests.get(update_url)
         latest_version = response.text.strip()
-        current_version = "0.0.0.1"  # 假定这是当前程序的版本
 
         # 比较版本号
         if compare_versions(latest_version, current_version) > 0:
@@ -42,6 +43,33 @@ def compare_versions(version1, version2):
     """比较两个版本号"""
     return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]
 
+def check_for_updates_and_create_version_strip(current_version,window):
+    """检查更新并创建版本状态色带"""
+    try:
+        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
+        response = requests.get(update_url)
+        latest_version = response.text.strip()
+
+        status, color_code, message = get_version_status(current_version, latest_version)
+
+        version_strip = tk.Frame(window, bg=color_code, height=40)  # 创建色带Frame
+        version_strip.pack(fill=tk.X, pady=(10, 0))  # 设置在蓝色色带下方
+
+        version_label = tk.Label(version_strip, text=message.format(current_version), font=("Microsoft YaHei", 12), fg="white", bg=color_code)
+        version_label.pack(anchor=tk.CENTER)  # 文字居中显示
+
+        # 如果有其他基于版本状态的操作，可在此处添加
+    except Exception as e:
+        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+
+def get_version_status(current_version, latest_version):
+    """根据版本比较结果返回状态、颜色和消息"""
+    if compare_versions(current_version, latest_version) > 0:
+        return "预发布或测试版本", "#0066CC", "您当前运行的版本可能是预发布或测试版，版本号：{}"  # 浅蓝
+    elif compare_versions(current_version, latest_version) == 0:
+        return "最新正式版", "#009900", "您当前运行的是最新正式版本，版本号：{}"  # 绿色
+    else:
+        return "旧版本", "#FFCC00", "您当前运行的版本可能为旧版本，请检查更新，版本号：{}"  # 黄色
 
 def toggle_music(icon_label):
     """切换音乐播放状态并更新图标"""
@@ -55,7 +83,6 @@ def toggle_music(icon_label):
         pygame.mixer.music.stop()
         music_playing = False
         icon_label.config(image=stop_icon_image)
-
 
 def fetch_notice(notice_text_area):
     """在线获取公告内容的函数"""
@@ -95,10 +122,6 @@ def create_gui():
     icon_label.pack(side=tk.LEFT, pady=10)
     icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
 
-    # 版本检查按钮 - 尝试与公告对齐
-    check_version_button = tk.Button(bottom_frame, text="检查更新", command=check_for_updates)
-    check_version_button.pack(side=tk.RIGHT, padx=10, pady=10)  # 通过side=tk.RIGHT使其靠近右侧
-
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
@@ -117,6 +140,9 @@ def create_gui():
 
     # 初始化时拉取公告
     fetch_notice(notice_text_area)
+
+    # 版本检查并创建色带
+    check_for_updates_and_create_version_strip(current_version,window)
 
     window.mainloop()
 
