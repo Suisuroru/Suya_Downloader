@@ -1,12 +1,47 @@
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
 import requests
+import json
+import webbrowser
+import subprocess
 import pygame
 from pygame import mixer
 from PIL import Image, ImageTk
 
 # 初始化pygame音乐模块
 pygame.mixer.init()
+
+def check_for_updates():
+    """检查更新并弹窗提示"""
+    try:
+        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
+        response = requests.get(update_url)
+        latest_version = response.text.strip()
+        current_version = "0.0.0.1"  # 假定这是当前程序的版本
+
+        # 比较版本号
+        if compare_versions(latest_version, current_version) > 0:
+            update_window = tk.Toplevel()
+            update_window.title("发现新版本")
+            update_message = tk.Label(update_window, text=f"发现新版本: {latest_version}，当前版本: {current_version}", justify=tk.LEFT)
+            update_message.pack(padx=20, pady=20)
+
+            def perform_update():
+                """执行更新操作"""
+                update_from_link = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Update"
+                webbrowser.open(update_from_link)  # 或者使用更复杂的更新逻辑
+
+            update_button = tk.Button(update_window, text="立即更新", command=perform_update)
+            update_button.pack(pady=10)
+        else:
+            messagebox.showinfo("版本检查", "当前已是最新版本！")
+    except Exception as e:
+        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+
+def compare_versions(version1, version2):
+    """比较两个版本号"""
+    return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]
+
 
 def toggle_music(icon_label):
     """切换音乐播放状态并更新图标"""
@@ -20,6 +55,7 @@ def toggle_music(icon_label):
         pygame.mixer.music.stop()
         music_playing = False
         icon_label.config(image=stop_icon_image)
+
 
 def fetch_notice(notice_text_area):
     """在线获取公告内容的函数"""
@@ -49,10 +85,19 @@ def create_gui():
     play_icon_image = ImageTk.PhotoImage(play_icon)
     stop_icon_image = ImageTk.PhotoImage(stop_icon)
 
+
+    # 创建一个容器Frame来对齐公告和检查更新按钮
+    bottom_frame = tk.Frame(window)
+    bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
+
     # 音乐切换按钮
-    icon_label = tk.Label(window, image=play_icon_image)
-    icon_label.pack(side=tk.BOTTOM, pady=10)
+    icon_label = tk.Label(bottom_frame, image=play_icon_image)
+    icon_label.pack(side=tk.LEFT, pady=10)
     icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+
+    # 版本检查按钮 - 尝试与公告对齐
+    check_version_button = tk.Button(bottom_frame, text="检查更新", command=check_for_updates)
+    check_version_button.pack(side=tk.RIGHT, padx=10, pady=10)  # 通过side=tk.RIGHT使其靠近右侧
 
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
