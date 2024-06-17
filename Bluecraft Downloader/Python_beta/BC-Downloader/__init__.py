@@ -91,8 +91,14 @@ def fetch_notice(notice_text_area):
         response = requests.get(url)
         response.raise_for_status()
         notice_content = response.text
+
+        # 允许编辑文本框以插入内容
+        notice_text_area.configure(state='normal')
         notice_text_area.delete(1.0, tk.END)
         notice_text_area.insert(tk.END, notice_content)
+
+        # 再次设置为不可编辑
+        notice_text_area.configure(state='disabled')
     except requests.RequestException as e:
         messagebox.showerror("错误", f"获取公告内容失败: {e}")
 
@@ -134,8 +140,8 @@ def create_gui():
     second_line_label = tk.Label(blue_strip, text="快速、方便地下载 Bluecraft 客户端", font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
-    # 创建公告栏（使用scrolledtext以支持滚动）
-    notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15)
+    # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
+    notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)  # 添加state=tk.DISABLED
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     # 初始化时拉取公告
