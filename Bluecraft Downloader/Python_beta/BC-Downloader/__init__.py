@@ -1,4 +1,4 @@
-current_version = "0.0.0.1"
+current_version = ("0.0.0.2")
 
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
@@ -41,7 +41,7 @@ def check_for_updates(current_version):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]
+    return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')],[int(v) for v in version1.split('.')] < [int(v) for v in version2.split('.')]
 
 def check_for_updates_and_create_version_strip(current_version,window):
     """检查更新并创建版本状态色带"""
@@ -64,12 +64,15 @@ def check_for_updates_and_create_version_strip(current_version,window):
 
 def get_version_status(current_version, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    if compare_versions(current_version, latest_version) > 0:
-        return "预发布或测试版本", "#0066CC", "您当前运行的版本可能是预发布或测试版，版本号：{}"  # 浅蓝
-    elif compare_versions(current_version, latest_version) == 0:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本，版本号：{}"  # 绿色
+    comparison_result1,comparison_result2 = compare_versions(current_version, latest_version)
+
+    if comparison_result1 == 1:
+        # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
+        return "预发布或测试版本", "#0066CC", "您当前运行的版本可能是预发布或测试版，当前版本号：{}"  # 浅蓝
+    elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
+        return "旧版本", "#FFCC00", "您当前运行的版本可能为遗留的旧版本，请及时更新，当前版本号：{}"  # 黄色
     else:
-        return "旧版本", "#FFCC00", "您当前运行的版本可能为旧版本，请检查更新，版本号：{}"  # 黄色
+        return "最新正式版", "#009900", "您当前运行的是最新正式版本，当前版本号：{}"  # 绿色
 
 def toggle_music(icon_label):
     """切换音乐播放状态并更新图标"""
