@@ -1,4 +1,4 @@
-current_version = ("0.0.0.2")
+current_version = ("0.0.0.1")
 
 import tkinter as tk
 from tkinter import messagebox, scrolledtext
@@ -146,6 +146,8 @@ def create_gui():
 
     # 版本检查并创建色带
     check_for_updates_and_create_version_strip(current_version,window)
+
+    toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
     window.mainloop()
 
