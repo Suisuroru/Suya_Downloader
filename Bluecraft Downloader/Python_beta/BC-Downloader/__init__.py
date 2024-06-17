@@ -1,4 +1,4 @@
-current_version = ("0.0.0.0")
+current_version = ("0.0.0.1")
 
 import sys
 import tkinter as tk
@@ -115,9 +115,6 @@ class TransparentSplashScreen(QWidget):
 # 初始化pygame音乐模块
 pygame.mixer.init()
 
-# 加载音乐并设置为循环播放
-pygame.mixer.music.load("./Resources/Sounds/music.mp3")
-pygame.mixer.music.play(loops=-1)  # loops=-1 表示无限循环播放
 
 def check_for_updates(current_version):
     """检查更新并弹窗提示"""
@@ -224,12 +221,6 @@ def fetch_notice(notice_text_area):
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image
 
-
-    # 初始化pygame音乐模块并设置音乐循环播放
-    pygame.mixer.init()
-    pygame.mixer.music.load("./Resources/Sounds/music.mp3")
-    pygame.mixer.music.play(loops=-1)
-
     music_playing = False
     window = tk.Tk()
     window.title("BlueCraft Client Downloader")
@@ -278,6 +269,12 @@ def create_gui():
 
     # 版本检查并创建色带
     check_for_updates_and_create_version_strip(current_version, window)
+
+    # 初始化pygame音乐模块并设置音乐循环播放
+    pygame.mixer.init()
+    # 加载音乐并设置为循环播放
+    pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+    pygame.mixer.music.play(loops=10000)  # 循环次数，-1存在问题，改为较大值
 
     toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
