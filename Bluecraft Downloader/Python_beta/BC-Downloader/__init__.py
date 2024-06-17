@@ -1,13 +1,10 @@
 current_version = ("0.0.0.1")
 
 import tkinter as tk
-from tkinter import messagebox, scrolledtext
-import requests
-import json
 import webbrowser
-import subprocess
+from tkinter import messagebox, scrolledtext
 import pygame
-from pygame import mixer
+import requests
 from PIL import Image, ImageTk
 
 # 初始化pygame音乐模块
