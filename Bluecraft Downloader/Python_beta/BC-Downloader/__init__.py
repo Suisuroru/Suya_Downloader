@@ -6,6 +6,63 @@ from tkinter import messagebox, scrolledtext
 import pygame
 import requests
 from PIL import Image, ImageTk
+import time
+
+def center_window(window, width=None, height=None):
+    """
+    使窗口居中显示。
+    :param window: Tkinter窗口实例
+    :param width: 窗口宽度，默认为None，表示使用当前窗口宽度
+    :param height: 窗口高度，默认为None，表示使用当前窗口高度
+    """
+    window.update_idletasks()  # 确保窗口尺寸是最新的
+    window_width = width if width is not None else window.winfo_width()
+    window_height = height if height is not None else window.winfo_height()
+    screen_width = window.winfo_screenwidth()
+    screen_height = window.winfo_screenheight()
+    x_cordinate = int((screen_width/2) - (window_width/2))
+    y_cordinate = int((screen_height/2) - (window_height/2))
+    window.geometry(f"{window_width}x{window_height}+{x_cordinate}+{y_cordinate}")
+
+def start_animation():
+    """启动动画函数"""
+    # 创建一个隐藏的根窗口
+    root = tk.Tk()
+    root.wm_attributes('-topmost', 1)
+    root.overrideredirect(True)
+    center_window(root, 400, 400)  # 假设动画窗口的尺寸为400x400，根据实际情况调整
+
+    # 加载图片并调整尺寸至窗口大小
+    img_path = "./Resources/Pic/BC.png"
+    original_image = Image.open(img_path)
+    # 计算窗口的缩放比例
+    scale_factor_x = 400 / original_image.width
+    scale_factor_y = 400 / original_image.height
+    scale_factor = min(scale_factor_x, scale_factor_y)  # 保持图像比例
+    resized_image = original_image.resize((int(original_image.width * scale_factor), int(original_image.height * scale_factor)))
+
+    # 用缩放后的图像创建初始PhotoImage对象
+    photo_image = ImageTk.PhotoImage(resized_image)
+
+    # 创建标签用于显示图片
+    label = tk.Label(root, image=photo_image)
+    label.pack()
+
+    # 淡入效果
+    for alpha in range(0, 101, 5):  # 从0到100，每次增加5
+        # 使用已缩放的图像来设置透明度
+        img_with_alpha = resized_image.copy()
+        img_with_alpha.putalpha(alpha)
+        photo_image = ImageTk.PhotoImage(img_with_alpha)  # 注意：此处每次循环都会创建新的PhotoImage对象
+        label.config(image=photo_image)
+        root.update_idletasks()  # 更新界面
+        time.sleep(0.1)  # 控制动画速度，这里设置为每帧0.1秒
+
+    # 动画结束后关闭临时窗口
+    root.destroy()
+
+    # 打开正式的GUI窗口
+    create_gui()
 
 # 初始化pygame音乐模块
 pygame.mixer.init()
@@ -152,7 +209,11 @@ def create_gui():
 
     toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
+    # 确保在所有窗口部件布局完成后调用center_window
+    window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
+    center_window(window)  # 居中窗口
+
     window.mainloop()
 
 if __name__ == "__main__":
-    create_gui()
+    start_animation()
