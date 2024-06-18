@@ -111,13 +111,6 @@ def read_client_version_from_file():
     try:
         with open(file_path, 'r') as file:
             client_version = file.read().strip()
-            try:
-                compare_client_versions(client_version, "0.0.0.0")
-            except:
-                with open(file_path, 'w') as file:
-                    file.write("0.0.0.0")  # 写入默认版本号
-                print("默认版本号已成功写入。")
-                return "0.0.0.0"
             return client_version
     except FileNotFoundError:
         print("版本文件未找到，正在尝试创建并写入默认版本号...")
@@ -394,12 +387,12 @@ def check_for_updates_with_confirmation(current_version, window):
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
             answer = messagebox.askyesno("更新可用", update_question)
-            Update(answer, window, current_working_dir)
+            Update(answer, window)
 
         elif comparison_result2 > 0:
             update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
             answer = messagebox.askyesno("获取正式版", update_question)
-            Update(answer, window, current_working_dir)
+            Update(answer, window)
 
         else:
             messagebox.showinfo("版本检查", "当前已是最新版本！")
