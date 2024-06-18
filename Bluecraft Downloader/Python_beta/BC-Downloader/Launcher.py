@@ -1,6 +1,7 @@
 current_version = "0.0.0.1"
-client_version = "0.0.0.1"
 
+import errno
+import os
 import sys
 import tkinter as tk
 import webbrowser
@@ -12,6 +13,65 @@ from PIL import Image, ImageTk
 from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+
+
+def ensure_directory_exists(directory_path):
+    """确保目录存在，如果不存在则尝试创建。"""
+    try:
+        os.makedirs(directory_path, exist_ok=True)
+    except OSError as e:
+        if e.errno != errno.EEXIST:
+            raise ValueError(f"无法创建目录: {directory_path}") from e
+
+
+def get_local_appdata_path(filename="client_version.txt"):
+    """获取本地应用数据路径下的指定文件路径。"""
+    username = os.getlogin()  # 获取当前用户名
+    directory = f"C:\\Users\\{username}\\AppData\\Local\\BC_Downloader"
+    ensure_directory_exists(directory)
+    return os.path.join(directory, filename)
+
+
+def update_version_info(new_version):
+    """
+    更新本地存储的版本信息。
+
+    :param new_version: 最新的版本号
+    """
+    try:
+        with open(get_local_appdata_path(), "w") as file:
+            file.write(new_version)
+        print(f"版本信息已更新至{new_version}")
+    except IOError as e:
+        print(f"写入版本信息时发生错误: {e}")
+
+
+def read_client_version_from_file():
+    """从本地文件读取客户端版本号，如文件不存在则创建并写入默认版本号。"""
+    file_path = get_local_appdata_path()
+
+    try:
+        with open(file_path, 'r') as file:
+            client_version = file.read().strip()
+            return client_version
+    except FileNotFoundError:
+        print("版本文件未找到，正在尝试创建并写入默认版本号...")
+        try:
+            with open(file_path, 'w') as file:
+                file.write("0.0.0.0")  # 写入默认版本号
+            print("默认版本号已成功写入。")
+            return "0.0.0.0"
+        except IOError as io_err:
+            print(f"写入文件时发生IO错误: {io_err}")
+            return "写入错误"
+    except Exception as e:
+        print(f"处理文件时发生未知错误: {e}")
+        return "未知错误"
+
+
+# 使用函数读取版本号
+client_version = read_client_version_from_file()
+print(f"当前客户端版本: {client_version}")
 
 
 def center_window(window, width=None, height=None):
@@ -164,8 +224,19 @@ def check_for_client_updates(current_version):
                     user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
                     if user_response:
                         webbrowser.open(download_link)  # 打开下载链接
+                        update_version_info(latest_version)
+                elif compare_client_versions(latest_version, current_version) == 0:
+                    user_response = messagebox.askyesno("无可用更新",
+                                                        f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
+                    if user_response:
+                        webbrowser.open(download_link)  # 打开下载链接
+                        update_version_info(latest_version)
                 else:
-                    print("当前已是最新版本。")
+                    user_response = messagebox.askyesno("您的版本处于预览版",
+                                                        f"需要下载正式版？最新正式版: {latest_version}")
+                    if user_response:
+                        webbrowser.open(download_link)  # 打开下载链接
+                        update_version_info(latest_version)
             else:
                 print("服务器返回的信息格式不正确。")
         else:
@@ -266,7 +337,7 @@ def check_for_updates_and_create_version_strip(current_version, window):
             messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
             return
         latest_version = version_info[0]
-        create_version_strip(current_version, latest_version, window,0)
+        create_version_strip(current_version, latest_version, window, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
@@ -287,7 +358,7 @@ def check_for_client_updates_and_create_version_strip(current_version, window):
             if len(update_info) == 2:
                 # 移除版本号前的 "v"
                 latest_version = update_info[0][1:]
-                create_version_strip(current_version, latest_version, window,1)
+                create_version_strip(current_version, latest_version, window, 1)
                 # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
@@ -396,13 +467,16 @@ def create_gui():
     check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新",
                                                command=lambda: check_for_updates_with_confirmation(current_version))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
+    # 音乐切换按钮及其容器之后，添加创建者信息的Label
+    creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru.", font=("Microsoft YaHei", 7), fg="gray")
+    creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在蓝色色带上添加文字
-    welcome_label = tk.Label(blue_strip, text="欢迎使用 Bluecraft 客户端下载器！", font=("Microsoft YaHei", 30),
+    welcome_label = tk.Label(blue_strip, text="欢迎使用 Bluecraft 客户端Suya下载器！", font=("Microsoft YaHei", 30),
                              fg="white", bg="#0060C0")
     welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
@@ -422,7 +496,7 @@ def create_gui():
     fetch_notice(notice_text_area)
 
     # 版本检查并创建色带(客户端)
-    check_for_client_updates_and_create_version_strip(current_version, window)
+    check_for_client_updates_and_create_version_strip(client_version, window)
 
     # 初始化pygame音乐模块并设置音乐循环播放
     pygame.mixer.init()
