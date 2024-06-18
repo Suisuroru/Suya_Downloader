@@ -192,7 +192,14 @@ def check_for_updates_and_create_version_strip(current_version, window):
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
         response = requests.get(update_url)
-        latest_version = response.text.strip()
+        response_text = response.text.strip()
+
+        # 分割响应文本，假设格式为 "version_number|update_url"
+        version_info = response_text.split("|")
+        if len(version_info) != 2:
+            messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
+            return
+        latest_version = version_info[0]
 
         status, color_code, message = get_version_status(current_version, latest_version)
 
