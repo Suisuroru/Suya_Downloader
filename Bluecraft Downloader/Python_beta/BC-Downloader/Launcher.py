@@ -112,8 +112,33 @@ class TransparentSplashScreen(QWidget):
 
 
 # 初始化pygame音乐模块
-# 初始化pygame音乐模块
 pygame.mixer.init()
+
+# 设置音乐结束事件
+MUSIC_END_EVENT = pygame.USEREVENT + 1  # 创建一个自定义事件类型
+pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
+
+
+# 修改toggle_music函数以处理音乐循环
+def toggle_music(icon_label):
+    """切换音乐播放状态并更新图标，同时处理音乐循环"""
+    global music_playing
+    if not music_playing:
+        pygame.mixer.music.play(loops=0)  # 设置为不循环播放，因为我们将在结束时手动处理循环
+        music_playing = True
+        icon_label.config(image=play_icon_image)
+    else:
+        pygame.mixer.music.stop()
+        music_playing = False
+        icon_label.config(image=stop_icon_image)
+
+
+# 在Tkinter的主循环中添加对音乐结束事件的监听
+def handle_events():
+    for event in pygame.event.get():  # 获取所有pygame事件
+        if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
+            if music_playing:  # 只有当音乐应该是播放状态时才重新开始
+                pygame.mixer.music.play(loops=0)  # 重新播放音乐
 
 
 def check_for_updates(current_version):
@@ -274,7 +299,6 @@ def create_gui():
     pygame.mixer.init()
     # 加载音乐并设置为循环播放
     pygame.mixer.music.load("./Resources/Sounds/music.mp3")
-    pygame.mixer.music.play(loops=10000)  # 循环次数，-1存在问题，改为较大值
 
     toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
@@ -283,6 +307,12 @@ def create_gui():
     center_window(window)  # 居中窗口
 
     window.mainloop()
+
+    # 在Tkinter的主循环中调用handle_events来处理音乐事件
+    while True:
+        handle_events()  # 处理pygame事件，包括音乐结束事件
+        window.update_idletasks()  # 更新Tkinter窗口
+        window.update()  # 运行Tkinter事件循环
 
 
 if __name__ == "__main__":
