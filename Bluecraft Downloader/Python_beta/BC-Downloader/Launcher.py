@@ -1,8 +1,12 @@
-current_version = "0.0.0.1"
+import zipfile
+
+current_version = "0.0.0.0"
 
 import errno
 import os
+import shutil
 import sys
+import tempfile
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox, scrolledtext
@@ -13,6 +17,15 @@ from PIL import Image, ImageTk
 from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+
+# 获取当前脚本的绝对路径
+script_path = os.path.abspath(__file__)
+
+# 获取脚本所在的目录路径
+running_path = os.path.dirname(script_path)
+
+# 打印运行路径以确认
+print("运行路径:", running_path)
 
 
 def ensure_directory_exists(directory_path):
@@ -275,6 +288,43 @@ def get_client_status(current_version, latest_version):
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}"  # 绿色
 
 
+def unzip_and_replace(zip_path, target_folder):
+    """解压zip文件并替换目标文件夹内容"""
+    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
+        zip_ref.extractall(tempfile.mkdtemp())  # 解压到临时目录
+        extracted_folder = zip_ref.namelist()[0]  # 获取根目录名
+
+        # 移动解压出的文件和文件夹到目标位置
+        for item in os.listdir(extracted_folder):
+            src = os.path.join(extracted_folder, item)
+            dst = os.path.join(target_folder, item)
+            if os.path.isdir(src):
+                shutil.copytree(src, dst, dirs_exist_ok=True)
+            else:
+                shutil.copy2(src, dst)
+
+    # 删除临时目录和zip文件
+    shutil.rmtree(os.path.dirname(zip_path))
+    os.remove(zip_path)
+
+
+def download_and_replace(file_url, target_folder):
+    """下载zip文件，解压并替换目标文件夹内容"""
+    try:
+        with requests.get(file_url, stream=True) as r:
+            r.raise_for_status()
+            with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_file:
+                for chunk in r.iter_content(chunk_size=8192):
+                    tmp_file.write(chunk)
+                tmp_file_path = tmp_file.name
+
+        unzip_and_replace(tmp_file_path, target_folder)
+
+        messagebox.showinfo("更新完成", "下载、解压并替换文件成功，请重启应用以应用更新。")
+    except Exception as e:
+        messagebox.showerror("下载或解压错误", f"下载或解压过程中发生错误: {e}")
+
+
 def check_for_updates_with_confirmation(current_version):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
@@ -300,14 +350,23 @@ def check_for_updates_with_confirmation(current_version):
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
             answer = messagebox.askyesno("更新可用", update_question)
 
-            if answer:  # 用户选择是，可以在这里添加跳转到下载链接的逻辑
-                webbrowser.open(Downloader_Update_URL)
+            if answer:  # 用户选择是
+                try:
+                    download_and_replace(Downloader_Update_URL, running_path)
+                except Exception as e:
+                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+
         elif comparison_result2 > 0:
             update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
             answer = messagebox.askyesno("获取正式版", update_question)
 
-            if answer:  # 用户选择是，可以在这里添加跳转到下载链接的逻辑
-                webbrowser.open(Downloader_Update_URL)
+            if answer:  # 用户选择是
+                try:
+                    download_and_replace(Downloader_Update_URL, running_path)
+                except Exception as e:
+                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+
+
         else:
             messagebox.showinfo("版本检查", "当前已是最新版本！")
     except Exception as e:
@@ -459,16 +518,16 @@ def create_gui():
     update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
 
     # 检查BC客户端更新按钮
-    check_bc_update_button = tk.Button(update_buttons_frame, text="检查BC客户端更新",
+    check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
                                        command=lambda: check_for_client_updates(client_version))
     check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
 
     # 检查下载器更新按钮
-    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新",
+    check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
                                                command=lambda: check_for_updates_with_confirmation(current_version))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
-    creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru.", font=("Microsoft YaHei", 7), fg="gray")
+    creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
     creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
     # 创建一个蓝色色带Frame
@@ -476,12 +535,14 @@ def create_gui():
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在蓝色色带上添加文字
-    welcome_label = tk.Label(blue_strip, text="欢迎使用 Bluecraft 客户端Suya下载器！", font=("Microsoft YaHei", 30),
+    welcome_label = tk.Label(blue_strip, text="   欢迎使用 Bluecraft 客户端Suya下载器！   ",
+                             font=("Microsoft YaHei", 30),
                              fg="white", bg="#0060C0")
     welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
     # 第二行文字示例（如果需要的话）
-    second_line_label = tk.Label(blue_strip, text="快速、方便地下载 Bluecraft 客户端", font=("Microsoft YaHei", 15),
+    second_line_label = tk.Label(blue_strip, text="快速、方便地下载或更新 Bluecraft 客户端",
+                                 font=("Microsoft YaHei", 15),
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
