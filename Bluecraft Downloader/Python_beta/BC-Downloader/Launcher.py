@@ -160,7 +160,7 @@ def check_for_updates_with_confirmation(current_version):
         if current_version == "url":
             return version_info[1]
         # 比较版本号
-        comparison_result1,comparison_result2 = compare_versions(latest_version, current_version)
+        comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
@@ -179,7 +179,10 @@ def check_for_updates_with_confirmation(current_version):
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
 
+
 Downloader_Update_URL = check_for_updates_with_confirmation("url")
+
+
 def compare_versions(version1, version2):
     """比较两个版本号"""
     return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')], [int(v) for v in
@@ -284,7 +287,6 @@ def create_gui():
     bottom_frame = tk.Frame(window)
     bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-
     # 音乐切换按钮及其容器
     music_frame = tk.Frame(bottom_frame)
     music_frame.pack(side=tk.LEFT, pady=10)
@@ -297,11 +299,13 @@ def create_gui():
     update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
 
     # 检查BC客户端更新按钮
-    check_bc_update_button = tk.Button(update_buttons_frame, text="检查BC客户端更新", command=lambda: check_for_updates(current_version))
+    check_bc_update_button = tk.Button(update_buttons_frame, text="检查BC客户端更新",
+                                       command=lambda: check_for_updates(current_version))
     check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
 
     # 检查下载器更新按钮
-    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新", command=lambda: check_for_updates_with_confirmation(current_version))
+    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新",
+                                               command=lambda: check_for_updates_with_confirmation(current_version))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
 
     # 创建一个蓝色色带Frame
