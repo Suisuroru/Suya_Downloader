@@ -1,5 +1,4 @@
 current_version = ("0.0.0.1")
-Downloader_Update_URL = ""
 
 import sys
 import tkinter as tk
@@ -147,8 +146,19 @@ def check_for_updates_with_confirmation(current_version):
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
         response = requests.get(update_url)
-        latest_version = response.text.strip()
+        response_text = response.text.strip()
 
+        # 分割响应文本，假设格式为 "version_number|update_url"
+        version_info = response_text.split("|")
+        if len(version_info) != 2:
+            messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
+            return
+
+        latest_version = version_info[0]
+        Downloader_Update_URL = version_info[1]  # 注意这里需要全局变量或通过参数传递给后续处理逻辑
+
+        if current_version == "url":
+            return version_info[1]
         # 比较版本号
         comparison_result1,comparison_result2 = compare_versions(latest_version, current_version)
 
@@ -169,7 +179,7 @@ def check_for_updates_with_confirmation(current_version):
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
 
-
+Downloader_Update_URL = check_for_updates_with_confirmation("url")
 def compare_versions(version1, version2):
     """比较两个版本号"""
     return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')], [int(v) for v in
