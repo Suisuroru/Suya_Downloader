@@ -266,10 +266,25 @@ def create_gui():
     bottom_frame = tk.Frame(window)
     bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-    # 音乐切换按钮
-    icon_label = tk.Label(bottom_frame, image=play_icon_image)
-    icon_label.pack(side=tk.LEFT, pady=10)
+
+    # 音乐切换按钮及其容器
+    music_frame = tk.Frame(bottom_frame)
+    music_frame.pack(side=tk.LEFT, pady=10)
+    icon_label = tk.Label(music_frame, image=play_icon_image)
+    icon_label.pack()
     icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+
+    # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
+    update_buttons_frame = tk.Frame(bottom_frame)
+    update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
+
+    # 检查BC客户端更新按钮
+    check_bc_update_button = tk.Button(update_buttons_frame, text="检查BC客户端更新", command=lambda: check_for_updates(current_version))
+    check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
+
+    # 检查下载器更新按钮
+    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新", command=lambda: check_for_updates(current_version))
+    check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
 
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
@@ -285,6 +300,9 @@ def create_gui():
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
+    # 版本检查并创建色带
+    check_for_updates_and_create_version_strip(current_version, window)
+
     # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
     notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)  # 添加state=tk.DISABLED
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
@@ -292,11 +310,9 @@ def create_gui():
     # 初始化时拉取公告
     fetch_notice(notice_text_area)
 
-    # 版本检查并创建色带
-    check_for_updates_and_create_version_strip(current_version, window)
-
     # 初始化pygame音乐模块并设置音乐循环播放
     pygame.mixer.init()
+
     # 加载音乐并设置为循环播放
     pygame.mixer.music.load("./Resources/Sounds/music.mp3")
 
