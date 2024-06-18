@@ -1,4 +1,5 @@
-current_version = ("0.0.0.1")
+current_version = "0.0.0.1"
+client_version = "0.0.0.1"
 
 import sys
 import tkinter as tk
@@ -141,6 +142,68 @@ def handle_events():
                 pygame.mixer.music.play(loops=0)  # 重新播放音乐
 
 
+def check_for_client_updates(current_version):
+    # 定义获取更新信息的URL
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
+
+    try:
+        # 发送GET请求获取更新信息
+        response = requests.get(update_url)
+
+        # 检查请求是否成功
+        if response.status_code == 200:
+            # 解析返回的信息，先按 "|" 分割，然后移除版本号前的 "v"
+            update_info = response.text.strip().split("|")
+            if len(update_info) == 2:
+                # 移除版本号前的 "v"
+                latest_version = update_info[0][1:]
+                download_link = update_info[1]
+                # 比较版本号并决定是否提示用户更新
+                if compare_client_versions(latest_version, current_version) > 0:
+                    # 如果有新版本，提示用户并提供下载链接
+                    user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
+                    if user_response:
+                        webbrowser.open(download_link)  # 打开下载链接
+                else:
+                    print("当前已是最新版本。")
+            else:
+                print("服务器返回的信息格式不正确。")
+        else:
+            print(f"请求更新信息失败，状态码：{response.status_code}")
+    except Exception as e:
+        print(f"检查更新时发生错误: {e}")
+
+
+def compare_client_versions(version1, version2):
+    """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
+    v1_parts = list(map(int, version1.split('.')))
+    v2_parts = list(map(int, version2.split('.')))
+
+    for i in range(max(len(v1_parts), len(v2_parts))):
+        part1 = v1_parts[i] if i < len(v1_parts) else 0
+        part2 = v2_parts[i] if i < len(v2_parts) else 0
+
+        if part1 > part2:
+            return 1
+        elif part1 < part2:
+            return -1
+
+    return 0
+
+
+def get_client_status(current_version, latest_version):
+    """根据版本比较结果返回状态、颜色和消息"""
+    comparison_result = compare_client_versions(current_version, latest_version)
+
+    if comparison_result == 1:
+        # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
+        return "预发布或测试版本", "#0066CC", "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：{}"  # 浅蓝
+    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
+        return "旧版本", "#FFCC00", "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：{}"  # 黄色
+    else:
+        return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}"  # 绿色
+
+
 def check_for_updates_with_confirmation(current_version):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
@@ -203,19 +266,45 @@ def check_for_updates_and_create_version_strip(current_version, window):
             messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
             return
         latest_version = version_info[0]
-
-        status, color_code, message = get_version_status(current_version, latest_version)
-
-        version_strip = tk.Frame(window, bg=color_code, height=40)  # 创建色带Frame
-        version_strip.pack(fill=tk.X, pady=(10, 0))  # 设置在蓝色色带下方
-
-        version_label = tk.Label(version_strip, text=message.format(current_version), font=("Microsoft YaHei", 12),
-                                 fg="white", bg=color_code)
-        version_label.pack(anchor=tk.CENTER)  # 文字居中显示
-
+        create_version_strip(current_version, latest_version, window,0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+
+
+def check_for_client_updates_and_create_version_strip(current_version, window):
+    """检查更新并创建版本状态色带"""
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
+
+    try:
+        # 发送GET请求获取更新信息
+        response = requests.get(update_url)
+
+        # 检查请求是否成功
+        if response.status_code == 200:
+            # 解析返回的信息，先按 "|" 分割，然后移除版本号前的 "v"
+            update_info = response.text.strip().split("|")
+            if len(update_info) == 2:
+                # 移除版本号前的 "v"
+                latest_version = update_info[0][1:]
+                create_version_strip(current_version, latest_version, window,1)
+                # 如果有其他基于版本状态的操作，可在此处添加
+    except Exception as e:
+        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+
+
+def create_version_strip(current_version, latest_version, window, type):
+    if type == 0:
+        status, color_code, message = get_version_status(current_version, latest_version)
+    elif type == 1:
+        status, color_code, message = get_client_status(current_version, latest_version)
+
+    version_strip = tk.Frame(window, bg=color_code, height=40)  # 创建色带Frame
+    version_strip.pack(fill=tk.X, pady=(10, 0))  # 设置在蓝色色带下方
+
+    version_label = tk.Label(version_strip, text=message.format(current_version), font=("Microsoft YaHei", 12),
+                             fg="white", bg=color_code)
+    version_label.pack(anchor=tk.CENTER)  # 文字居中显示
 
 
 def get_version_status(current_version, latest_version):
@@ -300,7 +389,7 @@ def create_gui():
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text="检查BC客户端更新",
-                                       command=lambda: check_for_updates(current_version))
+                                       command=lambda: check_for_client_updates(client_version))
     check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
 
     # 检查下载器更新按钮
@@ -322,7 +411,7 @@ def create_gui():
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
-    # 版本检查并创建色带
+    # 版本检查并创建色带(下载器)
     check_for_updates_and_create_version_strip(current_version, window)
 
     # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
@@ -331,6 +420,9 @@ def create_gui():
 
     # 初始化时拉取公告
     fetch_notice(notice_text_area)
+
+    # 版本检查并创建色带(客户端)
+    check_for_client_updates_and_create_version_strip(current_version, window)
 
     # 初始化pygame音乐模块并设置音乐循环播放
     pygame.mixer.init()
