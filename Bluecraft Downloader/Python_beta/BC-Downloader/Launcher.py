@@ -1,4 +1,5 @@
 current_version = ("0.0.0.1")
+Downloader_Update_URL = ""
 
 import sys
 import tkinter as tk
@@ -141,28 +142,28 @@ def handle_events():
                 pygame.mixer.music.play(loops=0)  # 重新播放音乐
 
 
-def check_for_updates(current_version):
-    """检查更新并弹窗提示"""
+def check_for_updates_with_confirmation(current_version):
+    """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
         response = requests.get(update_url)
         latest_version = response.text.strip()
 
         # 比较版本号
-        if compare_versions(latest_version, current_version) > 0:
-            update_window = tk.Toplevel()
-            update_window.title("发现新版本")
-            update_message = tk.Label(update_window, text=f"发现新版本: {latest_version}，当前版本: {current_version}",
-                                      justify=tk.LEFT)
-            update_message.pack(padx=20, pady=20)
+        comparison_result1,comparison_result2 = compare_versions(latest_version, current_version)
 
-            def perform_update():
-                """执行更新操作"""
-                update_from_link = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Update"
-                webbrowser.open(update_from_link)  # 或者使用更复杂的更新逻辑
+        if comparison_result1 > 0:  # 当前版本低于在线版本
+            update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
+            answer = messagebox.askyesno("更新可用", update_question)
 
-            update_button = tk.Button(update_window, text="立即更新", command=perform_update)
-            update_button.pack(pady=10)
+            if answer:  # 用户选择是，可以在这里添加跳转到下载链接的逻辑
+                webbrowser.open(Downloader_Update_URL)
+        elif comparison_result2 > 0:
+            update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
+            answer = messagebox.askyesno("获取正式版", update_question)
+
+            if answer:  # 用户选择是，可以在这里添加跳转到下载链接的逻辑
+                webbrowser.open(Downloader_Update_URL)
         else:
             messagebox.showinfo("版本检查", "当前已是最新版本！")
     except Exception as e:
@@ -283,7 +284,7 @@ def create_gui():
     check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
 
     # 检查下载器更新按钮
-    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新", command=lambda: check_for_updates(current_version))
+    check_downloader_update_button = tk.Button(update_buttons_frame, text="检查下载器更新", command=lambda: check_for_updates_with_confirmation(current_version))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
 
     # 创建一个蓝色色带Frame
