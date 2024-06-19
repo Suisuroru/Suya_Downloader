@@ -1,5 +1,7 @@
+import ctypes
 import os
 import re
+import sys
 import threading
 import tkinter as tk
 import zipfile
@@ -8,6 +10,20 @@ from urllib.parse import urlparse
 
 import requests
 from tqdm import tqdm
+
+
+# 检查是否已经拥有管理员权限
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def download_file(url, local_filename=None, chunk_size=8192):
