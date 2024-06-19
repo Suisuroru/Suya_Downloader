@@ -1,12 +1,8 @@
-import zipfile
-
-current_version = "0.0.0.0"
+current_version = "1.0.0.0"
 
 import errno
 import os
-import shutil
 import sys
-import tempfile
 import tkinter as tk
 import webbrowser
 from tkinter import messagebox, scrolledtext
@@ -288,44 +284,7 @@ def get_client_status(current_version, latest_version):
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}"  # 绿色
 
 
-def unzip_and_replace(zip_path, target_folder):
-    """解压zip文件并替换目标文件夹内容"""
-    with zipfile.ZipFile(zip_path, 'r') as zip_ref:
-        zip_ref.extractall(tempfile.mkdtemp())  # 解压到临时目录
-        extracted_folder = zip_ref.namelist()[0]  # 获取根目录名
-
-        # 移动解压出的文件和文件夹到目标位置
-        for item in os.listdir(extracted_folder):
-            src = os.path.join(extracted_folder, item)
-            dst = os.path.join(target_folder, item)
-            if os.path.isdir(src):
-                shutil.copytree(src, dst, dirs_exist_ok=True)
-            else:
-                shutil.copy2(src, dst)
-
-    # 删除临时目录和zip文件
-    shutil.rmtree(os.path.dirname(zip_path))
-    os.remove(zip_path)
-
-
-def download_and_replace(file_url, target_folder):
-    """下载zip文件，解压并替换目标文件夹内容"""
-    try:
-        with requests.get(file_url, stream=True) as r:
-            r.raise_for_status()
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".zip") as tmp_file:
-                for chunk in r.iter_content(chunk_size=8192):
-                    tmp_file.write(chunk)
-                tmp_file_path = tmp_file.name
-
-        unzip_and_replace(tmp_file_path, target_folder)
-
-        messagebox.showinfo("更新完成", "下载、解压并替换文件成功，请重启应用以应用更新。")
-    except Exception as e:
-        messagebox.showerror("下载或解压错误", f"下载或解压过程中发生错误: {e}")
-
-
-def check_for_updates_with_confirmation(current_version):
+def check_for_updates_with_confirmation(current_version,window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
@@ -352,7 +311,15 @@ def check_for_updates_with_confirmation(current_version):
 
             if answer:  # 用户选择是
                 try:
-                    download_and_replace(Downloader_Update_URL, running_path)
+                    launcher_path = os.path.join(running_path, 'Updater.exe')
+                    if os.path.isfile(launcher_path):
+                        import subprocess
+                        subprocess.Popen([launcher_path])
+                        print("Updater.exe 已启动。")
+                        window.destroy()  # 关闭Tkinter窗口
+                        sys.exit(0)  # 退出Python进程
+                    else:
+                        print("Updater.exe 未找到。")
                 except Exception as e:
                     messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
 
@@ -362,7 +329,15 @@ def check_for_updates_with_confirmation(current_version):
 
             if answer:  # 用户选择是
                 try:
-                    download_and_replace(Downloader_Update_URL, running_path)
+                    launcher_path = os.path.join(running_path, 'Updater.exe')
+                    if os.path.isfile(launcher_path):
+                        import subprocess
+                        subprocess.Popen([launcher_path])
+                        print("Updater.exe 已启动。")
+                        window.destroy()  # 关闭Tkinter窗口
+                        sys.exit(0)  # 退出Python进程
+                    else:
+                        print("Updater.exe 未找到。")
                 except Exception as e:
                     messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
 
@@ -371,9 +346,6 @@ def check_for_updates_with_confirmation(current_version):
             messagebox.showinfo("版本检查", "当前已是最新版本！")
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
-
-
-Downloader_Update_URL = check_for_updates_with_confirmation("url")
 
 
 def compare_versions(version1, version2):
@@ -450,20 +422,6 @@ def get_version_status(current_version, latest_version):
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的下载器，当前版本号：{}"  # 绿色
 
 
-def toggle_music(icon_label):
-    """切换音乐播放状态并更新图标"""
-    global music_playing
-    if not music_playing:
-        pygame.mixer.music.load("./Resources/Sounds/music.mp3")
-        pygame.mixer.music.play()
-        music_playing = True
-        icon_label.config(image=play_icon_image)
-    else:
-        pygame.mixer.music.stop()
-        music_playing = False
-        icon_label.config(image=stop_icon_image)
-
-
 def fetch_notice(notice_text_area):
     """在线获取公告内容的函数"""
     try:
@@ -524,7 +482,7 @@ def create_gui():
 
     # 检查下载器更新按钮
     check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
-                                               command=lambda: check_for_updates_with_confirmation(current_version))
+                                               command=lambda: check_for_updates_with_confirmation(current_version,window))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
     creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
