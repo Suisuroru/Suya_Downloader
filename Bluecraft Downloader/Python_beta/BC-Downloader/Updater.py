@@ -26,40 +26,75 @@ if not is_admin():
     sys.exit()
 
 
-def download_file(url, local_filename=None, chunk_size=8192):
-    global cancel_update, local_zip_path
+def get_script_directory():
     """
-    下载文件到本地并显示进度条。
+    尝试以一种较为保守的方式获取当前脚本所在的目录。
+    首先尝试直接使用__file__，如果遭遇问题（比如在某些打包环境下__file__不可靠），
+    则可能需要采取其他策略或记录错误。
     """
+    try:
+        # 尝试直接获取脚本绝对路径
+        script_path = os.path.abspath(__file__)
+        script_dir = os.path.dirname(script_path)
+        return script_dir
+    except NameError:
+        # 如果在交互模式下或__file__未定义，尝试回退到当前工作目录
+        print("警告: 无法直接确定脚本目录，使用当前工作目录作为替代。")
+        return os.getcwd()
+
+
+# 使用这个函数来获取脚本目录
+global current_dir
+current_dir = get_script_directory()
+print(f"当前脚本所在目录: {current_dir}")
+global local_zip_path
+local_zip_path = None  # 初始化变量
+
+
+def download_file(url, local_filename=None, chunk_size=8192, download_dir="./Downloads"):
+    """
+    下载文件到指定目录并显示进度条。如果文件已存在则覆盖。
+    """
+    session = requests.Session()  # 使用Session维护连接状态
+
+    # 确保下载目录存在
+    os.makedirs(download_dir, exist_ok=True)
+
     if local_filename is None:
-        # 清理URL以获得合法的文件名
-        local_filename = url.split('/')[-1].split('?')[0]  # 移除查询字符串
-        # 进一步清理，移除可能存在的非法文件名字符
-        local_filename = ''.join(c for c in local_filename if c.isalnum() or c in ('.', '-', '_'))
-        local_zip_path = local_filename
+        local_filename = url.split('/')[-1].split('?')[0]  # 基于URL获取文件名
+        local_filename = ''.join(c for c in local_filename if c.isalnum() or c in ('.', '-', '_'))  # 清理文件名
+        local_filename = os.path.join(download_dir, local_filename)  # 指定下载目录
 
-    # 确保文件名不为空且合法
-    if not local_filename:
-        raise ValueError("无法从URL中获取有效的文件名")
+    # 如果文件存在，则删除以准备覆盖下载
+    if os.path.exists(local_filename):
+        os.remove(local_filename)
+        print(f"文件 {local_filename} 已存在，准备覆盖下载。")
 
-    response = requests.get(url, stream=True)
-    response.raise_for_status()
+    headers = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'}  # 添加请求头
 
-    total_size = int(response.headers.get('content-length', 0))
-    progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=f"Downloading {local_filename}")
+    try:
+        with session.get(url, stream=True, allow_redirects=True, headers=headers) as response:
+            response.raise_for_status()
+            total_size = int(response.headers.get('content-length', 0))
+            progress_bar = tqdm(total=total_size, unit='iB', unit_scale=True, desc=f"Downloading {local_filename}")
 
-    with open(local_filename, 'wb') as file:
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            if cancel_update:  # 新增：检查是否需要取消
-                print("下载已取消")
-                break
-            if chunk:  # filter out keep-alive new chunks
-                progress_bar.update(len(chunk))
-                file.write(chunk)
-    progress_bar.close()
-
-    if total_size != 0 and progress_bar.n != total_size:
-        print("ERROR, something went wrong")
+            with open(local_filename, 'wb') as file:
+                for chunk in response.iter_content(chunk_size=chunk_size):
+                    if cancel_update:  # 检查是否应取消下载
+                        print("下载已取消。")
+                        raise KeyboardInterrupt  # 引发一个异常以跳出下载循环
+                    if chunk:
+                        progress_bar.update(len(chunk))
+                        file.write(chunk)
+            progress_bar.close()
+    except KeyboardInterrupt:  # 捕获取消异常
+        pass  # 或者在这里执行一些清理操作
+    except requests.exceptions.RequestException as e:
+        print(f"A problem occurred while downloading: {e}")
+        if os.path.exists(local_filename):  # 下载出错时删除已创建的不完整文件
+            os.remove(local_filename)
+        return None
 
     return local_filename
 
@@ -90,7 +125,6 @@ def fetch_and_process_url(url):
         local_zip_path = download_file(download_url)
 
         # 解压到当前脚本所在目录
-        current_dir = os.path.dirname(os.path.abspath(__file__))
         extract_zip(local_zip_path, current_dir)
 
         print(f"版本 {version} 下载并解压完成至当前目录: {current_dir}")
@@ -114,7 +148,7 @@ def update_progress_bar(value, max_value, bar, label):
     root.update_idletasks()  # 更新GUI
 
 
-def gui_fetch_and_process_url(url):
+def gui_fetch_and_process_url(url, msgbox=None):
     """
     在GUI环境中执行fetch_and_process_url操作，并更新界面。
     """
@@ -129,7 +163,7 @@ def gui_fetch_and_process_url(url):
     total_size = 100  # 示例总大小
     for i in range(total_size + 1):
         update_progress_bar(i, total_size, progress_bar, status_label)
-        root.after(100)  # 每100毫秒更新一次
+        root.after(20)  # 每20毫秒更新一次
 
 
 cancel_update = False
@@ -137,7 +171,7 @@ cancel_update = False
 
 def cancel_update_callback():
     """标记取消更新，关闭窗口，并尝试删除临时下载文件"""
-    global cancel_update, local_zip_path
+    global cancel_update
 
     cancel_update = True
 
@@ -163,7 +197,7 @@ def auto_fetch_and_process_url(url):
     """
     global progress_bar, status_label, cancel_button
 
-    status_label.config(text="正在检查更新...")
+    status_label.config(text="正在更新...")
     root.update_idletasks()
 
     # 启用取消按钮
@@ -176,17 +210,20 @@ def auto_fetch_and_process_url(url):
     for i in range(total_size + 1):
         if not cancel_update:
             update_progress_bar(i, total_size, progress_bar, status_label)
-            root.after(100)  # 每100毫秒更新一次
+            root.after(20)  # 每20毫秒更新一次
         else:
             break
 
     # 下载完成后或取消后，禁用取消按钮
     cancel_button.config(state=tk.DISABLED)
 
-    if cancel_update:
-        status_label.config(text="更新已取消")
+    if not cancel_update:
+        status_label.config(text="更新完成，窗口将自动关闭")
+        # 使用after方法设置一个定时器，在5秒后调用close_application
+        root.after(5000, root.destroy())  # 5000毫秒等于5秒
     else:
-        status_label.config(text="更新完成")
+        status_label.config(text="更新已取消")
+        cancel_button.config(state=tk.DISABLED)  # 确保按钮状态正确更新
 
 
 def threaded_fetch_and_process_url(url):
