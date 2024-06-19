@@ -304,6 +304,7 @@ def check_for_updates_with_confirmation(current_version,window):
             return version_info[1]
         # 比较版本号
         comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
+        current_working_dir = os.getcwd()
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
@@ -311,7 +312,7 @@ def check_for_updates_with_confirmation(current_version,window):
 
             if answer:  # 用户选择是
                 try:
-                    launcher_path = os.path.join(running_path, 'Updater.exe')
+                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
                     if os.path.isfile(launcher_path):
                         import subprocess
                         subprocess.Popen([launcher_path])
@@ -329,7 +330,7 @@ def check_for_updates_with_confirmation(current_version,window):
 
             if answer:  # 用户选择是
                 try:
-                    launcher_path = os.path.join(running_path, 'Updater.exe')
+                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
                     if os.path.isfile(launcher_path):
                         import subprocess
                         subprocess.Popen([launcher_path])
