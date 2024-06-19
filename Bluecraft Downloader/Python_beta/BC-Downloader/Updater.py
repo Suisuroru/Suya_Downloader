@@ -9,6 +9,7 @@ api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_
 # 当前工作目录
 current_dir = os.getcwd()
 
+
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
@@ -24,8 +25,9 @@ def fetch_update_info():
         print(f"请求错误: {e}")
         return None, None
 
+
 def download_and_install(update_url):
-    """下载ZIP文件并覆盖安装"""
+    """下载ZIP文件并覆盖安装，完成后运行Launcher.exe"""
     try:
         response = requests.get(update_url, stream=True)
         response.raise_for_status()
@@ -46,8 +48,23 @@ def download_and_install(update_url):
                     f.write(zip_file.read(member))
 
         print("更新安装完成")
+
+        # 确保Launcher.exe存在于当前目录下再尝试运行
+        launcher_path = os.path.join(current_dir, 'Launcher.exe')
+        if os.path.isfile(launcher_path):
+            # 使用os.system运行Launcher.exe，这会阻塞直到Launcher.exe执行完毕
+            # os.system(f'start {launcher_path}')
+
+            # 或者使用subprocess.run，这样可以更好地控制执行过程，下面的代码是非阻塞的执行方式
+            import subprocess
+            subprocess.Popen([launcher_path])
+            print("Launcher.exe 已启动。")
+        else:
+            print("Launcher.exe 未找到。")
     except Exception as e:
         print(f"下载或解压错误: {e}")
+
+
 
 def main():
     version, update_url = fetch_update_info()
@@ -56,6 +73,7 @@ def main():
         download_and_install(update_url)
     else:
         print("没有找到新版本的信息。")
+
 
 if __name__ == "__main__":
     main()
