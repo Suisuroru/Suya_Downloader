@@ -1,3 +1,7 @@
+import threading
+import zipfile
+from io import BytesIO
+
 current_version = "1.0.0.1"
 
 import errno
@@ -430,12 +434,102 @@ def fetch_notice(notice_text_area):
         messagebox.showerror("错误", f"获取公告内容失败: {e}")
 
 
+def fetch_update_info():
+    """从API获取版本信息和下载链接"""
+    get_Updater_api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Updater_Check"
+    try:
+        response = requests.get(get_Updater_api_url)
+        response.raise_for_status()  # 检查请求是否成功
+        version_url_pair = response.text.split("|")
+        if len(version_url_pair) == 2:
+            return version_url_pair[0], version_url_pair[1]
+        else:
+            print("获取的版本信息格式不正确")
+            return None, None
+    except requests.RequestException as e:
+        print(f"请求错误: {e}")
+        return None, None
+
+
+def download_and_install(update_url,version):
+    try:
+        response = requests.get(update_url, stream=True)
+        response.raise_for_status()
+
+        # 使用BytesIO作为临时存储，避免直接写入文件
+        zip_file = zipfile.ZipFile(BytesIO(response.content))
+
+        # 解压到当前目录
+        for member in zip_file.namelist():
+            # 避免路径遍历攻击
+            member_path = os.path.abspath(os.path.join(running_path, member))
+            if not member_path.startswith(running_path):
+                raise Exception("Zip file contains invalid path.")
+            if member.endswith('/'):
+                os.makedirs(member_path, exist_ok=True)
+            else:
+                with open(member_path, 'wb') as f:
+                    f.write(zip_file.read(member))
+        version_file_path = os.path.join("./Version_Check", "Updater_Version.txt")
+        with open(version_file_path, 'w') as file:
+            file.write(version)
+        print("更新安装完成")
+    except Exception as e:
+        print(f"下载或解压错误: {e}")
+
+
+def Update_Updater():
+    version, update_url = fetch_update_info()
+    if Version_Check_for_Updater(version):
+        if version and update_url:
+            print(f"发现新版本: {version}，开始下载...")
+            download_and_install(update_url,version)
+        else:
+            print("没有找到新版本的信息。")
+
+
+def Version_Check_for_Updater(online_version):
+    # 版本文件所在目录
+    version_dir_path = "./Version_Check"
+    print("Updater.exe在线最新版：" + online_version)
+    # 确保目录存在，如果不存在则创建
+    if not os.path.exists(version_dir_path):
+        os.makedirs(version_dir_path)
+        print(f"目录{version_dir_path}不存在，已创建。")
+
+    # 版本文件路径
+    version_file_path = os.path.join(version_dir_path, "Updater_Version.txt")
+
+    # 确保文件存在，如果不存在则创建并写入默认版本信息
+    if not os.path.exists(version_file_path):
+        with open(version_file_path, 'w') as file:
+            file.write("0.0.0.0")
+        print(f"文件{version_file_path}不存在，已创建并写入默认版本0.0.0.0。")
+        updater_version = "0.0.0.0"
+    else:
+        # 读取文件内容
+        with open(version_file_path, 'r') as file:
+            updater_version = file.read().strip()  # 读取内容并去除首尾空白字符
+            print(f"文件{version_file_path}存在，读取到版本信息：" + updater_version)
+
+    # 比较两个版本
+    if updater_version == online_version:
+        print("本地版本与更新器版本相同。")
+        return False
+    elif updater_version < online_version:
+        print("有新版本可用，更新器版本较新。")
+        return True
+    else:
+        print("本地版本较新，无需更新。")
+        return False
+
+
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image
 
     music_playing = False
     window = tk.Tk()
-    window.title("BlueCraft Client Downloader")
+    window.title("Suya Downloader for BlueCraft Client")
 
     # 设置窗口图标
     window.iconbitmap("./Resources/Pic/icon.ico")  # 添加此行代码
@@ -529,11 +623,17 @@ def create_gui():
 
 
 if __name__ == "__main__":
+    if Version_Check_for_Updater(fetch_update_info()[0]):
+        # 如果有新版本，启动新线程执行更新操作
+        print("启动更新线程...")
+        update_thread = threading.Thread(target=Update_Updater)
+        update_thread.start()
+    else:
+        print("无需更新。")
+        # 这里可以添加一个定时器或信号槽来在动画结束后关闭splash screen并打开主界面
     app = QApplication(sys.argv)
     splash = TransparentSplashScreen()
     splash.show()
-
-    # 这里可以添加一个定时器或信号槽来在动画结束后关闭splash screen并打开主界面
     QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
 
     sys.exit(app.exec_())
