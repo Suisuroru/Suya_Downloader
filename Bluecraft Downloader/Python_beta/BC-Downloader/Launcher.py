@@ -1,4 +1,4 @@
-current_version = "1.0.0.0"
+current_version = "1.0.0.1"
 
 import errno
 import os
@@ -284,7 +284,7 @@ def get_client_status(current_version, latest_version):
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}"  # 绿色
 
 
-def check_for_updates_with_confirmation(current_version,window):
+def check_for_updates_with_confirmation(current_version, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
         update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
@@ -300,6 +300,21 @@ def check_for_updates_with_confirmation(current_version,window):
         latest_version = version_info[0]
         Downloader_Update_URL = version_info[1]  # 注意这里需要全局变量或通过参数传递给后续处理逻辑
 
+        def Update(answer, window, current_working_dir):
+            if answer:  # 用户选择是
+                try:
+                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
+                    if os.path.isfile(launcher_path):
+                        import subprocess
+                        subprocess.Popen([launcher_path])
+                        print("Updater.exe 已启动。")
+                        window.destroy()  # 关闭Tkinter窗口
+                        sys.exit(0)  # 退出Python进程
+                    else:
+                        print("Updater.exe 未找到。")
+                except Exception as e:
+                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+
         if current_version == "url":
             return version_info[1]
         # 比较版本号
@@ -309,39 +324,12 @@ def check_for_updates_with_confirmation(current_version,window):
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
             answer = messagebox.askyesno("更新可用", update_question)
-
-            if answer:  # 用户选择是
-                try:
-                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
-                    if os.path.isfile(launcher_path):
-                        import subprocess
-                        subprocess.Popen([launcher_path])
-                        print("Updater.exe 已启动。")
-                        window.destroy()  # 关闭Tkinter窗口
-                        sys.exit(0)  # 退出Python进程
-                    else:
-                        print("Updater.exe 未找到。")
-                except Exception as e:
-                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+            Update(answer, window, current_working_dir)
 
         elif comparison_result2 > 0:
             update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
             answer = messagebox.askyesno("获取正式版", update_question)
-
-            if answer:  # 用户选择是
-                try:
-                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
-                    if os.path.isfile(launcher_path):
-                        import subprocess
-                        subprocess.Popen([launcher_path])
-                        print("Updater.exe 已启动。")
-                        window.destroy()  # 关闭Tkinter窗口
-                        sys.exit(0)  # 退出Python进程
-                    else:
-                        print("Updater.exe 未找到。")
-                except Exception as e:
-                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
-
+            Update(answer, window, current_working_dir)
 
         else:
             messagebox.showinfo("版本检查", "当前已是最新版本！")
@@ -483,7 +471,8 @@ def create_gui():
 
     # 检查下载器更新按钮
     check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
-                                               command=lambda: check_for_updates_with_confirmation(current_version,window))
+                                               command=lambda: check_for_updates_with_confirmation(current_version,
+                                                                                                   window))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
     creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
