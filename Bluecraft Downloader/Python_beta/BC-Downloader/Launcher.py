@@ -461,9 +461,10 @@ def download_and_install(update_url,version):
 
         # 解压到当前目录
         for member in zip_file.namelist():
+            current_dir = os.getcwd()
             # 避免路径遍历攻击
-            member_path = os.path.abspath(os.path.join(running_path, member))
-            if not member_path.startswith(running_path):
+            member_path = os.path.abspath(os.path.join(current_dir, member))
+            if not member_path.startswith(current_dir):
                 raise Exception("Zip file contains invalid path.")
             if member.endswith('/'):
                 os.makedirs(member_path, exist_ok=True)
