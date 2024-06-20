@@ -1,3 +1,5 @@
+Updater_Version = "1.0.0.1"
+
 import os
 import zipfile
 from io import BytesIO
@@ -8,6 +10,19 @@ import requests
 api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
 # 当前工作目录
 current_dir = os.getcwd()
+
+# 指定版本文件的路径
+version_file_path = os.path.join("./Version_Check", "Updater_Version.txt")
+
+# 确保Version目录存在
+os.makedirs(os.path.dirname(version_file_path), exist_ok=True)
+
+# 创建或覆盖版本文件
+with open(version_file_path, 'w') as file:
+    # 写入版本信息，这里以示例内容代替，实际使用时应替换为真实版本号
+    file.write(Updater_Version)
+
+print(f"版本文件已创建于: {version_file_path}")
 
 
 def fetch_update_info():
@@ -65,8 +80,7 @@ def download_and_install(update_url):
         print(f"下载或解压错误: {e}")
 
 
-
-def main():
+def Update_Launcher():
     version, update_url = fetch_update_info()
     if version and update_url:
         print(f"发现新版本: {version}，开始下载...")
@@ -76,4 +90,4 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    Update_Launcher()
