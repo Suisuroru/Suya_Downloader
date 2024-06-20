@@ -1,10 +1,25 @@
-Updater_Version = "1.0.0.1"
+Updater_Version = "1.0.0.2"
 
+import ctypes
 import os
+import sys
 import zipfile
 from io import BytesIO
 
 import requests
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 # 目标API地址
 api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"

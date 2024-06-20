@@ -1,14 +1,14 @@
-import threading
-import zipfile
-from io import BytesIO
+current_version = "1.0.0.2"
 
-current_version = "1.0.0.1"
-
+import ctypes
 import errno
 import os
 import sys
+import threading
 import tkinter as tk
 import webbrowser
+import zipfile
+from io import BytesIO
 from tkinter import messagebox, scrolledtext
 
 import pygame
@@ -26,6 +26,19 @@ running_path = os.path.dirname(script_path)
 
 # 打印运行路径以确认
 print("运行路径:", running_path)
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def ensure_directory_exists(directory_path):
@@ -451,7 +464,7 @@ def fetch_update_info():
         return None, None
 
 
-def download_and_install(update_url,version):
+def download_and_install(update_url, version):
     try:
         response = requests.get(update_url, stream=True)
         response.raise_for_status()
@@ -484,7 +497,7 @@ def Update_Updater():
     if Version_Check_for_Updater(version):
         if version and update_url:
             print(f"发现新版本: {version}，开始下载...")
-            download_and_install(update_url,version)
+            download_and_install(update_url, version)
         else:
             print("没有找到新版本的信息。")
 
