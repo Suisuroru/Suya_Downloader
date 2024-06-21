@@ -654,6 +654,10 @@ def create_gui():
 
 
 if __name__ == "__main__":
+    app = QApplication(sys.argv)
+    splash = TransparentSplashScreen()
+    splash.show()
+    QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
     if Version_Check_for_Updater(fetch_update_info()[0]):
         # 如果有新版本，启动新线程执行更新操作
         print("启动更新线程...")
@@ -661,10 +665,4 @@ if __name__ == "__main__":
         update_thread.start()
     else:
         print("无需更新。")
-        # 这里可以添加一个定时器或信号槽来在动画结束后关闭splash screen并打开主界面
-    app = QApplication(sys.argv)
-    splash = TransparentSplashScreen()
-    splash.show()
-    QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
-
     sys.exit(app.exec_())
