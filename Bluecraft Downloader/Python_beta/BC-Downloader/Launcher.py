@@ -1,4 +1,4 @@
-current_version = "1.0.0.2"
+current_version = "1.0.0.3"
 
 import ctypes
 import errno
@@ -9,7 +9,7 @@ import tkinter as tk
 import webbrowser
 import zipfile
 from io import BytesIO
-from tkinter import messagebox, scrolledtext
+from tkinter import messagebox, scrolledtext, ttk
 
 import pygame
 import requests
@@ -572,10 +572,27 @@ def create_gui():
     update_buttons_frame = tk.Frame(bottom_frame)
     update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
 
+    # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
+    download_source_frame = tk.Frame(update_buttons_frame)
+    download_source_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
+
+    # 添加“下载源：”标签
+    download_source_label = tk.Label(download_source_frame, text="下载源：", anchor="w")
+    download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
+
+    # 下载源选项
+    download_sources = ["OneDrive网盘(直链)", "123网盘(非直链，需登录)"]
+    selected_source = tk.StringVar(value="OneDrive网盘(直链)")  # 默认选择OneDrive
+
+    # 创建Combobox选择框，指定宽度
+    source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
+                                   state="readonly", width=25)  # 设定Combobox宽度为25字符宽
+    source_combobox.pack()
+
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
                                        command=lambda: check_for_client_updates(client_version))
-    check_bc_update_button.pack(side=tk.LEFT, padx=5)  # 左侧放置BC客户端更新按钮，并设置间距
+    check_bc_update_button.pack(side=tk.LEFT, padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
     check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
