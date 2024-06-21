@@ -211,7 +211,7 @@ def toggle_music(icon_label):
     """切换音乐播放状态并更新图标，同时处理音乐循环"""
     global music_playing
     if not music_playing:
-        pygame.mixer.music.play(loops=0)  # 设置为不循环播放，因为我们将在结束时手动处理循环
+        pygame.mixer.music.play(loops=-1)  # 设置为不循环播放，因为我们将在结束时手动处理循环
         music_playing = True
         icon_label.config(image=play_icon_image)
     else:
@@ -225,7 +225,7 @@ def handle_events():
     for event in pygame.event.get():  # 获取所有pygame事件
         if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
             if music_playing:  # 只有当音乐应该是播放状态时才重新开始
-                pygame.mixer.music.play(loops=0)  # 重新播放音乐
+                pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
 def check_for_client_updates(current_version):
