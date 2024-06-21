@@ -528,10 +528,10 @@ def Version_Check_for_Updater(online_version):
 
     # 比较两个版本
     if updater_version == online_version:
-        print("本地版本与更新器版本相同。")
+        print("本地版本与网络上的更新器版本相同。")
         return False
     elif updater_version < online_version:
-        print("有新版本可用，更新器版本较新。")
+        print("有新版本可用，本地更新器版本需要更新。")
         return True
     else:
         print("本地版本较新，无需更新。")
