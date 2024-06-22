@@ -228,9 +228,16 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def check_for_client_updates(current_version):
+def check_for_client_updates(current_version,selected_source):
+    # 获取selected_source的当前值
+    chosen_value = selected_source.get()
     # 定义获取更新信息的URL
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
+    if chosen_value == "123网盘(非直链，需登录)":
+        update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
+    elif chosen_value == "OneDrive网盘(直链)":
+        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/BC_ClientGetAPI_OneDrive"
+    else:
+        update_url = ""
 
     try:
         # 发送GET请求获取更新信息
@@ -591,7 +598,7 @@ def create_gui():
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
-                                       command=lambda: check_for_client_updates(client_version))
+                                       command=lambda: check_for_client_updates(client_version,selected_source))
     check_bc_update_button.pack(side=tk.LEFT, padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
