@@ -228,7 +228,7 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def check_for_client_updates(current_version,selected_source):
+def check_for_client_updates(current_version, selected_source):
     # 获取selected_source的当前值
     chosen_value = selected_source.get()
     # 定义获取更新信息的URL
@@ -322,7 +322,6 @@ def check_for_updates_with_confirmation(current_version, window):
             return
 
         latest_version = version_info[0]
-        Downloader_Update_URL = version_info[1]  # 注意这里需要全局变量或通过参数传递给后续处理逻辑
 
         def Update(answer, window, current_working_dir):
             if answer:  # 用户选择是
@@ -545,6 +544,13 @@ def Version_Check_for_Updater(online_version):
         return False
 
 
+def update_downloader(window):
+    update_thread = threading.Thread(target=check_for_updates_with_confirmation,
+                                     args=(current_version, window))
+    update_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
+    update_thread.start()
+
+
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image
 
@@ -598,13 +604,12 @@ def create_gui():
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
-                                       command=lambda: check_for_client_updates(client_version,selected_source))
+                                       command=lambda: check_for_client_updates(client_version, selected_source))
     check_bc_update_button.pack(side=tk.LEFT, padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
     check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
-                                               command=lambda: check_for_updates_with_confirmation(current_version,
-                                                                                                   window))
+                                               command=lambda: update_downloader(window))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
     creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
