@@ -298,11 +298,14 @@ def get_client_status(current_version, latest_version):
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：{}".format(current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：{}".format(
+            current_version)  # 浅蓝
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(current_version)  # 黄色
+        return "旧版本", "#FFCC00", "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
+            current_version)  # 黄色
     else:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}".format(current_version)  # 绿色
+        return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}".format(
+            current_version)  # 绿色
 
 
 def check_for_updates_with_confirmation(current_version, window):
@@ -422,6 +425,8 @@ def update_version_strip(version_strip_frame, version_label, current_version, la
         status, color_code, message = get_version_status(current_version, latest_version)
     elif type == 1:
         status, color_code, message = get_client_status(current_version, latest_version)
+    else:
+        status, color_code, message = current_version, latest_version, type
 
     # 更新色带背景颜色
     version_strip_frame.config(bg=color_code)
@@ -435,9 +440,11 @@ def get_version_status(current_version, latest_version):
 
     if comparison_result1 == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的下载器版本可能是预发布或测试版，当前版本号：{}".format(current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", "您当前运行的下载器版本可能是预发布或测试版，当前版本号：{}".format(
+            current_version)  # 浅蓝
     elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(current_version)  # 黄色
+        return "旧版本", "#FFCC00", "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
+            current_version)  # 黄色
     else:
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的下载器，当前版本号：{}".format(current_version)  # 绿色
 
@@ -543,7 +550,10 @@ def Update_Updater():
 def Version_Check_for_Updater(online_version):
     # 版本文件所在目录
     version_dir_path = "./Version_Check"
-    print("Updater.exe在线最新版：" + online_version)
+    try:
+        print("Updater.exe在线最新版：" + online_version)
+    except:
+        print("无法检查Updater.exe更新")
     # 确保目录存在，如果不存在则创建
     if not os.path.exists(version_dir_path):
         os.makedirs(version_dir_path)
@@ -664,7 +674,7 @@ def create_gui():
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
     # 版本检查并创建初始红色色带(下载器)
-    status, color_code, message = "检测中", "#FF0000", "检查下载器更新中..."
+    status, color_code, message = "检测中", "#808080", "检查下载器更新中..."
     strip_downloader, label_downloader = create_version_strip(color_code, message, window)
 
     # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
@@ -672,7 +682,7 @@ def create_gui():
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     # 版本检查并创建初始红色色带(客户端)
-    status, color_code, message = "检测中", "#FF0000", "检查客户端更新中..."
+    status, color_code, message = "检测中", "#808080", "检查客户端更新中..."
     strip_client, label_client = create_version_strip(color_code, message, window)
 
     # 初始化pygame音乐模块并设置音乐循环播放
@@ -687,16 +697,27 @@ def create_gui():
     window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
     center_window(window)  # 居中窗口
     # 将部分操作移动至此处以减少启动时卡顿
-    start_fetch_notice(notice_text_area)
+    try:
+        start_fetch_notice(notice_text_area)
+    except:
+        print("公告拉取失败，错误代码：{e}")
+
     update_thread_args = (strip_downloader, label_downloader, current_version)
     client_update_thread_args = (strip_client, label_client, client_version)
     # 启动线程
     update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
-    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip, args=client_update_thread_args)
-
-    update_thread.start()
-    client_update_thread.start()
-
+    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
+                                            args=client_update_thread_args)
+    try:
+        update_thread.start()
+    except:
+        print("下载器更新检查失败，错误代码：{e}")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "下载器更新检查失败")
+    try:
+        client_update_thread.start()
+    except:
+        print("客户端更新检查失败，错误代码：{e}")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "客户端更新检查失败")
 
     window.mainloop()
 
@@ -712,11 +733,14 @@ if __name__ == "__main__":
     splash = TransparentSplashScreen()
     splash.show()
     QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
-    if Version_Check_for_Updater(fetch_update_info()[0]):
-        # 如果有新版本，启动新线程执行更新操作
-        print("启动更新线程...")
-        update_thread = threading.Thread(target=Update_Updater)
-        update_thread.start()
-    else:
-        print("无需更新。")
+    try:
+        if Version_Check_for_Updater(fetch_update_info()[0]):
+            # 如果有新版本，启动新线程执行更新操作
+            print("启动更新线程...")
+            update_thread = threading.Thread(target=Update_Updater)
+            update_thread.start()
+        else:
+            print("无需更新。")
+    except:
+        print("更新拉取失败")
     sys.exit(app.exec_())
