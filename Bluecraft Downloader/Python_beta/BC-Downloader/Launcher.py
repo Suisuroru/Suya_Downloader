@@ -275,6 +275,20 @@ def check_for_client_updates(current_version, selected_source):
         print(f"检查更新时发生错误: {e}")
 
 
+def threaded_check_for_updates(current_version, selected_source):
+    """
+    在一个独立的线程中检查客户端更新。
+    """
+
+    def target():
+        check_for_client_updates(current_version, selected_source)
+    try:
+        thread = threading.Thread(target=target)
+        thread.start()
+    except:
+        print("检查客户端更新失败")
+
+
 def compare_client_versions(version1, version2):
     """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
     v1_parts = list(map(int, version1.split('.')))
@@ -646,7 +660,7 @@ def create_gui():
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
-                                       command=lambda: check_for_client_updates(client_version, selected_source))
+                                       command=lambda: threaded_check_for_updates(client_version, selected_source))
     check_bc_update_button.pack(side=tk.LEFT, padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
