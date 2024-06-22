@@ -1,7 +1,8 @@
-current_version = "1.0.0.3"
+current_version = "1.0.0.4"
 
 import ctypes
 import errno
+import json
 import os
 import sys
 import threading
@@ -244,10 +245,15 @@ def check_for_client_updates(current_version, selected_source):
             # 获取selected_source的当前值
             chosen_value = selected_source.get()
             # 根据下载源选择URL
-            if chosen_value == "123网盘(非直链，需登录)":
+            if chosen_value == "123网盘(网页非直链，需登录)":
                 download_link = update_info[1]
-            elif chosen_value == "OneDrive网盘(直链)":
+            elif chosen_value == "OneDrive网盘(网页直链)":
                 download_link = update_info[2]
+            elif chosen_value == "123网盘(网页直链)":
+                link = "https://tool.bitefu.net/123pan/?url=" + update_info[1]
+                json_str = requests.get(link).text.strip()
+                data = json.loads(json_str)
+                download_link = data['info']
             # 移除版本号前的 "v"
             latest_version = update_info[0][1:]
             # 比较版本号并决定是否提示用户更新
@@ -403,7 +409,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
     """检查更新并创建版本状态色带"""
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetPackLastversion"
 
     try:
         # 发送GET请求获取更新信息
@@ -651,8 +657,8 @@ def create_gui():
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["OneDrive网盘(直链)", "123网盘(非直链，需登录)"]
-    selected_source = tk.StringVar(value="OneDrive网盘(直链)")  # 默认选择OneDrive
+    download_sources = ["OneDrive网盘(网页直链)", "123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
+    selected_source = tk.StringVar(value="OneDrive网盘(网页直链)")  # 默认选择OneDrive
 
     # 创建Combobox选择框，指定宽度
     source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
