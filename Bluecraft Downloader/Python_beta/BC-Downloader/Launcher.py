@@ -230,49 +230,45 @@ def handle_events():
 
 
 def check_for_client_updates(current_version, selected_source):
-    # 获取selected_source的当前值
-    chosen_value = selected_source.get()
-    # 定义获取更新信息的URL
-    if chosen_value == "123网盘(非直链，需登录)":
-        update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetLastversion"
-    elif chosen_value == "OneDrive网盘(直链)":
-        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/BC_ClientGetAPI_OneDrive"
-    else:
-        update_url = ""
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetPackLastversion"
 
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
-
         # 检查请求是否成功
         if response.status_code == 200:
             # 解析返回的信息，先按 "|" 分割，然后移除版本号前的 "v"
+            print(response.text.strip())
             update_info = response.text.strip().split("|")
-            if len(update_info) == 2:
-                # 移除版本号前的 "v"
-                latest_version = update_info[0][1:]
+            print("获取到相关信息:" + str(update_info))
+            # 获取selected_source的当前值
+            chosen_value = selected_source.get()
+            # 根据下载源选择URL
+            if chosen_value == "123网盘(非直链，需登录)":
                 download_link = update_info[1]
-                # 比较版本号并决定是否提示用户更新
-                if compare_client_versions(latest_version, current_version) > 0:
-                    # 如果有新版本，提示用户并提供下载链接
-                    user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
-                    if user_response:
-                        webbrowser.open(download_link)  # 打开下载链接
-                        update_version_info(latest_version)
-                elif compare_client_versions(latest_version, current_version) == 0:
-                    user_response = messagebox.askyesno("无可用更新",
-                                                        f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
-                    if user_response:
-                        webbrowser.open(download_link)  # 打开下载链接
-                        update_version_info(latest_version)
-                else:
-                    user_response = messagebox.askyesno("您的版本处于预览版",
-                                                        f"需要下载正式版？最新正式版: {latest_version}")
-                    if user_response:
-                        webbrowser.open(download_link)  # 打开下载链接
-                        update_version_info(latest_version)
+            elif chosen_value == "OneDrive网盘(直链)":
+                download_link = update_info[2]
+            # 移除版本号前的 "v"
+            latest_version = update_info[0][1:]
+            # 比较版本号并决定是否提示用户更新
+            if compare_client_versions(latest_version, current_version) > 0:
+                # 如果有新版本，提示用户并提供下载链接
+                user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
+                if user_response:
+                    webbrowser.open(download_link)  # 打开下载链接
+                    update_version_info(latest_version)
+            elif compare_client_versions(latest_version, current_version) == 0:
+                user_response = messagebox.askyesno("无可用更新",
+                                                    f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
+                if user_response:
+                    webbrowser.open(download_link)  # 打开下载链接
+                    update_version_info(latest_version)
             else:
-                print("服务器返回的信息格式不正确。")
+                user_response = messagebox.askyesno("您的版本处于预览版",
+                                                    f"需要下载正式版？最新正式版: {latest_version}")
+                if user_response:
+                    webbrowser.open(download_link)  # 打开下载链接
+                    update_version_info(latest_version)
         else:
             print(f"请求更新信息失败，状态码：{response.status_code}")
     except Exception as e:
