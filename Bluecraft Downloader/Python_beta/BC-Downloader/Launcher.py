@@ -9,6 +9,7 @@ import tkinter as tk
 import webbrowser
 import zipfile
 from io import BytesIO
+from queue import Queue
 from tkinter import messagebox, scrolledtext, ttk
 
 import pygame
@@ -434,23 +435,47 @@ def get_version_status(current_version, latest_version):
         return "最新正式版", "#009900", "您当前运行的是最新正式版本的下载器，当前版本号：{}"  # 绿色
 
 
-def fetch_notice(notice_text_area):
-    """在线获取公告内容的函数"""
+def update_notice_from_queue(queue, notice_text_area):
+    """从队列中获取公告内容并更新到界面"""
+    notice_content = queue.get()
+    notice_text_area.config(state='normal')
+    notice_text_area.delete(1.0, tk.END)
+    notice_text_area.insert(tk.END, notice_content)
+    notice_text_area.config(state='disabled')
+    print("尝试更新公告内容:", notice_content)
+
+
+def fetch_notice_in_thread(queue, notice_text_area,notice_queue):
+    """在线获取公告内容的线程函数"""
     try:
         url = "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
         response = requests.get(url)
         response.raise_for_status()
         notice_content = response.text
-
-        # 允许编辑文本框以插入内容
-        notice_text_area.configure(state='normal')
-        notice_text_area.delete(1.0, tk.END)
-        notice_text_area.insert(tk.END, notice_content)
-
-        # 再次设置为不可编辑
-        notice_text_area.configure(state='disabled')
+        queue.put(notice_content)
+        print("获取到公告内容:\n", notice_content)
+        # 使用after方法来确保UI更新在主线程中执行
+        notice_text_area.after(0, lambda: check_notice_queue(notice_queue, notice_text_area))
     except requests.RequestException as e:
-        messagebox.showerror("错误", f"获取公告内容失败: {e}")
+        queue.put(f"获取公告内容失败: {e}")
+        print("公告拉取失败")
+
+
+def start_fetch_notice(notice_text_area):
+    """启动线程来获取公告"""
+    notice_queue = Queue()
+    notice_thread = threading.Thread(target=fetch_notice_in_thread, args=(notice_queue, notice_text_area,notice_queue))
+    notice_thread.daemon = True  # 设置为守护线程，主程序退出时自动关闭
+    notice_thread.start()
+    print("公告拉取中...")
+
+
+def check_notice_queue(queue, notice_text_area):
+    """检查队列，如果有内容则更新UI，并递归调用直到队列为空"""
+    if not queue.empty():
+        update_notice_from_queue(queue, notice_text_area)
+        # 递归调用，检查队列是否还有更多数据
+        notice_text_area.after(100, lambda: check_notice_queue(queue, notice_text_area))
 
 
 def fetch_update_info():
@@ -638,9 +663,6 @@ def create_gui():
     notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)  # 添加state=tk.DISABLED
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-    # 初始化时拉取公告
-    fetch_notice(notice_text_area)
-
     # 版本检查并创建色带(客户端)
     check_for_client_updates_and_create_version_strip(client_version, window)
 
@@ -655,6 +677,8 @@ def create_gui():
     # 确保在所有窗口部件布局完成后调用center_window
     window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
     center_window(window)  # 居中窗口
+    # 将部分操作移动至此处以减少启动时卡顿
+    start_fetch_notice(notice_text_area)
 
     window.mainloop()
 
