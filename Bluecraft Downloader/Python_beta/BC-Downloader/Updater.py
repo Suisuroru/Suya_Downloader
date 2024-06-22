@@ -1,10 +1,13 @@
-Updater_Version = "1.0.0.2"
+Updater_Version = "1.0.0.4"
 
 import ctypes
 import os
 import sys
+import threading
+import tkinter
 import zipfile
 from io import BytesIO
+from tkinter import messagebox
 
 import requests
 
@@ -20,6 +23,22 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+
+def show_message():
+    """
+    定义一个显示消息框的函数
+    """
+    root = tkinter.Tk()
+    root.withdraw()  # 隐藏主窗口
+    messagebox.showinfo("提示", "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启")
+
+
+# 创建一个新的线程来执行显示消息框的任务
+message_thread = threading.Thread(target=show_message)
+
+# 启动线程
+message_thread.start()
 
 # 目标API地址
 api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
