@@ -282,6 +282,7 @@ def threaded_check_for_updates(current_version, selected_source):
 
     def target():
         check_for_client_updates(current_version, selected_source)
+
     try:
         thread = threading.Thread(target=target)
         thread.start()
