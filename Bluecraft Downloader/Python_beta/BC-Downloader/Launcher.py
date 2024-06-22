@@ -676,13 +676,13 @@ def create_gui():
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在蓝色色带上添加文字
-    welcome_label = tk.Label(blue_strip, text="   欢迎使用 Bluecraft 客户端Suya下载器！   ",
+    welcome_label = tk.Label(blue_strip, text="   欢迎使用 BlueCraft 客户端Suya下载器！   ",
                              font=("Microsoft YaHei", 30),
                              fg="white", bg="#0060C0")
     welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
     # 第二行文字示例（如果需要的话）
-    second_line_label = tk.Label(blue_strip, text="快速、方便地下载或更新 Bluecraft 客户端",
+    second_line_label = tk.Label(blue_strip, text="快速、方便地下载或更新 BlueCraft 客户端",
                                  font=("Microsoft YaHei", 15),
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
