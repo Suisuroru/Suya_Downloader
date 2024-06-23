@@ -1,4 +1,4 @@
-Updater_Version = "1.0.0.4"
+Updater_Version = "1.0.0.5"
 
 import ctypes
 import os
@@ -41,12 +41,14 @@ message_thread = threading.Thread(target=show_message)
 message_thread.start()
 
 # 目标API地址
-api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
+full_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
+resources_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Resource_Pull"
 # 当前工作目录
 current_dir = os.getcwd()
 
 # 指定版本文件的路径
 version_file_path = os.path.join("./Version_Check", "Updater_Version.txt")
+Update_Partner_path = os.path.join("./Version_Check", "Update_Partner.txt")
 
 # 确保Version目录存在
 os.makedirs(os.path.dirname(version_file_path), exist_ok=True)
@@ -62,11 +64,27 @@ print(f"版本文件已创建于: {version_file_path}")
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
+        try:
+            with open(Update_Partner_path, 'r') as file:
+                Update_partner = file.read().strip()
+        except:
+            with open(Update_Partner_path, 'w') as file:
+                file.write("Full")
+                Update_partner = "Full"
+        if Update_partner == "Full":
+            api_url = full_url
+        elif Update_partner == "Resources":
+            api_url = resources_url
+        else:
+            print("传入参数错误")
+            return None, None
         response = requests.get(api_url)
         response.raise_for_status()  # 检查请求是否成功
         version_url_pair = response.text.split("|")
         if len(version_url_pair) == 2:
             return version_url_pair[0], version_url_pair[1]
+        elif len(version_url_pair) == 1:
+            return None, version_url_pair[0]
         else:
             print("获取的版本信息格式不正确")
             return None, None
@@ -118,6 +136,9 @@ def Update_Launcher():
     version, update_url = fetch_update_info()
     if version and update_url:
         print(f"发现新版本: {version}，开始下载...")
+        download_and_install(update_url)
+    elif update_url:
+        print("正在重新拉取Resources")
         download_and_install(update_url)
     else:
         print("没有找到新版本的信息。")

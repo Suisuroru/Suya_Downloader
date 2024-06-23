@@ -1,4 +1,4 @@
-current_version = "1.0.0.4"
+current_version = "1.0.0.5"
 
 import ctypes
 import errno
@@ -582,11 +582,14 @@ def Version_Check_for_Updater(online_version):
 
     # 版本文件路径
     version_file_path = os.path.join(version_dir_path, "Updater_Version.txt")
+    Update_Partner = os.path.join(version_dir_path, "Update_Partner.txt")
 
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     if not os.path.exists(version_file_path):
         with open(version_file_path, 'w') as file:
             file.write("0.0.0.0")
+        with open(Update_Partner, 'w') as file:
+            file.write("Full")
         print(f"文件{version_file_path}不存在，已创建并写入默认版本0.0.0.0。")
         updater_version = "0.0.0.0"
     else:
