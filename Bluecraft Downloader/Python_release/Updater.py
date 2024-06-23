@@ -26,20 +26,14 @@ if not is_admin():
     sys.exit()
 
 
-def show_message():
+def show_message(partner):
     """
     定义一个显示消息框的函数
     """
     root = tkinter.Tk()
     root.withdraw()  # 隐藏主窗口
-    messagebox.showinfo("提示", "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启")
+    messagebox.showinfo("提示", "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}".format(partner))
 
-
-# 创建一个新的线程来执行显示消息框的任务
-message_thread = threading.Thread(target=show_message)
-
-# 启动线程
-message_thread.start()
 
 # 目标API地址
 full_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
@@ -85,11 +79,18 @@ def fetch_update_info():
                 Update_partner = "Full"
         if Update_partner == "Full":
             api_url = full_url
+            partner = "完整更新模式"
         elif Update_partner == "Resources":
             api_url = resources_url
+            partner = "重新拉取资源文件模式"
         else:
             print("传入参数错误")
             return None, None
+        # 创建一个新的线程来执行显示消息框的任务
+        message_thread = threading.Thread(target=show_message, args=(partner,))
+
+        # 启动线程
+        message_thread.start()
         response = requests.get(api_url)
         response.raise_for_status()  # 检查请求是否成功
         version_url_pair = response.text.split("|")
