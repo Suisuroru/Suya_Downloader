@@ -1,6 +1,7 @@
-Updater_Version = "1.0.0.5"
+Updater_Version = "1.0.0.6"
 
 import ctypes
+import json
 import os
 import shutil
 import sys
@@ -36,8 +37,8 @@ def show_message(partner):
 
 
 # 目标API地址
-full_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
-resources_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Resource_Pull"
+api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
+
 # 当前工作目录
 current_dir = os.getcwd()
 
@@ -77,29 +78,25 @@ def fetch_update_info():
             with open(Update_Partner_path, 'w') as file:
                 file.write("Full")
                 Update_partner = "Full"
+        json_str = requests.get(api_url).text.strip()
+        data = json.loads(json_str)
         if Update_partner == "Full":
-            api_url = full_url
+            update_url = data['url_downloader']
+            version_url = data['version_downloader']
             partner = "完整更新模式"
+            message_thread = threading.Thread(target=show_message, args=(partner,))
+            # 启动线程
+            message_thread.start()
+            return version_url, update_url
         elif Update_partner == "Resources":
-            api_url = resources_url
+            update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
+            message_thread = threading.Thread(target=show_message, args=(partner,))
+            # 启动线程
+            message_thread.start()
+            return None, update_url
         else:
             print("传入参数错误")
-            return None, None
-        # 创建一个新的线程来执行显示消息框的任务
-        message_thread = threading.Thread(target=show_message, args=(partner,))
-
-        # 启动线程
-        message_thread.start()
-        response = requests.get(api_url)
-        response.raise_for_status()  # 检查请求是否成功
-        version_url_pair = response.text.split("|")
-        if len(version_url_pair) == 2:
-            return version_url_pair[0], version_url_pair[1]
-        elif len(version_url_pair) == 1:
-            return None, version_url_pair[0]
-        else:
-            print("获取的版本信息格式不正确")
             return None, None
     except requests.RequestException as e:
         print(f"请求错误: {e}")
