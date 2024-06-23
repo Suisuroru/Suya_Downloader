@@ -51,7 +51,11 @@ def Open_Updater(window):
             import subprocess
             subprocess.Popen([launcher_path])
             print("Updater.exe 已启动。")
-            window.destroy()  # 关闭Tkinter窗口
+            if window is not None:
+                try:
+                    window.destroy()  # 关闭Tkinter窗口
+                except:
+                    print("Tkinter窗口可能未开启或关闭失败。")
             sys.exit(0)  # 退出Python进程
         else:
             print("Updater.exe 未找到。")
@@ -153,7 +157,10 @@ class TransparentSplashScreen(QWidget):
 
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
         screen = QApplication.desktop().availableGeometry()
-        pic_ratio = QPixmap("./Resources/Pic/BC.png").size().width() / QPixmap("./Resources/Pic/BC.png").size().height()
+        try:
+            pic_ratio = QPixmap("./Resources/Pic/BC.png").size().width() / QPixmap("./Resources/Pic/BC.png").size().height()
+        except:
+            Pull_Resources(None)
         window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
         window_height = round(window_width / pic_ratio)
 
@@ -161,9 +168,12 @@ class TransparentSplashScreen(QWidget):
         self.alpha = 0
 
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
-        self.pixmap = QPixmap("./Resources/Pic/BC.png").scaled(window_width, window_height,
-                                                               Qt.KeepAspectRatio,
-                                                               Qt.SmoothTransformation)
+        try:
+            self.pixmap = QPixmap("./Resources/Pic/BC.png").scaled(window_width, window_height,
+                                                                   Qt.KeepAspectRatio,
+                                                                   Qt.SmoothTransformation)
+        except:
+            Pull_Resources(None)
 
         # 使用 QGraphicsView 和 QGraphicsScene 来实现图像的自适应缩放
         self.scene = QGraphicsScene(self)
@@ -638,11 +648,14 @@ def create_gui():
     window.title("Suya Downloader for BlueCraft Client")
 
     # 设置窗口图标
-    window.iconbitmap("./Resources/Pic/icon.ico")  # 添加此行代码
+    try:
+        window.iconbitmap("./Resources/Pic/icon.ico")
 
-    # 图标加载与初始化
-    play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
-    stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
+        # 图标加载与初始化
+        play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
+    except:
+        Pull_Resources(window)
     icons_size = (24, 24)
     play_icon = play_icon.resize(icons_size)
     stop_icon = stop_icon.resize(icons_size)
@@ -725,8 +738,11 @@ def create_gui():
     # 初始化pygame音乐模块并设置音乐循环播放
     pygame.mixer.init()
 
-    # 加载音乐并设置为循环播放
-    pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+    try:
+        # 加载音乐并设置为循环播放
+        pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+    except:
+        Pull_Resources(window)
 
     toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
