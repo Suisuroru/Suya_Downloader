@@ -1,3 +1,5 @@
+import shutil
+
 Updater_Version = "1.0.0.5"
 
 import ctypes
@@ -61,6 +63,17 @@ with open(version_file_path, 'w') as file:
 print(f"版本文件已创建于: {version_file_path}")
 
 
+def del_Resources():
+    folder_path = './Resources'
+    try:
+        shutil.rmtree(folder_path)
+        print(f"'{folder_path}' 文件夹已成功删除。")
+    except FileNotFoundError:
+        print(f"'{folder_path}' 文件夹未找到。")
+    except Exception as e:
+        print(f"删除 '{folder_path}' 文件夹时发生错误: {e}")
+
+
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
@@ -101,6 +114,7 @@ def download_and_install(update_url):
 
         # 使用BytesIO作为临时存储，避免直接写入文件
         zip_file = zipfile.ZipFile(BytesIO(response.content))
+        del_Resources()
 
         # 解压到当前目录
         for member in zip_file.namelist():
@@ -121,7 +135,6 @@ def download_and_install(update_url):
         if os.path.isfile(launcher_path):
             # 使用os.system运行Launcher.exe，这会阻塞直到Launcher.exe执行完毕
             # os.system(f'start {launcher_path}')
-
             # 或者使用subprocess.run，这样可以更好地控制执行过程，下面的代码是非阻塞的执行方式
             import subprocess
             subprocess.Popen([launcher_path])
