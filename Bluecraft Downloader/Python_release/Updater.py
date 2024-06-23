@@ -1,9 +1,8 @@
-import shutil
-
 Updater_Version = "1.0.0.5"
 
 import ctypes
 import os
+import shutil
 import sys
 import threading
 import tkinter
