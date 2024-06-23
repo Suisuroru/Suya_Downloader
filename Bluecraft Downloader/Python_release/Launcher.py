@@ -25,6 +25,7 @@ script_path = os.path.abspath(__file__)
 
 # 获取脚本所在的目录路径
 running_path = os.path.dirname(script_path)
+current_working_dir = os.getcwd()
 
 # 打印运行路径以确认
 print("运行路径:", running_path)
@@ -41,6 +42,31 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+
+def Open_Updater(window):
+    try:
+        launcher_path = os.path.join(current_working_dir, 'Updater.exe')
+        if os.path.isfile(launcher_path):
+            import subprocess
+            subprocess.Popen([launcher_path])
+            print("Updater.exe 已启动。")
+            window.destroy()  # 关闭Tkinter窗口
+            sys.exit(0)  # 退出Python进程
+        else:
+            print("Updater.exe 未找到。")
+    except Exception as e:
+        messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+
+
+def Pull_Resources(window):
+    with open(Update_Partner_path, 'w') as file:
+        file.write("Resources")
+    Open_Updater(window)
+
+
+global Update_Partner_path
+Update_Partner_path = os.path.join("./Version_Check", "Update_Partner.txt")
 
 
 def ensure_directory_exists(directory_path):
@@ -344,26 +370,14 @@ def check_for_updates_with_confirmation(current_version, window):
 
         latest_version = version_info[0]
 
-        def Update(answer, window, current_working_dir):
+        def Update(answer, window):
             if answer:  # 用户选择是
-                try:
-                    launcher_path = os.path.join(current_working_dir, 'Updater.exe')
-                    if os.path.isfile(launcher_path):
-                        import subprocess
-                        subprocess.Popen([launcher_path])
-                        print("Updater.exe 已启动。")
-                        window.destroy()  # 关闭Tkinter窗口
-                        sys.exit(0)  # 退出Python进程
-                    else:
-                        print("Updater.exe 未找到。")
-                except Exception as e:
-                    messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+                Open_Updater(window)
 
         if current_version == "url":
             return version_info[1]
         # 比较版本号
         comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
-        current_working_dir = os.getcwd()
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
@@ -582,13 +596,12 @@ def Version_Check_for_Updater(online_version):
 
     # 版本文件路径
     version_file_path = os.path.join(version_dir_path, "Updater_Version.txt")
-    Update_Partner = os.path.join(version_dir_path, "Update_Partner.txt")
 
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     if not os.path.exists(version_file_path):
         with open(version_file_path, 'w') as file:
             file.write("0.0.0.0")
-        with open(Update_Partner, 'w') as file:
+        with open(Update_Partner_path, 'w') as file:
             file.write("Full")
         print(f"文件{version_file_path}不存在，已创建并写入默认版本0.0.0.0。")
         updater_version = "0.0.0.0"
