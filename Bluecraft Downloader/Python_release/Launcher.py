@@ -1,4 +1,4 @@
-current_version = "1.0.0.5"
+current_version = "1.0.0.6"
 
 import ctypes
 import errno
@@ -111,6 +111,13 @@ def read_client_version_from_file():
     try:
         with open(file_path, 'r') as file:
             client_version = file.read().strip()
+            try:
+                compare_client_versions(client_version, "0.0.0.0")
+            except:
+                with open(file_path, 'w') as file:
+                    file.write("0.0.0.0")  # 写入默认版本号
+                print("默认版本号已成功写入。")
+                return "0.0.0.0"
             return client_version
     except FileNotFoundError:
         print("版本文件未找到，正在尝试创建并写入默认版本号...")
@@ -267,31 +274,32 @@ def handle_events():
 
 
 def check_for_client_updates(current_version, selected_source):
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetPackLastversion"
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
 
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
         # 检查请求是否成功
         if response.status_code == 200:
-            # 解析返回的信息，先按 "|" 分割，然后移除版本号前的 "v"
-            print(response.text.strip())
-            update_info = response.text.strip().split("|")
+            info_json_str = requests.get(update_url).text.strip()
+            update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
             chosen_value = selected_source.get()
             # 根据下载源选择URL
             if chosen_value == "123网盘(网页非直链，需登录)":
-                download_link = update_info[1]
+                download_link = update_info['url_123']
             elif chosen_value == "OneDrive网盘(网页直链)":
-                download_link = update_info[2]
+                download_link = update_info['url_onedrive_direct']
+            elif chosen_value == "OneDrive网盘(网页非直链)":
+                download_link = update_info['url_onedrive_origin']
             elif chosen_value == "123网盘(网页直链)":
-                link = "https://tool.bitefu.net/123pan/?url=" + update_info[1]
+                link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                 json_str = requests.get(link).text.strip()
                 data = json.loads(json_str)
                 download_link = data['info']
             # 移除版本号前的 "v"
-            latest_version = update_info[0][1:]
+            latest_version = update_info["version_123"][1:]
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
@@ -368,24 +376,18 @@ def get_client_status(current_version, latest_version):
 def check_for_updates_with_confirmation(current_version, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
-        response = requests.get(update_url)
-        response_text = response.text.strip()
-
-        # 分割响应文本，假设格式为 "version_number|update_url"
-        version_info = response_text.split("|")
-        if len(version_info) != 2:
-            messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
-            return
-
-        latest_version = version_info[0]
+        api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
+        json_str = requests.get(api_url).text.strip()
+        data = json.loads(json_str)
+        update_url = data['url_downloader']
+        latest_version = data['version_downloader']
 
         def Update(answer, window):
             if answer:  # 用户选择是
                 Open_Updater(window)
 
         if current_version == "url":
-            return version_info[1]
+            return update_url
         # 比较版本号
         comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
 
@@ -415,16 +417,11 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
     """检查更新并更新版本状态色带"""
     try:
-        update_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Version_Check"
-        response = requests.get(update_url)
-        response_text = response.text.strip()
+        api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
+        json_str = requests.get(api_url).text.strip()
+        data = json.loads(json_str)
+        latest_version = data['version_downloader']
 
-        # 分割响应文本，假设格式为 "version_number|update_url"
-        version_info = response_text.split("|")
-        if len(version_info) != 2:
-            messagebox.showerror("错误", "服务器响应格式错误，无法解析版本信息。")
-            return
-        latest_version = version_info[0]
         update_version_strip(version_strip_frame, version_label, current_version, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
@@ -433,21 +430,19 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
     """检查更新并创建版本状态色带"""
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/GetPackLastversion"
+    update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
 
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
-
         # 检查请求是否成功
         if response.status_code == 200:
-            # 解析返回的信息，先按 "|" 分割，然后移除版本号前的 "v"
-            update_info = response.text.strip().split("|")
-            if len(update_info) == 2:
-                # 移除版本号前的 "v"
-                latest_version = update_info[0][1:]
-                update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
-                # 如果有其他基于版本状态的操作，可在此处添加
+            info_json_str = requests.get(update_url).text.strip()
+            update_info = json.loads(info_json_str)
+            print("获取到相关信息:" + str(update_info))
+            latest_version = update_info['version_123'][1:]
+            update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
+            # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
 
@@ -539,16 +534,13 @@ def check_notice_queue(queue, notice_text_area):
 
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
-    get_Updater_api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Updater_Check"
+    get_Updater_api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
     try:
-        response = requests.get(get_Updater_api_url)
-        response.raise_for_status()  # 检查请求是否成功
-        version_url_pair = response.text.split("|")
-        if len(version_url_pair) == 2:
-            return version_url_pair[0], version_url_pair[1]
-        else:
-            print("获取的版本信息格式不正确")
-            return None, None
+        json_str = requests.get(get_Updater_api_url).text.strip()
+        data = json.loads(json_str)
+        update_url = data['url_downloader']
+        version = data['version_downloader']
+        return version, update_url
     except requests.RequestException as e:
         print(f"请求错误: {e}")
         return None, None
@@ -686,7 +678,7 @@ def create_gui():
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["OneDrive网盘(网页直链)", "123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
+    download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
     selected_source = tk.StringVar(value="OneDrive网盘(网页直链)")  # 默认选择OneDrive
 
     # 创建Combobox选择框，指定宽度
