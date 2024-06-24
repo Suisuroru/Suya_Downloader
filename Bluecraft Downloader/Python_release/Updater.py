@@ -82,12 +82,12 @@ def fetch_update_info():
         data = json.loads(json_str)
         if Update_partner == "Full":
             update_url = data['url_downloader']
-            version_url = data['version_downloader']
+            version = data['version_downloader']
             partner = "完整更新模式"
             message_thread = threading.Thread(target=show_message, args=(partner,))
             # 启动线程
             message_thread.start()
-            return version_url, update_url
+            return version, update_url
         elif Update_partner == "Resources":
             update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
