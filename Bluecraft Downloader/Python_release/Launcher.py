@@ -1,4 +1,4 @@
-current_version = "1.0.0.6"
+current_version = "1.0.0.7"
 
 import ctypes
 import errno
@@ -424,10 +424,8 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
 
 
-def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
-    """检查更新并创建版本状态色带"""
+def check_client_update():
     update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
-
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
@@ -438,7 +436,6 @@ def check_for_client_updates_and_create_version_strip(version_strip_frame, versi
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info['version_123'][1:]
             latest_version_onedrive = update_info['version_onedrive'][1:]
-            global tag_client_check
             if compare_client_versions(latest_version_123, latest_version_onedrive) == 1:
                 latest_version = latest_version_123
                 tag_client_check = "123"
@@ -448,10 +445,15 @@ def check_for_client_updates_and_create_version_strip(version_strip_frame, versi
             else:
                 latest_version = latest_version_123
                 tag_client_check = "both"
-            update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
-            # 如果有其他基于版本状态的操作，可在此处添加
+            return latest_version, tag_client_check
     except Exception as e:
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+
+
+def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
+    """检查更新并创建版本状态色带"""
+    latest_version = check_client_update()[0]
+    update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
 
 
 def create_version_strip(color_code, message, window):
@@ -639,6 +641,34 @@ def update_downloader(window):
     update_thread.start()
 
 
+def select_download_source(selected_source, source_combobox_select):
+    # 下载源选项
+    tag_client_check = check_client_update()[1]
+    if tag_client_check == "both":
+        download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)",
+                            "123网盘(网页直链)"]
+        default_selected_source = "OneDrive网盘(网页直链)"  # 默认选择
+    elif tag_client_check == "123":
+        download_sources = ["123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
+        default_selected_source = "123网盘(网页直链)"
+    elif tag_client_check == "onedrive":
+        download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)"]
+        default_selected_source = "OneDrive网盘(网页直链)"
+    else:
+        download_sources = ["检查下载源失败"]
+        default_selected_source = "检查下载源失败"
+    # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
+    # 更新Combobox选择框内容
+    source_combobox_select['values'] = download_sources
+    selected_source.set(default_selected_source)
+
+
+def start_select_thread(selected_source, source_combobox_select):
+    thread = threading.Thread(target=select_download_source, args=(selected_source, source_combobox_select))
+    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.start()
+
+
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image
 
@@ -685,9 +715,8 @@ def create_gui():
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)",
-                        "123网盘(网页直链)"]
-    selected_source = tk.StringVar(value="OneDrive网盘(网页直链)")  # 默认选择OneDrive
+    download_sources = ["正在获取下载源信息，请稍候..."]
+    selected_source = tk.StringVar(value="正在获取下载源信息，请稍候...")  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
@@ -697,7 +726,8 @@ def create_gui():
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
                                        command=lambda: threaded_check_for_updates(client_version, selected_source))
-    check_bc_update_button.pack(side=tk.LEFT, padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
+    check_bc_update_button.pack(side=tk.LEFT,
+                                padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
     check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
@@ -750,6 +780,10 @@ def create_gui():
     window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
     center_window(window)  # 居中窗口
     # 将部分操作移动至此处以减少启动时卡顿
+    try:
+        start_select_thread(selected_source, source_combobox)
+    except:
+        print("下载源列表拉取失败，错误代码：{e}")
     try:
         start_fetch_notice(notice_text_area)
     except:
