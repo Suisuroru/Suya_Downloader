@@ -158,7 +158,8 @@ class TransparentSplashScreen(QWidget):
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
         screen = QApplication.desktop().availableGeometry()
         try:
-            pic_ratio = QPixmap("./Resources/Pic/BC.png").size().width() / QPixmap("./Resources/Pic/BC.png").size().height()
+            pic_ratio = QPixmap("./Resources/Pic/BC.png").size().width() / QPixmap(
+                "./Resources/Pic/BC.png").size().height()
         except:
             Pull_Resources(None)
         window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
@@ -639,13 +640,13 @@ def create_gui():
         # 图标加载与初始化
         play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
+        icons_size = (24, 24)
+        play_icon = play_icon.resize(icons_size)
+        stop_icon = stop_icon.resize(icons_size)
+        play_icon_image = ImageTk.PhotoImage(play_icon)
+        stop_icon_image = ImageTk.PhotoImage(stop_icon)
     except:
         Pull_Resources(window)
-    icons_size = (24, 24)
-    play_icon = play_icon.resize(icons_size)
-    stop_icon = stop_icon.resize(icons_size)
-    play_icon_image = ImageTk.PhotoImage(play_icon)
-    stop_icon_image = ImageTk.PhotoImage(stop_icon)
 
     # 创建一个容器Frame来对齐公告和检查更新按钮
     bottom_frame = tk.Frame(window)
@@ -671,7 +672,8 @@ def create_gui():
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
+    download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)",
+                        "123网盘(网页直链)"]
     selected_source = tk.StringVar(value="OneDrive网盘(网页直链)")  # 默认选择OneDrive
 
     # 创建Combobox选择框，指定宽度

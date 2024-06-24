@@ -33,7 +33,9 @@ def show_message(partner):
     """
     root = tkinter.Tk()
     root.withdraw()  # 隐藏主窗口
-    messagebox.showinfo("提示", "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}".format(partner))
+    messagebox.showinfo("提示",
+                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}".format(
+                            partner))
 
 
 # 目标API地址
