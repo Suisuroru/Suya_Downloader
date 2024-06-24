@@ -283,17 +283,19 @@ def check_for_client_updates(current_version, selected_source):
             # 根据下载源选择URL
             if chosen_value == "123网盘(网页非直链，需登录)":
                 download_link = update_info['url_123']
+                latest_version = update_info["version_123"][1:]
             elif chosen_value == "OneDrive网盘(网页直链)":
                 download_link = update_info['url_onedrive_direct']
+                latest_version = update_info["version_onedrive"][1:]
             elif chosen_value == "OneDrive网盘(网页非直链)":
                 download_link = update_info['url_onedrive_origin']
+                latest_version = update_info["version_onedrive"][1:]
             elif chosen_value == "123网盘(网页直链)":
                 link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                 json_str = requests.get(link).text.strip()
                 data = json.loads(json_str)
                 download_link = data['info']
-            # 移除版本号前的 "v"
-            latest_version = update_info["version_123"][1:]
+                latest_version = update_info["version_123"][1:]
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
@@ -434,7 +436,18 @@ def check_for_client_updates_and_create_version_strip(version_strip_frame, versi
             info_json_str = requests.get(update_url).text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
-            latest_version = update_info['version_123'][1:]
+            latest_version_123 = update_info['version_123'][1:]
+            latest_version_onedrive = update_info['version_onedrive'][1:]
+            global tag_client_check
+            if compare_client_versions(latest_version_123, latest_version_onedrive) == 1:
+                latest_version = latest_version_123
+                tag_client_check = "123"
+            elif compare_client_versions(latest_version_123, latest_version_onedrive) == -1:
+                latest_version = latest_version_onedrive
+                tag_client_check = "onedrive"
+            else:
+                latest_version = latest_version_123
+                tag_client_check = "both"
             update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
             # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
