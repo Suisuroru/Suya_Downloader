@@ -1,4 +1,4 @@
-current_version = "1.0.0.7"
+current_version = "1.0.0.8"
 
 import ctypes
 import errno
@@ -64,6 +64,10 @@ def Open_Updater(window):
 
 
 def Pull_Resources(window):
+    version_dir_path = "./Version_Check"
+    if not os.path.exists(version_dir_path):
+        os.makedirs(version_dir_path)
+    print(f"目录{version_dir_path}不存在，已创建。")
     with open(Update_Partner_path, 'w') as file:
         file.write("Resources")
     Open_Updater(window)
