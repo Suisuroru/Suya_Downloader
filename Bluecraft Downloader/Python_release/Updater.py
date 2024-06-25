@@ -1,4 +1,4 @@
-Updater_Version = "1.0.0.6"
+Updater_Version = "1.0.0.8"
 
 import ctypes
 import json
@@ -89,14 +89,14 @@ def fetch_update_info():
             message_thread = threading.Thread(target=show_message, args=(partner,))
             # 启动线程
             message_thread.start()
-            return version, update_url
+            return version, update_url, Update_partner
         elif Update_partner == "Resources":
             update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
             message_thread = threading.Thread(target=show_message, args=(partner,))
             # 启动线程
             message_thread.start()
-            return None, update_url
+            return None, update_url, Update_partner
         else:
             print("传入参数错误")
             return None, None
@@ -105,7 +105,7 @@ def fetch_update_info():
         return None, None
 
 
-def download_and_install(update_url):
+def download_and_install(update_url, Update_partner):
     """下载ZIP文件并覆盖安装，完成后运行Launcher.exe"""
     try:
         response = requests.get(update_url, stream=True)
@@ -114,12 +114,22 @@ def download_and_install(update_url):
         # 使用BytesIO作为临时存储，避免直接写入文件
         zip_file = zipfile.ZipFile(BytesIO(response.content))
         del_Resources()
+        current_dir = os.getcwd()
+        if Update_partner == "Resources":
+            # 构建完整的目录路径，基于当前工作目录
+            pull_dir = os.path.join(current_dir, "Resources")
+            # 确保"Resource"目录存在，如果不存在则创建
+            if not os.path.exists(pull_dir):
+                print(f"Resources目录不存在，将进行重新创建")
+                os.makedirs(pull_dir, exist_ok=True)
 
+        else:
+            pull_dir = current_dir
         # 解压到当前目录
         for member in zip_file.namelist():
             # 避免路径遍历攻击
-            member_path = os.path.abspath(os.path.join(current_dir, member))
-            if not member_path.startswith(current_dir):
+            member_path = os.path.abspath(os.path.join(pull_dir, member))
+            if not member_path.startswith(pull_dir):
                 raise Exception("Zip file contains invalid path.")
             if member.endswith('/'):
                 os.makedirs(member_path, exist_ok=True)
@@ -145,13 +155,13 @@ def download_and_install(update_url):
 
 
 def Update_Launcher():
-    version, update_url = fetch_update_info()
+    version, update_url, Update_partner = fetch_update_info()
     if version and update_url:
         print(f"发现新版本: {version}，开始下载...")
-        download_and_install(update_url)
+        download_and_install(update_url, Update_partner)
     elif update_url:
         print("正在重新拉取Resources")
-        download_and_install(update_url)
+        download_and_install(update_url, Update_partner)
     else:
         print("没有找到新版本的信息。")
 
