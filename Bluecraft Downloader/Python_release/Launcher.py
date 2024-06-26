@@ -270,8 +270,10 @@ def handle_events():
             if music_playing:  # 只有当音乐应该是播放状态时才重新开始
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
+
 def direct_download_client():
     messagebox.showinfo("提示", "暂未完成，敬请期待")
+
 
 def check_for_client_updates(current_version, selected_source, way_selected_source):
     update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
@@ -286,8 +288,9 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
             chosen_value = selected_source.get()
+            way_chosen_value = way_selected_source.get()
             # 根据下载源选择URL
-            if way_selected_source == "网页非直链":
+            if way_chosen_value == "网页非直链":
                 tag_download = "web"
                 if chosen_value == "123网盘":
                     download_link = update_info['url_123']
@@ -295,7 +298,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                 elif chosen_value == "OneDrive网盘":
                     download_link = update_info['url_onedrive_origin']
                     latest_version = update_info["version_onedrive"][1:]
-            elif way_selected_source == "网页直链":
+            elif way_chosen_value == "网页直链":
                 tag_download = "web"
                 if chosen_value == "123网盘":
                     link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
@@ -306,10 +309,18 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                 elif chosen_value == "OneDrive网盘":
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
-            elif way_selected_source == "客户端直接拉取":
+            elif way_chosen_value == "客户端直接拉取":
                 tag_download = "direct"
-                messagebox.showinfo("提示", "暂未完成，敬请期待")
-                return
+                if chosen_value == "123网盘":
+                    link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
+                    json_str = requests.get(link).text.strip()
+                    data = json.loads(json_str)
+                    download_link = data['info']
+                    latest_version = update_info["version_123"][1:]
+                elif chosen_value == "OneDrive网盘":
+                    download_link = update_info['url_onedrive_direct']
+                    latest_version = update_info["version_onedrive"][1:]
+
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
@@ -753,8 +764,7 @@ def create_gui():
     download_source_way_frame = tk.Frame(update_buttons_frame)
     download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
 
-
-# 添加“下载源：”标签
+    # 添加“下载源：”标签
     download_source_label = tk.Label(download_source_frame, text="下载源：", anchor="w")
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
@@ -769,7 +779,8 @@ def create_gui():
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
-                                       command=lambda: threaded_check_for_updates(client_version, selected_source, way_selected_source))
+                                       command=lambda: threaded_check_for_updates(client_version, selected_source,
+                                                                                  way_selected_source))
     check_bc_update_button.pack(side=tk.LEFT,
                                 padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
