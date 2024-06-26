@@ -1,4 +1,4 @@
-current_version = "1.0.0.8"
+current_version = "1.0.0.9"
 
 import ctypes
 import errno
@@ -270,8 +270,10 @@ def handle_events():
             if music_playing:  # 只有当音乐应该是播放状态时才重新开始
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
+def direct_download_client():
+    messagebox.showinfo("提示", "暂未完成，敬请期待")
 
-def check_for_client_updates(current_version, selected_source):
+def check_for_client_updates(current_version, selected_source, way_selected_source):
     update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
 
     try:
@@ -285,39 +287,56 @@ def check_for_client_updates(current_version, selected_source):
             # 获取selected_source的当前值
             chosen_value = selected_source.get()
             # 根据下载源选择URL
-            if chosen_value == "123网盘(网页非直链，需登录)":
-                download_link = update_info['url_123']
-                latest_version = update_info["version_123"][1:]
-            elif chosen_value == "OneDrive网盘(网页直链)":
-                download_link = update_info['url_onedrive_direct']
-                latest_version = update_info["version_onedrive"][1:]
-            elif chosen_value == "OneDrive网盘(网页非直链)":
-                download_link = update_info['url_onedrive_origin']
-                latest_version = update_info["version_onedrive"][1:]
-            elif chosen_value == "123网盘(网页直链)":
-                link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
-                json_str = requests.get(link).text.strip()
-                data = json.loads(json_str)
-                download_link = data['info']
-                latest_version = update_info["version_123"][1:]
+            if way_selected_source == "网页非直链":
+                tag_download = "web"
+                if chosen_value == "123网盘":
+                    download_link = update_info['url_123']
+                    latest_version = update_info["version_123"][1:]
+                elif chosen_value == "OneDrive网盘":
+                    download_link = update_info['url_onedrive_origin']
+                    latest_version = update_info["version_onedrive"][1:]
+            elif way_selected_source == "网页直链":
+                tag_download = "web"
+                if chosen_value == "123网盘":
+                    link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
+                    json_str = requests.get(link).text.strip()
+                    data = json.loads(json_str)
+                    download_link = data['info']
+                    latest_version = update_info["version_123"][1:]
+                elif chosen_value == "OneDrive网盘":
+                    download_link = update_info['url_onedrive_direct']
+                    latest_version = update_info["version_onedrive"][1:]
+            elif way_selected_source == "客户端直接拉取":
+                tag_download = "direct"
+                messagebox.showinfo("提示", "暂未完成，敬请期待")
+                return
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
                 user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
                 if user_response:
-                    webbrowser.open(download_link)  # 打开下载链接
+                    if tag_download == "web":
+                        webbrowser.open(download_link)  # 打开下载链接
+                    elif tag_download == "direct":
+                        direct_download_client()  # 下载器直接下载
                     update_version_info(latest_version)
             elif compare_client_versions(latest_version, current_version) == 0:
                 user_response = messagebox.askyesno("无可用更新",
                                                     f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
                 if user_response:
-                    webbrowser.open(download_link)  # 打开下载链接
+                    if tag_download == "web":
+                        webbrowser.open(download_link)  # 打开下载链接
+                    elif tag_download == "direct":
+                        direct_download_client()  # 下载器直接下载
                     update_version_info(latest_version)
             else:
                 user_response = messagebox.askyesno("您的版本处于预览版",
                                                     f"需要下载正式版？最新正式版: {latest_version}")
                 if user_response:
-                    webbrowser.open(download_link)  # 打开下载链接
+                    if tag_download == "web":
+                        webbrowser.open(download_link)  # 打开下载链接
+                    elif tag_download == "direct":
+                        direct_download_client()  # 下载器直接下载
                     update_version_info(latest_version)
         else:
             print(f"请求更新信息失败，状态码：{response.status_code}")
@@ -325,13 +344,13 @@ def check_for_client_updates(current_version, selected_source):
         print(f"检查更新时发生错误: {e}")
 
 
-def threaded_check_for_updates(current_version, selected_source):
+def threaded_check_for_updates(current_version, selected_source, way_selected_source):
     """
     在一个独立的线程中检查客户端更新。
     """
 
     def target():
-        check_for_client_updates(current_version, selected_source)
+        check_for_client_updates(current_version, selected_source, way_selected_source)
 
     try:
         thread = threading.Thread(target=target)
@@ -649,15 +668,14 @@ def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
     tag_client_check = check_client_update()[1]
     if tag_client_check == "both":
-        download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)", "123网盘(网页非直链，需登录)",
-                            "123网盘(网页直链)"]
-        default_selected_source = "OneDrive网盘(网页直链)"  # 默认选择
+        download_sources = ["OneDrive网盘", "123网盘"]
+        default_selected_source = "OneDrive网盘"  # 默认选择
     elif tag_client_check == "123":
-        download_sources = ["123网盘(网页非直链，需登录)", "123网盘(网页直链)"]
-        default_selected_source = "123网盘(网页直链)"
+        download_sources = ["123网盘"]
+        default_selected_source = "123网盘"
     elif tag_client_check == "onedrive":
-        download_sources = ["OneDrive网盘(网页直链)", "OneDrive网盘(网页非直链)"]
-        default_selected_source = "OneDrive网盘(网页直链)"
+        download_sources = ["OneDrive网盘"]
+        default_selected_source = "OneDrive网盘"
     else:
         download_sources = ["检查下载源失败"]
         default_selected_source = "检查下载源失败"
@@ -711,25 +729,47 @@ def create_gui():
     update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
 
     # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
+    download_source_way_frame = tk.Frame(update_buttons_frame)
+    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
+
+    # 添加“下载源：”标签
+    download_source_way_label = tk.Label(download_source_way_frame, text="资源资源方式：", anchor="w")
+    download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
+
+    # 下载源选项
+    way_sources = ["客户端直接拉取", "网页非直链", "网页直链"]
+    way_selected_source = tk.StringVar(value="网页直链")  # 初始化下载源选项
+
+    # 创建Combobox选择框，指定宽度
+    source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
+                                    state="readonly", width=15)  # 设定Combobox宽度为15字符宽
+    source_combobox2.pack()
+
+    # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
     download_source_frame = tk.Frame(update_buttons_frame)
     download_source_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
-    # 添加“下载源：”标签
+    # 然后定义download_source_way_frame并将其放置于右侧
+    download_source_way_frame = tk.Frame(update_buttons_frame)
+    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
+
+
+# 添加“下载源：”标签
     download_source_label = tk.Label(download_source_frame, text="下载源：", anchor="w")
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["正在获取下载源信息，请稍候..."]
-    selected_source = tk.StringVar(value="正在获取下载源信息，请稍候...")  # 初始化下载源选项
+    download_sources = ["正在获取下载源信息", "请稍候..."]
+    selected_source = tk.StringVar(value="正在获取下载源信息")  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
-                                   state="readonly", width=25)  # 设定Combobox宽度为25字符宽
+                                   state="readonly", width=15)  # 设定Combobox宽度为15字符宽
     source_combobox.pack()
 
     # 检查BC客户端更新按钮
     check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
-                                       command=lambda: threaded_check_for_updates(client_version, selected_source))
+                                       command=lambda: threaded_check_for_updates(client_version, selected_source, way_selected_source))
     check_bc_update_button.pack(side=tk.LEFT,
                                 padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
