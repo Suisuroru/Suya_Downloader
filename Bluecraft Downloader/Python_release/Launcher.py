@@ -743,11 +743,11 @@ def create_gui():
     download_source_way_frame = tk.Frame(update_buttons_frame)
     download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
-    # 添加“下载源：”标签
-    download_source_way_label = tk.Label(download_source_way_frame, text="资源资源方式：", anchor="w")
+    # 添加“资源获取方式：”标签
+    download_source_way_label = tk.Label(download_source_way_frame, text="资源获取方式：", anchor="w")
     download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
-    # 下载源选项
+    # 资源获取方式选项
     way_sources = ["客户端直接拉取", "网页非直链", "网页直链"]
     way_selected_source = tk.StringVar(value="网页直链")  # 初始化下载源选项
 
