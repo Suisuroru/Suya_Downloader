@@ -45,18 +45,20 @@ api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Ve
 current_dir = os.getcwd()
 
 # 指定版本文件的路径
-version_file_path = os.path.join("./Version_Check", "Updater_Version.txt")
-Update_Partner_path = os.path.join("./Version_Check", "Update_Partner.txt")
-
-# 确保Version目录存在
-os.makedirs(os.path.dirname(version_file_path), exist_ok=True)
+setting_path = os.path.join(".", "setting.json")
 
 # 创建或覆盖版本文件
-with open(version_file_path, 'w') as file:
-    # 写入版本信息，这里以示例内容代替，实际使用时应替换为真实版本号
-    file.write(Updater_Version)
-
-print(f"版本文件已创建于: {version_file_path}")
+try:
+    with open(setting_path, 'r', encoding='utf-8') as file:
+        setting_json = json.load(file)
+    setting_json['Updater_Version'] = Updater_Version
+    with open(setting_path, 'w', encoding='utf-8') as file:
+        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+except:
+    setting_json = {'Updater_Version': Updater_Version}
+    with open(setting_path, 'w', encoding='utf-8') as file:
+        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    print(f"版本文件已创建于: {setting_path}")
 
 
 def del_Resources():
@@ -74,29 +76,37 @@ def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
         try:
-            with open(Update_Partner_path, 'r') as file:
-                Update_partner = file.read().strip()
+            with open(setting_path, 'r', encoding='utf-8') as file:
+                setting_json = json.load(file)
+                try:
+                    Update_Partner = setting_json['Update_Partner']
+                except:
+                    setting_json['Updater_Partner'] = "Full"
+                    with open(setting_path, 'w', encoding='utf-8') as file:
+                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                    Update_Partner = "Full"
         except:
-            with open(Update_Partner_path, 'w') as file:
-                file.write("Full")
-                Update_partner = "Full"
+            setting_json = {'Updater_Partner': "Full"}
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            Update_Partner = "Full"
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
-        if Update_partner == "Full":
+        if Update_Partner == "Full":
             update_url = data['url_downloader']
             version = data['version_downloader']
             partner = "完整更新模式"
             message_thread = threading.Thread(target=show_message, args=(partner,))
             # 启动线程
             message_thread.start()
-            return version, update_url, Update_partner
-        elif Update_partner == "Resources":
+            return version, update_url, Update_Partner
+        elif Update_Partner == "Resources":
             update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
             message_thread = threading.Thread(target=show_message, args=(partner,))
             # 启动线程
             message_thread.start()
-            return None, update_url, Update_partner
+            return None, update_url, Update_Partner
         else:
             print("传入参数错误")
             return None, None
