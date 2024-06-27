@@ -273,7 +273,13 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
+def open_setting(event):
+    # 这里编写处理设置按钮点击的逻辑
+    messagebox.showinfo("提示", "暂未完成，敬请期待")
+
+
 def direct_download_client():
+    # 这里编写客户端直接拉取文件的逻辑
     messagebox.showinfo("提示", "暂未完成，敬请期待")
 
 
@@ -713,11 +719,14 @@ def create_gui():
         # 图标加载与初始化
         play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources/Material Icons/outline_settings_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
+        setting_icon = setting_icon.resize(icons_size)
         play_icon_image = ImageTk.PhotoImage(play_icon)
         stop_icon_image = ImageTk.PhotoImage(stop_icon)
+        setting_icon_image = ImageTk.PhotoImage(setting_icon)
     except:
         Pull_Resources(window)
 
@@ -731,6 +740,17 @@ def create_gui():
     icon_label = tk.Label(music_frame, image=play_icon_image)
     icon_label.pack()
     icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+
+    # 设置按钮及其容器
+    settings_frame = tk.Frame(bottom_frame)
+    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在右侧
+
+    # 设置图标Label
+    settings_icon_label = tk.Label(settings_frame, image=setting_icon_image)
+    settings_icon_label.pack()
+
+    # 绑定设置按钮点击事件
+    settings_icon_label.bind("<Button-1>", open_setting)
 
     # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
     update_buttons_frame = tk.Frame(bottom_frame)
