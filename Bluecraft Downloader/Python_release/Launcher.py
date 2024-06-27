@@ -26,6 +26,8 @@ script_path = os.path.abspath(__file__)
 # 获取脚本所在的目录路径
 running_path = os.path.dirname(script_path)
 current_working_dir = os.getcwd()
+global setting_path
+setting_path = os.path.join(".", "setting.json")
 
 # 打印运行路径以确认
 print("运行路径:", running_path)
@@ -64,17 +66,17 @@ def Open_Updater(window):
 
 
 def Pull_Resources(window):
-    version_dir_path = "./Version_Check"
-    if not os.path.exists(version_dir_path):
-        os.makedirs(version_dir_path)
-    print(f"目录{version_dir_path}不存在，已创建。")
-    with open(Update_Partner_path, 'w') as file:
-        file.write("Resources")
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            setting_json['Update_Partner'] = "Resources"
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    except:
+        setting_json = {'Updater_Partner': "Resources"}
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
-
-
-global Update_Partner_path
-Update_Partner_path = os.path.join("./Version_Check", "Update_Partner.txt")
 
 
 def ensure_directory_exists(directory_path):
@@ -609,9 +611,16 @@ def download_and_install(update_url, version):
             else:
                 with open(member_path, 'wb') as f:
                     f.write(zip_file.read(member))
-        version_file_path = os.path.join("./Version_Check", "Updater_Version.txt")
-        with open(version_file_path, 'w') as file:
-            file.write(version)
+        try:
+            with open(setting_path, 'r', encoding='utf-8') as file:
+                setting_json = json.load(file)
+                setting_json['Updater_Version'] = version
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        except:
+            setting_json = {'Updater_Version': version}
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except Exception as e:
         print(f"下载或解压错误: {e}")
@@ -624,37 +633,25 @@ def Update_Updater():
             print(f"发现新版本: {version}，开始下载...")
             download_and_install(update_url, version)
         else:
-            print("没有找到新版本的信息。")
+            print("没有找到新版本的信息或返回消息异常。")
 
 
 def Version_Check_for_Updater(online_version):
     # 版本文件所在目录
-    version_dir_path = "./Version_Check"
     try:
         print("Updater.exe在线最新版：" + online_version)
     except:
         print("无法检查Updater.exe更新")
-    # 确保目录存在，如果不存在则创建
-    if not os.path.exists(version_dir_path):
-        os.makedirs(version_dir_path)
-        print(f"目录{version_dir_path}不存在，已创建。")
-
-    # 版本文件路径
-    version_file_path = os.path.join(version_dir_path, "Updater_Version.txt")
-
     # 确保文件存在，如果不存在则创建并写入默认版本信息
-    if not os.path.exists(version_file_path):
-        with open(version_file_path, 'w') as file:
-            file.write("0.0.0.0")
-        with open(Update_Partner_path, 'w') as file:
-            file.write("Full")
-        print(f"文件{version_file_path}不存在，已创建并写入默认版本0.0.0.0。")
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            try:
+                updater_version = setting_json['Updater_Version']
+            except:
+                updater_version = "0.0.0.0"
+    except:
         updater_version = "0.0.0.0"
-    else:
-        # 读取文件内容
-        with open(version_file_path, 'r') as file:
-            updater_version = file.read().strip()  # 读取内容并去除首尾空白字符
-            print(f"文件{version_file_path}存在，读取到版本信息：" + updater_version)
 
     # 比较两个版本
     if updater_version == online_version:
