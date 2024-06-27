@@ -45,7 +45,7 @@ api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Ve
 current_dir = os.getcwd()
 
 # 指定版本文件的路径
-setting_path = os.path.join(".", "setting.json")
+setting_path = os.path.join(".", "settings.json")
 
 # 创建或覆盖版本文件
 try:

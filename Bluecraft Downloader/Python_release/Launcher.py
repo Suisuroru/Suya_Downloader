@@ -27,7 +27,7 @@ script_path = os.path.abspath(__file__)
 running_path = os.path.dirname(script_path)
 current_working_dir = os.getcwd()
 global setting_path
-setting_path = os.path.join(".", "setting.json")
+setting_path = os.path.join(".", "settings.json")
 
 # 打印运行路径以确认
 print("运行路径:", running_path)
