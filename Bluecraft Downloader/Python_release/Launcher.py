@@ -91,6 +91,7 @@ def ini_settings():
         setting_json = {'Client_dir': path}
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    ensure_directory_exists(path)
     return path
 
 
@@ -326,6 +327,7 @@ def create_setting_window():
             setting_json = {'Client_dir': path}
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        ensure_directory_exists(path)
 
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
