@@ -9,9 +9,10 @@ import threading
 import tkinter as tk
 import webbrowser
 import zipfile
+from getpass import getuser
 from io import BytesIO
 from queue import Queue
-from tkinter import messagebox, scrolledtext, ttk
+from tkinter import messagebox, scrolledtext, ttk, filedialog
 
 import pygame
 import requests
@@ -23,7 +24,7 @@ from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphic
 # 获取当前脚本的绝对路径
 script_path = os.path.abspath(__file__)
 
-# 获取脚本所在的目录路径
+# 获取运行目录
 running_path = os.path.dirname(script_path)
 current_working_dir = os.getcwd()
 global setting_path
@@ -77,6 +78,24 @@ def Pull_Resources(window):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
+
+
+def ini_settings():
+    path = fr"C:\Users\{getuser()}\AppData\Local\BC-Downloader"
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            if setting_json['Client_dir']:
+                path = setting_json['Client_dir']
+            else:
+                setting_json['Client_dir'] = path
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    except:
+        setting_json = {'Client_dir': path}
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    return path
 
 
 def ensure_directory_exists(directory_path):
@@ -273,12 +292,72 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
+def choose_directory():
+    """
+    弹出文件夹选择对话框并返回用户选择的目录路径。
+    """
+    directory = filedialog.askdirectory()  # 打开文件夹选择对话框
+    if directory:  # 如果用户选择了文件夹
+        return directory
+    return None  # 用户取消选择，返回None
+
+
+def create_setting_window():
+    """
+    在新窗口中创建设置界面，包含一个按钮用于选择自动拉取的文件夹路径。
+    """
+
+    def on_choose_path():
+        """处理选择路径按钮点击的逻辑"""
+        path = choose_directory()
+        if path:
+            entry.delete(0, tk.END)  # 清除当前文本框内容
+            entry.insert(0, path)  # 插入用户选择的路径
+        else:
+            if not entry.get():  # 如果文本框为空
+                path = fr"C:\Users\{getuser()}\AppData\Local\BC-Downloader"
+                entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
+                entry.insert(0, path)  # 插入默认路径
+            else:
+                path = entry.get()
+        try:
+            with open(setting_path, 'r', encoding='utf-8') as file:
+                setting_json = json.load(file)
+            setting_json['Client_dir'] = path
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        except:
+            setting_json = {'Client_dir': path}
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+
+    # 创建新窗口作为设置界面
+    setting_win = tk.Toplevel()
+    setting_win.title("设置")
+
+    # 添加一个文本框显示选择的路径
+    entry = tk.Entry(setting_win, width=50)
+    path = ini_settings()
+    entry.insert(0, path)  # 插入用户选择的路径
+    entry.pack(pady=5)
+
+    # 添加一个按钮用于打开文件夹选择对话框
+    choose_button = tk.Button(setting_win, text="选择文件夹", command=on_choose_path)
+    choose_button.pack(pady=10)
+
+    setting_win.mainloop()
+
+
 def open_setting(event):
-    # 这里编写处理设置按钮点击的逻辑
-    messagebox.showinfo("提示", "暂未完成，敬请期待")
+    """
+    处理设置按钮点击事件，启动新线程打开设置窗口。
+    """
+    thread = threading.Thread(target=create_setting_window)
+    thread.daemon = True
+    thread.start()
 
 
-def direct_download_client():
+def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     messagebox.showinfo("提示", "暂未完成，敬请期待")
 
@@ -337,7 +416,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
                     elif tag_download == "direct":
-                        direct_download_client()  # 下载器直接下载
+                        direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             elif compare_client_versions(latest_version, current_version) == 0:
                 user_response = messagebox.askyesno("无可用更新",
@@ -346,7 +425,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
                     elif tag_download == "direct":
-                        direct_download_client()  # 下载器直接下载
+                        direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             else:
                 user_response = messagebox.askyesno("您的版本处于预览版",
