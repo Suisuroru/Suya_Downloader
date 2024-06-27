@@ -77,13 +77,14 @@ def Pull_Resources(window):
 
 
 def ini_settings():
-    path = fr"C:\Users\{getuser()}\AppData\Local\BC-Downloader"
+    path = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+    ensure_directory_exists(path)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
             setting_json = json.load(file)
-            if setting_json['Client_dir']:
+            try:
                 path = setting_json['Client_dir']
-            else:
+            except:
                 setting_json['Client_dir'] = path
                 with open(setting_path, 'w', encoding='utf-8') as file:
                     json.dump(setting_json, file, ensure_ascii=False, indent=4)
@@ -91,7 +92,6 @@ def ini_settings():
         setting_json = {'Client_dir': path}
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
-    ensure_directory_exists(path)
     return path
 
 
@@ -306,13 +306,14 @@ def create_setting_window():
 
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
-        path = choose_directory()
+        rel_path = ini_settings()
+        path = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
         if path:
             entry.delete(0, tk.END)  # 清除当前文本框内容
             entry.insert(0, path)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path = fr"C:\Users\{getuser()}\AppData\Local\BC-Downloader"
+                path = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path)  # 插入默认路径
             else:
@@ -332,6 +333,10 @@ def create_setting_window():
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
     setting_win.title("设置")
+
+    # 添加说明标签
+    instruction_label = tk.Label(setting_win, text="直接拉取安装路径:", anchor='w')
+    instruction_label.pack(pady=(10, 0))  # 上方预留一些间距
 
     # 添加一个文本框显示选择的路径
     entry = tk.Entry(setting_win, width=50)
@@ -928,6 +933,7 @@ def create_gui():
     # 确保在所有窗口部件布局完成后调用center_window
     window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
     center_window(window)  # 居中窗口
+    ini_settings()  # 初始化设置内容
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         start_select_thread(selected_source, source_combobox)
