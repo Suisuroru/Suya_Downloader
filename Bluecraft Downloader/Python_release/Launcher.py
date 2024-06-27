@@ -76,7 +76,7 @@ def Pull_Resources(window):
     Open_Updater(window)
 
 
-def ini_settings():
+def initialize_settings():
     path = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
     ensure_directory_exists(path)
     try:
@@ -306,7 +306,7 @@ def create_setting_window():
 
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
-        rel_path = ini_settings()
+        rel_path = initialize_settings()
         path = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
         if path:
             entry.delete(0, tk.END)  # 清除当前文本框内容
@@ -340,7 +340,7 @@ def create_setting_window():
 
     # 添加一个文本框显示选择的路径
     entry = tk.Entry(setting_win, width=50)
-    path = ini_settings()
+    path = initialize_settings()
     entry.insert(0, path)  # 插入用户选择的路径
     entry.pack(pady=5)
 
@@ -933,7 +933,7 @@ def create_gui():
     # 确保在所有窗口部件布局完成后调用center_window
     window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
     center_window(window)  # 居中窗口
-    ini_settings()  # 初始化设置内容
+    initialize_settings()  # 初始化设置内容
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         start_select_thread(selected_source, source_combobox)
