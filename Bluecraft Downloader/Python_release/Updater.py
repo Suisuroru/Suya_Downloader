@@ -1,4 +1,4 @@
-Updater_Version = "1.0.0.8"
+Updater_Version = "1.0.1.0"
 
 import ctypes
 import json
