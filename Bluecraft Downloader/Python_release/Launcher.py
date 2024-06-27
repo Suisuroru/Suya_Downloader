@@ -21,17 +21,13 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-# 获取当前脚本的绝对路径
-script_path = os.path.abspath(__file__)
-
 # 获取运行目录
-running_path = os.path.dirname(script_path)
 current_working_dir = os.getcwd()
 global setting_path
 setting_path = os.path.join(".", "settings.json")
 
-# 打印运行路径以确认
-print("运行路径:", running_path)
+# 打印运行目录以确认
+print("运行目录:", current_working_dir)
 
 
 def is_admin():
