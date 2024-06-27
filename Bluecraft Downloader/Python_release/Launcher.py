@@ -583,8 +583,8 @@ def fetch_update_info():
     try:
         json_str = requests.get(get_Updater_api_url).text.strip()
         data = json.loads(json_str)
-        update_url = data['url_downloader']
-        version = data['version_downloader']
+        update_url = data['url_updater']
+        version = data['version_updater']
         return version, update_url
     except requests.RequestException as e:
         print(f"请求错误: {e}")
