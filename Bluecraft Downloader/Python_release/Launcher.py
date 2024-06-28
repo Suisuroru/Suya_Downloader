@@ -362,6 +362,30 @@ def open_setting(event):
 
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            try:
+                Confirm_tag = setting_json['Confirm_tag']
+            except:
+                Confirm_tag = "No"
+                setting_json['Confirm_tag'] = Confirm_tag
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    except:
+        Confirm_tag = "No"
+        setting_json = {'Confirm_tag': Confirm_tag}
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    if Confirm_tag == "No":
+        if messagebox.askyesno("提示", "请从设置中确认该目录是否为你希望安装的目录{}，点击取消将打开设置，此窗口在第一次确认后将不再弹出".format(initialize_settings())):
+            Confirm_tag = "Yes"
+            setting_json['Confirm_tag'] = Confirm_tag
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        else:
+            open_setting(1)
+            pass
     messagebox.showinfo("提示", "暂未完成，敬请期待")
 
 
