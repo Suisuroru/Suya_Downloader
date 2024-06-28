@@ -368,8 +368,6 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
     total_size = int(response.headers.get('content-length', 0))
     downloaded_size = 0
     global zip_content
-    global tag_Download
-    tag_Download = True
     zip_content = BytesIO()
     for chunk in response.iter_content(chunk_size):
         if chunk:
@@ -378,7 +376,6 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
             if progress_callback:
                 progress_callback(downloaded_size, total_size)
     zip_content.seek(0)  # 将读取指针移到开头
-    tag_Download = False
 
 
 def start_download_in_new_window(download_link):
