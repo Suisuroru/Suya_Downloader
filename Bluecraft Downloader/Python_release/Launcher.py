@@ -351,6 +351,32 @@ def create_setting_window():
     setting_win.mainloop()
 
 
+def download_and_unzip_client(download_link):
+    try:
+        messagebox.showinfo("提示", "客户端下载已开始，完成后将进行通知")
+        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
+                                 'Chrome/58.0.3029.110 Safari/537.3'}
+        response = requests.get(download_link, stream=True, headers=headers)
+        response.raise_for_status()
+        # 使用BytesIO作为临时存储，避免直接写入文件
+        zip_file = zipfile.ZipFile(BytesIO(response.content))
+        path = initialize_settings()
+        for member in zip_file.namelist():
+            # 避免路径遍历攻击
+            member_path = os.path.abspath(os.path.join(path, member))
+            if not member_path.startswith(path):
+                raise Exception("Zip file contains invalid path.")
+            if member.endswith('/'):
+                os.makedirs(member_path, exist_ok=True)
+            else:
+                with open(member_path, 'wb') as f:
+                    f.write(zip_file.read(member))
+        messagebox.showinfo("提示", "客户端已完成完成，请前往您设定的安装路径查看")
+    except Exception as e:
+        print(f"下载或解压错误: {e}")
+        messagebox.showerror("错误", f"下载或解压错误: {e}")
+
+
 def open_setting(event):
     """
     处理设置按钮点击事件，启动新线程打开设置窗口。
@@ -386,7 +412,10 @@ def direct_download_client(download_link):
         else:
             open_setting(1)
             pass
-    messagebox.showinfo("提示", "暂未完成，敬请期待")
+    if Confirm_tag == "Yes":
+        thread = threading.Thread(target=download_and_unzip_client(download_link))
+        thread.daemon = True
+        thread.start()
 
 
 def check_for_client_updates(current_version, selected_source, way_selected_source):
@@ -872,7 +901,7 @@ def create_gui():
 
     # 资源获取方式选项
     way_sources = ["客户端直接拉取", "网页非直链", "网页直链"]
-    way_selected_source = tk.StringVar(value="网页直链")  # 初始化下载源选项
+    way_selected_source = tk.StringVar(value="客户端直接拉取")  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
