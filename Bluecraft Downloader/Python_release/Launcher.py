@@ -6,6 +6,7 @@ import json
 import os
 import sys
 import threading
+import time
 import tkinter as tk
 import webbrowser
 import zipfile
@@ -351,30 +352,82 @@ def create_setting_window():
     setting_win.mainloop()
 
 
-def download_and_unzip_client(download_link):
-    try:
-        messagebox.showinfo("提示", "客户端下载已开始，完成后将进行通知")
-        headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) '
-                                 'Chrome/58.0.3029.110 Safari/537.3'}
-        response = requests.get(download_link, stream=True, headers=headers)
-        response.raise_for_status()
-        # 使用BytesIO作为临时存储，避免直接写入文件
-        zip_file = zipfile.ZipFile(BytesIO(response.content))
-        path = initialize_settings()
-        for member in zip_file.namelist():
-            # 避免路径遍历攻击
-            member_path = os.path.abspath(os.path.join(path, member))
-            if not member_path.startswith(path):
-                raise Exception("Zip file contains invalid path.")
-            if member.endswith('/'):
-                os.makedirs(member_path, exist_ok=True)
-            else:
-                with open(member_path, 'wb') as f:
-                    f.write(zip_file.read(member))
-        messagebox.showinfo("提示", "客户端已完成完成，请前往您设定的安装路径查看")
-    except Exception as e:
-        print(f"下载或解压错误: {e}")
-        messagebox.showerror("错误", f"下载或解压错误: {e}")
+def update_progress_bar(progress_bar, value, max_value):
+    """更新进度条的值"""
+    progress_bar['value'] = value
+    progress_bar['maximum'] = max_value
+    progress_bar.update()
+
+
+def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
+    """带有进度显示的文件下载函数"""
+    response = requests.get(url, stream=True)
+    total_size = int(response.headers.get('content-length', 0))
+    downloaded_size = 0
+
+    with open("temp_download.zip", "wb") as f:
+        for chunk in response.iter_content(chunk_size=chunk_size):
+            if chunk:
+                f.write(chunk)
+                downloaded_size += len(chunk)
+                if progress_callback:
+                    progress_callback(downloaded_size, total_size)
+
+
+def start_download_in_new_window(download_link):
+    def start_download_and_close(new_window, progress_bar):
+        try:
+            messagebox.showinfo("提示", "客户端下载已开始，完成后将关闭此窗口并进行通知")
+            # 添加进度文字标签
+            progress_text = tk.StringVar()
+            progress_label = ttk.Label(new_window, textvariable=progress_text)
+            progress_label.pack(anchor='center', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
+            # 添加百分比标签
+            percentage_text = tk.StringVar()
+            percentage_label = ttk.Label(new_window, textvariable=percentage_text)
+            percentage_label.pack(anchor='center', pady=(0, 10))  # 下方添加百分比，这里原本就是正确的
+            # 添加速度相关变量和标签
+            speed_text = tk.StringVar()
+            speed_label = ttk.Label(new_window, textvariable=speed_text)
+            speed_label.pack(anchor='center', pady=(0, 10))  # 在百分比标签下方添加速度标签
+
+            def update_labels(downloaded, total, start_time=None):
+                """更新进度文字、百分比和速度"""
+                current_time = time.time()
+                if start_time is None:
+                    start_time = current_time
+                elapsed_time = current_time - start_time
+
+                percent = round((downloaded / total) * 100, 2) if total else 0
+                speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
+
+                progress_text.set(f"下载进度: {percent}%")
+                percentage_text.set(f"{percent}%")
+                speed_text.set(f"下载速度: {speed} KB/s")  # 更新速度文本
+
+            download_start_time = time.time()  # 记录下载开始时间
+            download_file_with_progress(download_link,
+                                       progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
+                                                                       update_labels(d, t, download_start_time)])
+
+            # 清理临时下载的ZIP文件（可选）
+            os.remove("temp_download.zip")
+
+            new_window.destroy()  # 关闭新窗口
+
+        except Exception as e:
+            print(f"下载或解压错误: {e}")
+            messagebox.showerror("错误", f"下载或解压错误: {e}")
+            new_window.destroy()  # 发生错误也关闭窗口
+
+    # 创建一个新的顶级窗口作为下载进度窗口
+    new_window = tk.Toplevel()
+    new_window.title("下载进度")
+
+    # 创建并配置进度条
+    progress_bar = ttk.Progressbar(new_window, orient="horizontal", length=200, mode="determinate")
+    progress_bar.pack(pady=20)
+    start_download_and_close(new_window, progress_bar)
 
 
 def open_setting(event):
@@ -404,7 +457,9 @@ def direct_download_client(download_link):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
-        if messagebox.askyesno("提示", "请从设置中确认该目录是否为你希望安装的目录{}，点击取消将打开设置，此窗口在第一次确认后将不再弹出".format(initialize_settings())):
+        if messagebox.askyesno("提示",
+                               "请从设置中确认该目录是否为你希望安装的目录{}，点击取消将打开设置，此窗口在第一次确认后将不再弹出".format(
+                                   initialize_settings())):
             Confirm_tag = "Yes"
             setting_json['Confirm_tag'] = Confirm_tag
             with open(setting_path, 'w', encoding='utf-8') as file:
@@ -413,7 +468,7 @@ def direct_download_client(download_link):
             open_setting(1)
             pass
     if Confirm_tag == "Yes":
-        thread = threading.Thread(target=download_and_unzip_client(download_link))
+        thread = threading.Thread(target=start_download_in_new_window(download_link))
         thread.daemon = True
         thread.start()
 
@@ -490,7 +545,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
                     elif tag_download == "direct":
-                        direct_download_client()  # 下载器直接下载
+                        direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
         else:
             print(f"请求更新信息失败，状态码：{response.status_code}")
