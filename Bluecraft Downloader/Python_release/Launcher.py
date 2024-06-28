@@ -1,3 +1,5 @@
+import tempfile
+
 current_version = "1.0.1.0"
 
 import ctypes
@@ -361,23 +363,27 @@ def update_progress_bar(progress_bar, value, max_value):
 
 def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
     """带有进度显示的文件下载函数"""
+    # 在内存中下载ZIP文件
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get('content-length', 0))
     downloaded_size = 0
-
-    with open("temp_download.zip", "wb") as f:
-        for chunk in response.iter_content(chunk_size=chunk_size):
-            if chunk:
-                f.write(chunk)
-                downloaded_size += len(chunk)
-                if progress_callback:
-                    progress_callback(downloaded_size, total_size)
+    global zip_content
+    global tag_Download
+    tag_Download = True
+    zip_content = BytesIO()
+    for chunk in response.iter_content(chunk_size):
+        if chunk:
+            zip_content.write(chunk)
+            downloaded_size += len(chunk)
+            if progress_callback:
+                progress_callback(downloaded_size, total_size)
+    zip_content.seek(0)  # 将读取指针移到开头
+    tag_Download = False
 
 
 def start_download_in_new_window(download_link):
     def start_download_and_close(new_window, progress_bar):
         try:
-            messagebox.showinfo("提示", "客户端下载已开始，完成后将关闭此窗口并进行通知")
             # 添加进度文字标签
             progress_text = tk.StringVar()
             progress_label = ttk.Label(new_window, textvariable=progress_text)
@@ -402,17 +408,19 @@ def start_download_in_new_window(download_link):
                 speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
 
                 progress_text.set(f"下载进度: {percent}%")
-                percentage_text.set(f"{percent}%")
                 speed_text.set(f"下载速度: {speed} KB/s")  # 更新速度文本
-
             download_start_time = time.time()  # 记录下载开始时间
+            messagebox.showinfo("提示", "客户端下载已完成，请等待解压缩完成后再关闭该窗口")
             download_file_with_progress(download_link,
-                                       progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
-                                                                       update_labels(d, t, download_start_time)])
+                                        progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
+                                                                        update_labels(d, t, download_start_time)])
+            messagebox.showinfo("提示", "客户端下载已完成，请等待解压缩完成后再关闭该窗口")
+            # 下载完成后处理ZIP文件（注意路径已更改）
+            with zipfile.ZipFile(zip_content, 'r') as zip_ref:
+                path = initialize_settings()
+                zip_ref.extractall(path=path)
 
-            # 清理临时下载的ZIP文件（可选）
-            os.remove("temp_download.zip")
-
+            messagebox.showinfo("提示", "客户端下载及解压完成，请前往您设定的安装路径查看")
             new_window.destroy()  # 关闭新窗口
 
         except Exception as e:
