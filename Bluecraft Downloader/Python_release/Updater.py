@@ -120,7 +120,6 @@ def download_and_install(update_url, Update_partner):
     try:
         response = requests.get(update_url, stream=True)
         response.raise_for_status()
-
         # 使用BytesIO作为临时存储，避免直接写入文件
         zip_file = zipfile.ZipFile(BytesIO(response.content))
         del_Resources()
@@ -132,7 +131,6 @@ def download_and_install(update_url, Update_partner):
             if not os.path.exists(pull_dir):
                 print(f"Resources目录不存在，将进行重新创建")
                 os.makedirs(pull_dir, exist_ok=True)
-
         else:
             pull_dir = current_dir
         # 解压到当前目录

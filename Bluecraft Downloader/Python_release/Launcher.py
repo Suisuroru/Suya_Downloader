@@ -423,9 +423,18 @@ def start_download_in_new_window(download_link):
             progress_text.set("下载已完成")
             speed_text.set("请等待解压缩进程完成")
             # 下载完成后处理ZIP文件（注意路径已更改）
-            with zipfile.ZipFile(zip_content, 'r') as zip_ref:
-                path = initialize_settings()
-                zip_ref.extractall(path=path)
+            pull_dir = initialize_settings()
+            zip_file = zipfile.ZipFile(zip_content)
+            for member in zip_file.namelist():
+                # 避免路径遍历攻击
+                member_path = os.path.abspath(os.path.join(pull_dir, member))
+                if not member_path.startswith(pull_dir):
+                    raise Exception("Zip file contains invalid path.")
+                if member.endswith('/'):
+                    os.makedirs(member_path, exist_ok=True)
+                else:
+                    with open(member_path, 'wb') as f:
+                        f.write(zip_file.read(member))
             progress_text.set("解压缩已完成")
             speed_text.set("您现在可以安全地关闭这个窗口了")
             messagebox.showinfo("提示", "客户端下载及解压完成，请前往您设定的安装路径查看")
