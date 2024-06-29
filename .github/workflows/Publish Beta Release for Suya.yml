@@ -24,14 +24,14 @@ jobs:
 
     - name: Build Executables
       run: |
-        pyinstaller --onefile Bluecraft\ Downloader/Python_release/Launcher.py
-        pyinstaller --onefile Bluecraft\ Downloader/Python_release/Updater.py
+        pyinstaller -F -w -i ./Resources/Pic/icon.ico Launcher.py
+        pyinstaller -F -w Updater.py
 
     - name: Move Built Executables
       run: |
         mkdir release_files
-        mv dist/Launcher.exe release_files/
-        mv dist/Updater.exe release_files/
+        mv Bluecraft\ Downloader/Python_release/dist/Launcher.exe release_files/
+        mv Bluecraft\ Downloader/Python_release/dist/Updater.exe release_files/
 
     - name: Copy Resources
       run: |
