@@ -24,14 +24,14 @@ jobs:
 
     - name: Build Executables
       run: |
-        pyinstaller -F -w -i ./Resources/Pic/icon.ico Bluecraft\ Downloader/Python_release/Launcher.py
-        pyinstaller -F -w Bluecraft\ Downloader/Python_release/Updater.py
+        pyinstaller -F -w -i ./Resources/Pic/icon.ico "Bluecraft Downloader/Python_release/Launcher.py"
+        pyinstaller -F -w "Bluecraft Downloader/Python_release/Updater.py"
 
     - name: Move Built Executables
       run: |
         mkdir release_files
-        mv Bluecraft\ Downloader/Python_release/dist/Launcher.exe release_files/
-        mv Bluecraft\ Downloader/Python_release/dist/Updater.exe release_files/
+        mv "Bluecraft Downloader/Python_release/dist/Launcher.exe" release_files/
+        mv "Bluecraft Downloader/Python_release/dist/Updater.exe" release_files/
 
     - name: Copy Resources
       run: |
@@ -41,6 +41,20 @@ jobs:
       run: |
         cd release_files
         zip -r ../Bluecraft_Downloader_Beta.zip ./*
+
+    - name: Delete Existing Beta Release Tag
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 确保只在主分支上执行
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      run: |
+        echo "Deleting existing beta_release tag, if any..."
+        existing_tag=$(curl -sL -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/ref/tags/beta_release | jq -r '.object.sha')
+        if [ "$existing_tag" != "null" ]; then
+          curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/refs/tags/beta_release
+          echo "Existing beta_release tag deleted."
+        else
+          echo "No existing beta_release tag found."
+        fi
 
     - name: Create GitHub Release
       id: create_release
@@ -62,16 +76,3 @@ jobs:
         asset_path: ./Bluecraft_Downloader_Beta.zip
         asset_name: Bluecraft_Downloader_Beta.zip
         asset_content_type: application/zip
-    - name: Delete Existing Beta Release Tag
-      if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 确保只在主分支上执行
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        echo "Deleting existing beta_release tag, if any..."
-        existing_tag=$(curl -sL -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/ref/tags/beta_release | jq -r '.object.sha')
-        if [ "$existing_tag" != "null" ]; then
-          curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/refs/tags/beta_release
-          echo "Existing beta_release tag deleted."
-        else
-          echo "No existing beta_release tag found."
-        fi
