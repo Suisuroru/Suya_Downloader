@@ -18,23 +18,28 @@ jobs:
         python-version: 3.x # 使用您项目对应的Python版本
 
     - name: Install Dependencies
-      run: |        python -m pip install --upgrade pip
+      run: |
+        python -m pip install --upgrade pip
         pip install pyinstaller # 安装PyInstaller以打包Python脚本
 
     - name: Build Executables
-      run: |        pyinstaller --onefile Bluecraft\ Downloader/Python_release/Launcher.py
+      run: |
+        pyinstaller --onefile Bluecraft\ Downloader/Python_release/Launcher.py
         pyinstaller --onefile Bluecraft\ Downloader/Python_release/Updater.py
 
     - name: Move Built Executables
-      run: |        mkdir release_files
+      run: |
+        mkdir release_files
         mv dist/Launcher.exe release_files/
         mv dist/Updater.exe release_files/
 
     - name: Copy Resources
-      run: |        cp -r Bluecraft\ Downloader/Python_release/Resources release_files/
+      run: |
+        cp -r Bluecraft\ Downloader/Python_release/Resources release_files/
 
     - name: Create Zip Archive
-      run: |        cd release_files
+      run: |
+        cd release_files
         zip -r ../Bluecraft_Downloader_Beta.zip ./*
 
     - name: Create GitHub Release
@@ -61,7 +66,8 @@ jobs:
       if: github.event_name == 'push' && github.ref == 'refs/heads/main' # 确保只在主分支上执行
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |    echo "Deleting existing beta_release tag, if any..."
+      run: |
+        echo "Deleting existing beta_release tag, if any..."
         existing_tag=$(curl -sL -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/ref/tags/beta_release | jq -r '.object.sha')
         if [ "$existing_tag" != "null" ]; then
           curl -X DELETE -H "Authorization: token $GITHUB_TOKEN" https://api.github.com/repos/${{ github.repository }}/git/refs/tags/beta_release
