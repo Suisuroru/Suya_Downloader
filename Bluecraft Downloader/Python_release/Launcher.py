@@ -406,17 +406,28 @@ def start_download_in_new_window(download_link):
 
                 progress_text.set(f"下载进度: {percent}%")
                 speed_text.set(f"下载速度: {speed} KB/s")  # 更新速度文本
+
             download_start_time = time.time()  # 记录下载开始时间
-            messagebox.showinfo("提示", "客户端下载已完成，请等待解压缩完成后再关闭该窗口")
-            download_file_with_progress(download_link,
-                                        progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
-                                                                        update_labels(d, t, download_start_time)])
-            messagebox.showinfo("提示", "客户端下载已完成，请等待解压缩完成后再关闭该窗口")
+
+            def start_download_client(download_link):
+                thread = threading.Thread(target=download_file_with_progress(download_link,
+                                                                             progress_callback=lambda d, t: [
+                                                                                 update_progress_bar(progress_bar, d,
+                                                                                                     t),
+                                                                                 update_labels(d, t,
+                                                                                               download_start_time)]))
+                thread.daemon = True
+                thread.start()
+
+            start_download_client(download_link)
+            progress_text.set("下载已完成")
+            speed_text.set("请等待解压缩进程完成")
             # 下载完成后处理ZIP文件（注意路径已更改）
             with zipfile.ZipFile(zip_content, 'r') as zip_ref:
                 path = initialize_settings()
                 zip_ref.extractall(path=path)
-
+            progress_text.set("解压缩已完成")
+            speed_text.set("您现在可以安全地关闭这个窗口了")
             messagebox.showinfo("提示", "客户端下载及解压完成，请前往您设定的安装路径查看")
             new_window.destroy()  # 关闭新窗口
 
