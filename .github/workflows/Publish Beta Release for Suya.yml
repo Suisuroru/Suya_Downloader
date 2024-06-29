@@ -24,8 +24,8 @@ jobs:
 
     - name: Build Executables
       run: |
-        pyinstaller -F -w -i ./Resources/Pic/icon.ico Launcher.py
-        pyinstaller -F -w Updater.py
+        pyinstaller -F -w -i ./Resources/Pic/icon.ico Bluecraft\ Downloader/Python_release/Launcher.py
+        pyinstaller -F -w Bluecraft\ Downloader/Python_release/Updater.py
 
     - name: Move Built Executables
       run: |
