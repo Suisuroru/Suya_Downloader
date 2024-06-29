@@ -1,5 +1,3 @@
-import tempfile
-
 current_version = "1.0.1.0"
 
 import ctypes
@@ -375,6 +373,10 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
             downloaded_size += len(chunk)
             if progress_callback:
                 progress_callback(downloaded_size, total_size)
+    response.raise_for_status()
+    # 使用BytesIO作为临时存储，避免直接写入文件
+    global zip_file
+    zip_file = zipfile.ZipFile(BytesIO(response.content))
     zip_content.seek(0)  # 将读取指针移到开头
 
 
@@ -424,7 +426,6 @@ def start_download_in_new_window(download_link):
             speed_text.set("请等待解压缩进程完成")
             # 下载完成后处理ZIP文件（注意路径已更改）
             pull_dir = initialize_settings()
-            zip_file = zipfile.ZipFile(zip_content)
             for member in zip_file.namelist():
                 # 避免路径遍历攻击
                 member_path = os.path.abspath(os.path.join(pull_dir, member))
