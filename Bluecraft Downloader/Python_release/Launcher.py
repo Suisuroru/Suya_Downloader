@@ -706,6 +706,16 @@ def check_client_update():
         messagebox.showerror("错误", f"检查更新时发生错误: {e}")
 
 
+def pull_suya_announcement(version_strip_frame, version_label):
+    api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
+    try:
+        json_str = requests.get(api_url).text.strip()
+        data = json.loads(json_str)
+        update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_code"], "Suya启动器公告：" + data["suya_announcement_message"])
+    except:
+        update_version_strip(version_strip_frame, version_label, "失败", "A00000", "尝试拉取Suya下载器公告失败")
+
+
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
     """检查更新并创建版本状态色带"""
     latest_version = check_client_update()[0]
@@ -1023,6 +1033,10 @@ def create_gui():
     creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
     creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
+    # 在启动器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
+    status, color_code_gray, message_gray = "等待数据回传", "#808080", "等待Suya下载器公告数据回传中..."
+    strip_suya_announcement, suya_announcement = create_version_strip(color_code_gray, message_gray, window)
+
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
@@ -1039,7 +1053,7 @@ def create_gui():
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
-    # 版本检查并创建初始红色色带(下载器)
+    # 版本检查并创建初始灰色色带(下载器)
     status, color_code, message = "检测中", "#808080", "检查下载器更新中..."
     strip_downloader, label_downloader = create_version_strip(color_code, message, window)
 
@@ -1047,7 +1061,7 @@ def create_gui():
     notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)  # 添加state=tk.DISABLED
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-    # 版本检查并创建初始红色色带(客户端)
+    # 版本检查并创建初始灰色色带(客户端)
     status, color_code, message = "检测中", "#808080", "检查客户端更新中..."
     strip_client, label_client = create_version_strip(color_code, message, window)
 
@@ -1078,10 +1092,12 @@ def create_gui():
 
     update_thread_args = (strip_downloader, label_downloader, current_version)
     client_update_thread_args = (strip_client, label_client, client_version)
+    pull_suya_announcement_args = (strip_suya_announcement, suya_announcement)
     # 启动线程
     update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
     client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
                                             args=client_update_thread_args)
+    pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
     try:
         update_thread.start()
     except:
@@ -1092,6 +1108,11 @@ def create_gui():
     except:
         print("客户端更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "客户端更新检查失败")
+    try:
+        pull_suya_announcement_thread.start()
+    except:
+        print("下载器更新检查失败，错误代码：{e}")
+        update_version_strip(strip_suya_announcement, suya_announcement, "未知", "FF0000", "Suya公告拉取失败")
 
     window.mainloop()
 
