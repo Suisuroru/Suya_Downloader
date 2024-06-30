@@ -711,7 +711,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         "Suya启动器公告：" + data["suya_announcement_message"])
+                         "Suya下载器公告：" + data["suya_announcement_message"])
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
@@ -1031,7 +1031,7 @@ def create_gui():
     creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
     creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
-    # 在启动器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
+    # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
     status, color_code_gray, message_gray = "等待数据回传", "#808080", "等待Suya下载器公告数据回传中..."
     strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
 
