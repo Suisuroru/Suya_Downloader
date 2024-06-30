@@ -708,12 +708,10 @@ def check_client_update():
 
 def pull_suya_announcement(version_strip_frame, version_label):
     api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
-    try:
-        json_str = requests.get(api_url).text.strip()
-        data = json.loads(json_str)
-        update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_code"], "Suya启动器公告：" + data["suya_announcement_message"])
-    except:
-        update_version_strip(version_strip_frame, version_label, "失败", "A00000", "尝试拉取Suya下载器公告失败")
+    json_str = requests.get(api_url).text.strip()
+    data = json.loads(json_str)
+    update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
+                         "Suya启动器公告：" + data["suya_announcement_message"])
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
@@ -1035,7 +1033,7 @@ def create_gui():
 
     # 在启动器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
     status, color_code_gray, message_gray = "等待数据回传", "#808080", "等待Suya下载器公告数据回传中..."
-    strip_suya_announcement, suya_announcement = create_version_strip(color_code_gray, message_gray, window)
+    strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
 
     # 创建一个蓝色色带Frame
     blue_strip = tk.Frame(window, bg="#0060C0", height=80)
@@ -1092,7 +1090,7 @@ def create_gui():
 
     update_thread_args = (strip_downloader, label_downloader, current_version)
     client_update_thread_args = (strip_client, label_client, client_version)
-    pull_suya_announcement_args = (strip_suya_announcement, suya_announcement)
+    pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
     # 启动线程
     update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
     client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
@@ -1111,8 +1109,8 @@ def create_gui():
     try:
         pull_suya_announcement_thread.start()
     except:
-        print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, suya_announcement, "未知", "FF0000", "Suya公告拉取失败")
+        print("Suya公告拉取失败，错误代码：{e}")
+        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000", "尝试拉取Suya下载器公告失败")
 
     window.mainloop()
 
