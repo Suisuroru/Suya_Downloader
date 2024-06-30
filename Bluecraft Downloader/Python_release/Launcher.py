@@ -990,7 +990,7 @@ def create_gui():
 
     # 资源获取方式选项
     way_sources = ["客户端直接拉取", "网页非直链", "网页直链"]
-    way_selected_source = tk.StringVar(value="客户端直接拉取")  # 初始化下载源选项
+    way_selected_source = tk.StringVar(value="网页直链")  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
