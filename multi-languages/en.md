@@ -2,7 +2,7 @@
 
 This is a repository of API interfaces for the Bluecraft client downloader and its calls.
 
-## 语言 / languages
+## Languages
 
 [简体中文](https://Bluecraft-Server.github.io/multi-languages/zh_hans.)
 

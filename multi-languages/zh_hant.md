@@ -2,7 +2,7 @@
 
 這是為 Bluecraft 用戶端下載器及其調用的 API 介面的儲存庫。
 
-## 语言 / languages
+## Languages
 
 [简体中文](https://Bluecraft-Server.github.io/multi-languages/zh_hans.)
 
