@@ -1081,11 +1081,11 @@ def create_gui():
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         start_select_thread(selected_source, source_combobox)
-    except:
+    except requests.RequestException as e:
         print("下载源列表拉取失败，错误代码：{e}")
     try:
         start_fetch_notice(notice_text_area)
-    except:
+    except requests.RequestException as e:
         print("公告拉取失败，错误代码：{e}")
 
     update_thread_args = (strip_downloader, label_downloader, current_version)
@@ -1098,17 +1098,17 @@ def create_gui():
     pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
     try:
         update_thread.start()
-    except:
+    except requests.RequestException as e:
         print("下载器更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "下载器更新检查失败")
     try:
         client_update_thread.start()
-    except:
+    except requests.RequestException as e:
         print("客户端更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "客户端更新检查失败")
     try:
         pull_suya_announcement_thread.start()
-    except:
+    except requests.RequestException as e:
         print("Suya公告拉取失败，错误代码：{e}")
         update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000", "尝试拉取Suya下载器公告失败")
 
@@ -1134,6 +1134,6 @@ if __name__ == "__main__":
             update_thread.start()
         else:
             print("无需更新。")
-    except:
-        print("更新拉取失败")
+    except requests.RequestException as e:
+        print("更新拉取失败，错误代码：{e}")
     sys.exit(app.exec_())
