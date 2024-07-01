@@ -4,9 +4,11 @@
 
 ## 语言 / languages
 
-[简体中文]()
-[繁體中文]()
-[English]()
+[简体中文](https://Bluecraft-Server.github.io/multi-languages/zh_hans.)
+
+[繁體中文](https://Bluecraft-Server.github.io/multi-languages/zh_hant.md)
+
+[English](https://Bluecraft-Server.github.io/multi-languages/en.md)
 
 ## 使用
 
