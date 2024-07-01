@@ -8,7 +8,7 @@
 
 [繁體中文](https://github.com/Bluecraft-Server/API/blob/main/multi-languages/zh_hant.md)
 
-[English](https://github.com/Bluecraft-Server/API/blob/main/multi-languages/en.md)
+[English](https://github.com/Bluecraft-Server/API/blob/main/multi-languages/en_us.md)
 
 ## 使用
 
