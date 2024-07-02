@@ -1,7 +1,7 @@
 {
     "settings": "设置",
     "direct_pull_path": "直接拉取安装路径：",
-    "open_folders": "选择文件夹",
+    "choose_folders": "选择文件夹",
     "downloading_process": "下载进度：",
     "downloading_speed": "下载速度：",
     "error": "错误",
