@@ -90,6 +90,7 @@ def Pull_Resources(window):
 
 
 def initialize_languages():
+  global lang_json, spare_lang_json
     get_language()
     if language == "zh_hans":
         lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
@@ -116,6 +117,14 @@ def initialize_languages():
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
+  
+  
+def get_text(key):
+  try:
+    text = lang_json[key]
+  except:
+    text = spare_lang_json[key]
+  return key
 
 
 def initialize_settings():
