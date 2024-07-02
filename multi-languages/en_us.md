@@ -1,6 +1,6 @@
 # API
 
-This is a repository of API interfaces for the Bluecraft client downloader and its calls.
+This is a repository of API interfaces for the BlueCraft Client Downloader and its calls.
 
 ## Languages
 
@@ -34,6 +34,7 @@ E language version is developed by KFACBT.
 ### Python language version
 
 Python language version developed by Suisuroru.
+This version is based on Suya Downloader.
 
 #### Functionalities that has been implemented
 

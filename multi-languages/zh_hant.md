@@ -1,6 +1,6 @@
 # API
 
-這是為 Bluecraft 用戶端下載器及其調用的 API 介面的儲存庫。
+這是為 BlueCraft 用戶端下載器及其調用的 API 介面的儲存庫。
 
 ## Languages
 
@@ -34,6 +34,7 @@
 ### Python 版本
 
 Python 版本由 Suisuroru 開發。
+該版本基於Suya Downloader。
 
 #### 支援的功能
 
