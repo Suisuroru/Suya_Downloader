@@ -6,7 +6,7 @@
     "downloading_speed": "下载速度：",
     "download_finished": "下载已完成",
     "unzip_tip": "请等待解压缩完成后根本此窗口",
-    "download_window": "下载"
+    "download_window": "下载",
     "unzip_finished": "解压缩已完成",
     "close_tip": "您现在可以安全地关闭这个窗口了",
     "unzip_finished_tip": "客户端下载及解压完成，请前往您设定的安装路径查看",
@@ -40,8 +40,18 @@
     "update_unable": "更新可用",
     "update_unable_msg": "与上次下载版本一致，重新下载？最新正式版：",
     "update_dev": "您的版本处于预览版",
-    "update_dev_msg": "需要下载正式版？最新正式版：",
+    "update_dev_msg": "希望使用正式版？最新正式版：",
     "dev_client": "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：",
     "old_client": "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：",
-    "release_client": "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号："
+    "release_client": "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：",
+    "update_question_available1": "发现新版本：",
+    "update_question_available2": "当前版本：",
+    "update_question_available3": "。您想现在下载更新吗？",
+    "update_question_dev1": "当前运行的版本已是最新测试版！希望使用正式版？正式版版本号：",
+    "update_question_dev2": "当前版本：",
+    "update_question_dev3": "。希望使用正式版？",
+    "update_question_release": "当前已是最新版本！",
+    "update_question_check": "版本检查",
+    "update_question_unknown": "检查更新时发生错误：",
+    "suya_announcement": "Suya下载器公告："
 }

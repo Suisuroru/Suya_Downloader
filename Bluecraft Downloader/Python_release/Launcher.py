@@ -691,19 +691,23 @@ def check_for_updates_with_confirmation(current_version, window):
         comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
-            update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
+            update_question = (get_text("update_question_available1") + latest_version +
+                               get_text("update_question_available2") + current_version +
+                               get_text("update_question_available3"))
             answer = messagebox.askyesno("更新可用", update_question)
             Update(answer, window)
 
         elif comparison_result2 > 0:
-            update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
+            update_question = (get_text("update_question_dev1") + latest_version +
+                               get_text("update_question_dev2") + current_version +
+                               get_text("update_question_dev3"))
             answer = messagebox.askyesno("获取正式版", update_question)
             Update(answer, window)
 
         else:
-            messagebox.showinfo("版本检查", "当前已是最新版本！")
+            messagebox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def compare_versions(version1, version2):
@@ -724,7 +728,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         update_version_strip(version_strip_frame, version_label, current_version, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def check_client_update():
@@ -750,7 +754,7 @@ def check_client_update():
                 tag_client_check = "both"
             return latest_version, tag_client_check
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
@@ -758,7 +762,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         "Suya下载器公告：" + data["suya_announcement_message"])
+                         get_text("suya_announcement") + data["suya_announcement_message"])
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
