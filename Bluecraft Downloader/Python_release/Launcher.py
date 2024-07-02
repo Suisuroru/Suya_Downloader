@@ -1,4 +1,4 @@
-current_version = "1.0.1.0"
+current_version = "1.0.1.1"
 
 import ctypes
 import errno
@@ -44,6 +44,23 @@ if not is_admin():
     sys.exit()
 
 
+def get_language():
+    global language
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            try:
+                language = setting_json['language']
+            except:
+                setting_json['language'] = language = "zh_hans"
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    except:
+        setting_json = {'language': "zh_hans"}
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+
+
 def Open_Updater(window):
     try:
         launcher_path = os.path.join(current_working_dir, 'Updater.exe')
@@ -60,7 +77,7 @@ def Open_Updater(window):
         else:
             print("Updater.exe 未找到。")
     except Exception as e:
-        messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+        messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{e}")
 
 
 def Pull_Resources(window):
@@ -75,6 +92,44 @@ def Pull_Resources(window):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
+
+
+def initialize_languages():
+    global lang_json, spare_lang_json
+    get_language()
+    if language == "zh_hans":
+        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
+    elif language == "zh_hant":
+        lang_path = os.path.join("./Resources/Languages", "zh_hant.json")
+    elif language == "en_us":
+        lang_path = os.path.join("./Resources/Languages", "en_us.json")
+    else:
+        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
+        try:
+            with open(setting_path, 'r', encoding='utf-8') as file:
+                setting_json = json.load(file)
+                setting_json['language'] = "zh_hans"
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        except:
+            setting_json = {'language': "zh_hans"}
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    try:
+        with open(lang_path, 'r', encoding='utf-8') as file:
+            lang_json = json.load(file)
+        with open(os.path.join("./Resources/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
+            spare_lang_json = json.load(file)
+    except:
+        Pull_Resources(None)
+  
+  
+def get_text(key):
+    try:
+        text = lang_json[key]
+    except:
+        text = spare_lang_json[key]
+    return text
 
 
 def initialize_settings():
@@ -102,7 +157,7 @@ def ensure_directory_exists(directory_path):
         os.makedirs(directory_path, exist_ok=True)
     except OSError as e:
         if e.errno != errno.EEXIST:
-            raise ValueError(f"无法创建目录: {directory_path}") from e
+            raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
 
 
 def get_local_appdata_path(filename="client_version.txt"):
@@ -181,8 +236,8 @@ class TransparentSplashScreen(QWidget):
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
         screen = QApplication.desktop().availableGeometry()
         try:
-            pic_ratio = QPixmap("./Resources/Pic/BC.png").size().width() / QPixmap(
-                "./Resources/Pic/BC.png").size().height()
+            pic_ratio = QPixmap("./Resources/Pictures/BC.png").size().width() / QPixmap(
+                "./Resources/Pictures/BC.png").size().height()
         except:
             Pull_Resources(None)
         window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
@@ -193,9 +248,9 @@ class TransparentSplashScreen(QWidget):
 
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
         try:
-            self.pixmap = QPixmap("./Resources/Pic/BC.png").scaled(window_width, window_height,
-                                                                   Qt.KeepAspectRatio,
-                                                                   Qt.SmoothTransformation)
+            self.pixmap = QPixmap("./Resources/Pictures/BC.png").scaled(window_width, window_height,
+                                                                        Qt.KeepAspectRatio,
+                                                                        Qt.SmoothTransformation)
         except:
             Pull_Resources(None)
 
@@ -333,10 +388,10 @@ def create_setting_window():
 
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
-    setting_win.title("设置")
+    setting_win.title(get_text("settings"))
 
     # 添加说明标签
-    instruction_label = tk.Label(setting_win, text="直接拉取安装路径:", anchor='w')
+    instruction_label = tk.Label(setting_win, text=get_text("direct_pull_path"), anchor='w')
     instruction_label.pack(pady=(10, 0))  # 上方预留一些间距
 
     # 添加一个文本框显示选择的路径
@@ -346,7 +401,7 @@ def create_setting_window():
     entry.pack(pady=5)
 
     # 添加一个按钮用于打开文件夹选择对话框
-    choose_button = tk.Button(setting_win, text="选择文件夹", command=on_choose_path)
+    choose_button = tk.Button(setting_win, text=get_text("choose_folders"), command=on_choose_path)
     choose_button.pack(pady=10)
 
     setting_win.mainloop()
@@ -403,8 +458,8 @@ def start_download_in_new_window(download_link):
                 percent = round((downloaded / total) * 100, 2) if total else 0
                 speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
 
-                progress_text.set(f"下载进度: {percent}%")
-                speed_text.set(f"下载速度: {speed} KB/s")  # 更新速度文本
+                progress_text.set(get_text("downloading_process") + f"{percent}%")
+                speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
 
             download_start_time = time.time()  # 记录下载开始时间
 
@@ -419,8 +474,8 @@ def start_download_in_new_window(download_link):
                 thread.start()
 
             start_download_client(download_link)
-            progress_text.set("下载已完成")
-            speed_text.set("请等待解压缩进程完成")
+            progress_text.set(get_text("download_finished"))
+            speed_text.set(get_text("unzip_tip"))
             # 下载完成后处理ZIP文件（注意路径已更改）
             pull_dir = initialize_settings()
             zip_file = zipfile.ZipFile(zip_content)  # 这里直接使用zip_content
@@ -434,19 +489,19 @@ def start_download_in_new_window(download_link):
                 else:
                     with open(member_path, 'wb') as f:
                         f.write(zip_file.read(member))
-            progress_text.set("解压缩已完成")
-            speed_text.set("您现在可以安全地关闭这个窗口了")
-            messagebox.showinfo("提示", "客户端下载及解压完成，请前往您设定的安装路径查看")
+            progress_text.set(get_text("unzip_finished"))
+            speed_text.set(get_text("close_tip"))
+            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
             new_window.destroy()  # 关闭新窗口
 
         except Exception as e:
             print(f"下载或解压错误: {e}")
-            messagebox.showerror("错误", f"下载或解压错误: {e}")
+            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
             new_window.destroy()  # 发生错误也关闭窗口
 
     # 创建一个新的顶级窗口作为下载进度窗口
     new_window = tk.Toplevel()
-    new_window.title("下载进度")
+    new_window.title(get_text("download_window"))
 
     # 创建并配置进度条
     progress_bar = ttk.Progressbar(new_window, orient="horizontal", length=200, mode="determinate")
@@ -481,9 +536,8 @@ def direct_download_client(download_link):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
-        if messagebox.askyesno("提示",
-                               "请从设置中确认该目录是否为你希望安装的目录{}，点击取消将打开设置，此窗口在第一次确认后将不再弹出".format(
-                                   initialize_settings())):
+        if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
+                                                get_text("path_tip2")):
             Confirm_tag = "Yes"
             setting_json['Confirm_tag'] = Confirm_tag
             with open(setting_path, 'w', encoding='utf-8') as file:
@@ -512,41 +566,42 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
             chosen_value = selected_source.get()
             way_chosen_value = way_selected_source.get()
             # 根据下载源选择URL
-            if way_chosen_value == "网页非直链":
+            if way_chosen_value == get_text("url_origin"):
                 tag_download = "web"
-                if chosen_value == "123网盘":
+                if chosen_value == get_text("123_pan"):
                     download_link = update_info['url_123']
                     latest_version = update_info["version_123"][1:]
-                elif chosen_value == "OneDrive网盘":
+                elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_origin']
                     latest_version = update_info["version_onedrive"][1:]
-            elif way_chosen_value == "网页直链":
+            elif way_chosen_value == get_text("url_direct"):
                 tag_download = "web"
-                if chosen_value == "123网盘":
+                if chosen_value == get_text("123_pan"):
                     link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                     json_str = requests.get(link).text.strip()
                     data = json.loads(json_str)
                     download_link = data['info']
                     latest_version = update_info["version_123"][1:]
-                elif chosen_value == "OneDrive网盘":
+                elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
-            elif way_chosen_value == "客户端直接拉取":
+            elif way_chosen_value == get_text("downloader_direct"):
                 tag_download = "direct"
-                if chosen_value == "123网盘":
+                if chosen_value == get_text("123_pan"):
                     link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                     json_str = requests.get(link).text.strip()
                     data = json.loads(json_str)
                     download_link = data['info']
                     latest_version = update_info["version_123"][1:]
-                elif chosen_value == "OneDrive网盘":
+                elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
 
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
-                user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
+                user_response = messagebox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
+                                                    latest_version + get_text("update_available_msg2"))
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -554,8 +609,8 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             elif compare_client_versions(latest_version, current_version) == 0:
-                user_response = messagebox.askyesno("无可用更新",
-                                                    f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
+                user_response = messagebox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
+                                                    latest_version)
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -563,8 +618,8 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             else:
-                user_response = messagebox.askyesno("您的版本处于预览版",
-                                                    f"需要下载正式版？最新正式版: {latest_version}")
+                user_response = messagebox.askyesno(get_text("update_dev"), get_text("update_dev_msg") +
+                                                    latest_version)
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -615,14 +670,11 @@ def get_client_status(current_version, latest_version):
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：{}".format(
-            current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version  # 浅蓝
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
-            current_version)  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_client") + current_version  # 黄色
     else:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}".format(
-            current_version)  # 绿色
+        return "最新正式版", "#009900", get_text("release_client") + current_version  # 绿色
 
 
 def check_for_updates_with_confirmation(current_version, window):
@@ -644,19 +696,23 @@ def check_for_updates_with_confirmation(current_version, window):
         comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
-            update_question = f"发现新版本: {latest_version}，当前版本: {current_version}。您想现在下载更新吗？"
+            update_question = (get_text("update_question_available1") + latest_version +
+                               get_text("update_question_available2") + current_version +
+                               get_text("update_question_available3"))
             answer = messagebox.askyesno("更新可用", update_question)
             Update(answer, window)
 
         elif comparison_result2 > 0:
-            update_question = f"当前运行的版本已是最新测试版！希望使用正式版？正式版版本号: {latest_version}，当前版本: {current_version}。"
+            update_question = (get_text("update_question_dev1") + latest_version +
+                               get_text("update_question_dev2") + current_version +
+                               get_text("update_question_dev3"))
             answer = messagebox.askyesno("获取正式版", update_question)
             Update(answer, window)
 
         else:
-            messagebox.showinfo("版本检查", "当前已是最新版本！")
+            messagebox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def compare_versions(version1, version2):
@@ -677,7 +733,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         update_version_strip(version_strip_frame, version_label, current_version, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def check_client_update():
@@ -703,7 +759,7 @@ def check_client_update():
                 tag_client_check = "both"
             return latest_version, tag_client_check
     except Exception as e:
-        messagebox.showerror("错误", f"检查更新时发生错误: {e}")
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
@@ -711,7 +767,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         "Suya下载器公告：" + data["suya_announcement_message"])
+                         get_text("suya_announcement") + data["suya_announcement_message"])
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
@@ -753,13 +809,11 @@ def get_version_status(current_version, latest_version):
 
     if comparison_result1 == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的下载器版本可能是预发布或测试版，当前版本号：{}".format(
-            current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version  # 浅蓝
     elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
-            current_version)  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_downloader") + current_version  # 黄色
     else:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本的下载器，当前版本号：{}".format(current_version)  # 绿色
+        return "最新正式版", "#009900", get_text("release_downloader") + current_version  # 绿色
 
 
 def update_notice_from_queue(queue, notice_text_area):
@@ -904,17 +958,17 @@ def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
     tag_client_check = check_client_update()[1]
     if tag_client_check == "both":
-        download_sources = ["OneDrive网盘", "123网盘"]
-        default_selected_source = "OneDrive网盘"  # 默认选择
+        download_sources = [get_text("OneDrive_pan"), get_text("123_pan")]
+        default_selected_source = get_text("OneDrive_pan")  # 默认选择
     elif tag_client_check == "123":
-        download_sources = ["123网盘"]
-        default_selected_source = "123网盘"
+        download_sources = [get_text("123_pan")]
+        default_selected_source = get_text("123_pan")
     elif tag_client_check == "onedrive":
-        download_sources = ["OneDrive网盘"]
-        default_selected_source = "OneDrive网盘"
+        download_sources = [get_text("OneDrive_pan")]
+        default_selected_source = get_text("OneDrive_pan")
     else:
-        download_sources = ["检查下载源失败"]
-        default_selected_source = "检查下载源失败"
+        download_sources = [get_text("source_fault")]
+        default_selected_source = get_text("source_fault")
     # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
     # 更新Combobox选择框内容
     source_combobox_select['values'] = download_sources
@@ -936,12 +990,12 @@ def create_gui():
 
     # 设置窗口图标
     try:
-        window.iconbitmap("./Resources/Pic/icon.ico")
+        window.iconbitmap("./Resources/Pictures/BC.ico")
 
         # 图标加载与初始化
-        play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
-        stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
-        setting_icon = Image.open("./Resources/Material Icons/outline_settings_black_24dp.png")
+        play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources/Pictures/Icons/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources/Pictures/Icons/outline_settings_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
@@ -983,12 +1037,12 @@ def create_gui():
     download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
     # 添加“资源获取方式：”标签
-    download_source_way_label = tk.Label(download_source_way_frame, text="资源获取方式：", anchor="w")
+    download_source_way_label = tk.Label(download_source_way_frame, text=get_text("pull_resources"), anchor="w")
     download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 资源获取方式选项
-    way_sources = ["客户端直接拉取", "网页非直链", "网页直链"]
-    way_selected_source = tk.StringVar(value="网页直链")  # 初始化下载源选项
+    way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
+    way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
@@ -1004,12 +1058,12 @@ def create_gui():
     download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
 
     # 添加“下载源：”标签
-    download_source_label = tk.Label(download_source_frame, text="下载源：", anchor="w")
+    download_source_label = tk.Label(download_source_frame, text=get_text("download_source"), anchor="w")
     download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
     # 下载源选项
-    download_sources = ["正在获取下载源信息", "请稍候..."]
-    selected_source = tk.StringVar(value="正在获取下载源信息")  # 初始化下载源选项
+    download_sources = [get_text("source_wait1"), get_text("source_wait2")]
+    selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
@@ -1017,22 +1071,22 @@ def create_gui():
     source_combobox.pack()
 
     # 检查BC客户端更新按钮
-    check_bc_update_button = tk.Button(update_buttons_frame, text=" 检查BC客户端更新 ",
+    check_bc_update_button = tk.Button(update_buttons_frame, text=get_text("check_client_update"),
                                        command=lambda: threaded_check_for_updates(client_version, selected_source,
                                                                                   way_selected_source))
     check_bc_update_button.pack(side=tk.LEFT,
                                 padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
     # 检查下载器更新按钮
-    check_downloader_update_button = tk.Button(update_buttons_frame, text=" 检查下载器更新 ",
+    check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
                                                command=lambda: update_downloader(window))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
-    creator_label = tk.Label(update_buttons_frame, text="Created by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
+    creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
     creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
     # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
-    status, color_code_gray, message_gray = "等待数据回传", "#808080", "等待Suya下载器公告数据回传中..."
+    status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
     strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
 
     # 创建一个蓝色色带Frame
@@ -1040,19 +1094,19 @@ def create_gui():
     blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在蓝色色带上添加文字
-    welcome_label = tk.Label(blue_strip, text="   欢迎使用 BlueCraft 客户端Suya下载器！   ",
+    welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
                              font=("Microsoft YaHei", 30),
                              fg="white", bg="#0060C0")
     welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
     # 第二行文字示例（如果需要的话）
-    second_line_label = tk.Label(blue_strip, text="快速、方便地下载或更新 BlueCraft 客户端",
+    second_line_label = tk.Label(blue_strip, text=get_text("description"),
                                  font=("Microsoft YaHei", 15),
                                  fg="white", bg="#0060C0")
     second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
     # 版本检查并创建初始灰色色带(下载器)
-    status, color_code, message = "检测中", "#808080", "检查下载器更新中..."
+    status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
     strip_downloader, label_downloader = create_version_strip(color_code, message, window)
 
     # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
@@ -1060,7 +1114,7 @@ def create_gui():
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     # 版本检查并创建初始灰色色带(客户端)
-    status, color_code, message = "检测中", "#808080", "检查客户端更新中..."
+    status, color_code, message = "检测中", "#808080", get_text("checking_client_update")
     strip_client, label_client = create_version_strip(color_code, message, window)
 
     # 初始化pygame音乐模块并设置音乐循环播放
@@ -1081,11 +1135,11 @@ def create_gui():
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         start_select_thread(selected_source, source_combobox)
-    except requests.RequestException as e:
+    except:
         print("下载源列表拉取失败，错误代码：{e}")
     try:
         start_fetch_notice(notice_text_area)
-    except requests.RequestException as e:
+    except:
         print("公告拉取失败，错误代码：{e}")
 
     update_thread_args = (strip_downloader, label_downloader, current_version)
@@ -1098,19 +1152,20 @@ def create_gui():
     pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
     try:
         update_thread.start()
-    except requests.RequestException as e:
+    except:
         print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "下载器更新检查失败")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error1"))
     try:
         client_update_thread.start()
-    except requests.RequestException as e:
+    except:
         print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "客户端更新检查失败")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error2"))
     try:
         pull_suya_announcement_thread.start()
-    except requests.RequestException as e:
+    except:
         print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000", "尝试拉取Suya下载器公告失败")
+        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000",
+                             "check_error3")
 
     window.mainloop()
 
@@ -1122,6 +1177,7 @@ def create_gui():
 
 
 if __name__ == "__main__":
+    initialize_languages()
     app = QApplication(sys.argv)
     splash = TransparentSplashScreen()
     splash.show()
