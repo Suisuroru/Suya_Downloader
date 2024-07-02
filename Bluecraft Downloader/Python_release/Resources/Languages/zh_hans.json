@@ -12,5 +12,16 @@
     "OneDrive_pan": "OneDrive网盘",
     "url_direct": "网页直链",
     "url_origin": "网页非直链",
-    "downloader_direct": "客户端直接拉取"
+    "downloader_direct": "客户端直接拉取",
+    "pull_resources": "资源获取方式：",
+    "download_source": "下载源：",
+    "source_wait1": "正在获取下载源信息",
+    "source_wait2": "请稍候…",
+    "check_client_update": "检查BC客户端更新",
+    "check_downloader_update": "检查下载器更新",
+    "wait_message": "等待Suya下载器公告数据回传中",
+    "welcome": "欢迎使用 BlueCraft 客户端Suya下载器！",
+    "description": "快速、方便地下载或更新 BlueCraft 客户端",
+    "checking_downloader_update": "检查下载器更新中…",
+    "checking_client_update": "检查BC客户端更新中…"
 }
