@@ -936,12 +936,12 @@ def create_gui():
 
     # 设置窗口图标
     try:
-        window.iconbitmap("./Resources/Pictures/icon.ico")
+        window.iconbitmap("./Resources/Pictures/BC.ico")
 
         # 图标加载与初始化
-        play_icon = Image.open("./Resources/Material Icons/outline_music_note_black_24dp.png")
-        stop_icon = Image.open("./Resources/Material Icons/outline_music_off_black_24dp.png")
-        setting_icon = Image.open("./Resources/Material Icons/outline_settings_black_24dp.png")
+        play_icon = Image.open("./Resources/Pictures/Icon/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources/Pictures/Icon/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources/Pictures/Icon/outline_settings_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
