@@ -17,6 +17,7 @@
     "download_source": "下载源：",
     "source_wait1": "正在获取下载源信息",
     "source_wait2": "请稍候…",
+    "source_fault": "检查下载源失败",
     "check_client_update": "检查BC客户端更新",
     "check_downloader_update": "检查下载器更新",
     "wait_message": "等待Suya下载器公告数据回传中",
