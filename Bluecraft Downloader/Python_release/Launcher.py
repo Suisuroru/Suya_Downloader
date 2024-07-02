@@ -72,7 +72,7 @@ def Open_Updater(window):
         else:
             print("Updater.exe 未找到。")
     except Exception as e:
-        messagebox.showerror("下载启动错误", f"尝试开始下载时遇到错误: {e}")
+        messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{e}")
 
 
 def Pull_Resources(window):
@@ -152,7 +152,7 @@ def ensure_directory_exists(directory_path):
         os.makedirs(directory_path, exist_ok=True)
     except OSError as e:
         if e.errno != errno.EEXIST:
-            raise ValueError(f"无法创建目录: {directory_path}") from e
+            raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
 
 
 def get_local_appdata_path(filename="client_version.txt"):
@@ -531,7 +531,8 @@ def direct_download_client(download_link):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
-        if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" + get_text("path_tip2")):
+        if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
+                                                get_text("path_tip2")):
             Confirm_tag = "Yes"
             setting_json['Confirm_tag'] = Confirm_tag
             with open(setting_path, 'w', encoding='utf-8') as file:
@@ -594,7 +595,8 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
                 # 如果有新版本，提示用户并提供下载链接
-                user_response = messagebox.askyesno("更新可用", f"发现新版本: {latest_version}，是否立即下载？")
+                user_response = messagebox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
+                                                    latest_version + get_text("update_available_msg2"))
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -602,8 +604,8 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             elif compare_client_versions(latest_version, current_version) == 0:
-                user_response = messagebox.askyesno("无可用更新",
-                                                    f"与上次下载版本一致，重新下载？最新正式版: {latest_version}")
+                user_response = messagebox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
+                                                    latest_version)
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -611,8 +613,8 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             else:
-                user_response = messagebox.askyesno("您的版本处于预览版",
-                                                    f"需要下载正式版？最新正式版: {latest_version}")
+                user_response = messagebox.askyesno(get_text("update_dev"), get_text("update_dev_msg") +
+                                                    latest_version)
                 if user_response:
                     if tag_download == "web":
                         webbrowser.open(download_link)  # 打开下载链接
@@ -663,14 +665,11 @@ def get_client_status(current_version, latest_version):
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的客户端版本可能是测试版，即将更新，当前版本号：{}".format(
-            current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version  # 浅蓝
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的客户端版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
-            current_version)  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_client") + current_version  # 黄色
     else:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本的客户端，可直接进入服务器，当前版本号：{}".format(
-            current_version)  # 绿色
+        return "最新正式版", "#009900", get_text("release_client") + current_version  # 绿色
 
 
 def check_for_updates_with_confirmation(current_version, window):
