@@ -112,6 +112,8 @@ def initialize_languages():
     try:
         with open(lang_path, 'r', encoding='utf-8') as file:
             lang_json = json.load(file)
+        with open(os.path.join("./Resources/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
+            spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
 
