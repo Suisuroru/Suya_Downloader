@@ -45,11 +45,16 @@ if not is_admin():
 
 
 def get_language():
+    global language
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
             setting_json = json.load(file)
-            global language
-            language = setting_json['language']
+            try:
+                language = setting_json['language']
+            except:
+                setting_json['language'] = language = "zh_hans"
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
     except:
         setting_json = {'language': "zh_hans"}
         with open(setting_path, 'w', encoding='utf-8') as file:
@@ -120,11 +125,11 @@ def initialize_languages():
   
   
 def get_text(key):
-  try:
-    text = lang_json[key]
-  except:
-    text = spare_lang_json[key]
-  return text
+    try:
+        text = lang_json[key]
+    except:
+        text = spare_lang_json[key]
+    return text
 
 
 def initialize_settings():
@@ -988,9 +993,9 @@ def create_gui():
         window.iconbitmap("./Resources/Pictures/BC.ico")
 
         # 图标加载与初始化
-        play_icon = Image.open("./Resources/Pictures/Icon/outline_music_note_black_24dp.png")
-        stop_icon = Image.open("./Resources/Pictures/Icon/outline_music_off_black_24dp.png")
-        setting_icon = Image.open("./Resources/Pictures/Icon/outline_settings_black_24dp.png")
+        play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources/Pictures/Icons/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources/Pictures/Icons/outline_settings_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
