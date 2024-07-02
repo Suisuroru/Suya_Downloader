@@ -355,6 +355,15 @@ def choose_directory():
     return None  # 用户取消选择，返回None
 
 
+def language_formated:
+  if language == "zh_hans":
+    return "简体中文
+  elif language == "zh_hant":
+    return "繁體中文"
+  elif language == "en_us":
+    return "English"
+
+
 def create_setting_window():
     """
     在新窗口中创建设置界面，包含一个按钮用于选择自动拉取的文件夹路径。
@@ -403,6 +412,20 @@ def create_setting_window():
     # 添加一个按钮用于打开文件夹选择对话框
     choose_button = tk.Button(setting_win, text=get_text("choose_folders"), command=on_choose_path)
     choose_button.pack(pady=10)
+
+    lang_frame = tk.Frame(setting_win)
+    lang_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
+
+    lang_label = tk.Label(lang_frame, text=get_text("Languages: "), anchor="w")
+    lang_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
+
+    # 选项
+    lang_choice = ["简体中文", "繁體中文", "English"]
+    lang_selected = tk.StringVar(value=language_formated())  # 初始化
+
+    # 创建Combobox选择框，指定宽度
+    lang_combobox = ttk.Combobox(lang_frame, textvariable=lang_selected, values=lang_choice,
+                                    state="readonly", width=20)  # 设定Combobox宽度为20字符宽
 
     setting_win.mainloop()
 
