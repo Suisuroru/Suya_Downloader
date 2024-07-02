@@ -1,0 +1,16 @@
+{
+    "settings": "设置",
+    "direct_pull_path": "直接拉取安装路径：",
+    "open_folders": "选择文件夹",
+    "downloading_process": "下载进度：",
+    "downloading_speed": "下载速度：",
+    "error": "错误",
+    "tip": "提示",
+    "path_tip1": "请从设置中确认该目录是否为您希望安装的目录",
+    "path_tip2": "点击取消将自动打开设置，此窗口在第一次确认后将不再弹出",
+    "123_pan": "123网盘",
+    "OneDrive_pan": "OneDrive网盘",
+    "url_direct": "网页直链",
+    "url_origin": "网页非直链",
+    "downloader_direct": "客户端直接拉取"
+}
