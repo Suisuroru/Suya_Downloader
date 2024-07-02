@@ -1149,18 +1149,18 @@ def create_gui():
         update_thread.start()
     except:
         print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "下载器更新检查失败")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error1"))
     try:
         client_update_thread.start()
     except:
         print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", "客户端更新检查失败")
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error2"))
     try:
         pull_suya_announcement_thread.start()
     except:
         print("Suya公告拉取失败，错误代码：{e}")
         update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000",
-                             "尝试拉取Suya下载器公告失败")
+                             "check_error3")
 
     window.mainloop()
 

@@ -56,5 +56,8 @@
     "suya_announcement": "Suya下载器公告：",
     "dev_downloader": "您当前运行的下载器版本可能是预发布或测试版，当前版本号：",
     "old_downloader": "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：",
-    "release_downloader": "您当前运行的是最新正式版本的下载器，当前版本号："
+    "release_downloader": "您当前运行的是最新正式版本的下载器，当前版本号：",
+    "check_error1": "下载器更新检查失败",
+    "check_error2": "客户端更新检查失败",
+    "check_error3": "尝试拉取Suya下载器公告失败"
 }
