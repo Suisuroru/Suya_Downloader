@@ -44,6 +44,18 @@ if not is_admin():
     sys.exit()
 
 
+def get_language():
+    try:
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            setting_json = json.load(file)
+            global language
+            language = setting_json['language']
+    except:
+        setting_json = {'language': "zh_hans"}
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+
+
 def Open_Updater(window):
     try:
         launcher_path = os.path.join(current_working_dir, 'Updater.exe')
@@ -75,6 +87,33 @@ def Pull_Resources(window):
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
+
+
+def initialize_languages():
+    get_language()
+    if language == "zh_hans":
+        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
+    elif language == "zh_hant":
+        lang_path = os.path.join("./Resources/Languages", "zh_hant.json")
+    elif language == "en_us":
+        lang_path = os.path.join("./Resources/Languages", "en_us.json")
+    else:
+        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
+        try:
+            with open(setting_path, 'r', encoding='utf-8') as file:
+                setting_json = json.load(file)
+                setting_json['language'] = "zh_hans"
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        except:
+            setting_json = {'language': "zh_hans"}
+            with open(setting_path, 'w', encoding='utf-8') as file:
+                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    try:
+        with open(lang_path, 'r', encoding='utf-8') as file:
+            lang_json = json.load(file)
+    except:
+        Pull_Resources(None)
 
 
 def initialize_settings():
@@ -194,8 +233,8 @@ class TransparentSplashScreen(QWidget):
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
         try:
             self.pixmap = QPixmap("./Resources/Pictures/BC.png").scaled(window_width, window_height,
-                                                                   Qt.KeepAspectRatio,
-                                                                   Qt.SmoothTransformation)
+                                                                        Qt.KeepAspectRatio,
+                                                                        Qt.SmoothTransformation)
         except:
             Pull_Resources(None)
 
@@ -1110,7 +1149,8 @@ def create_gui():
         pull_suya_announcement_thread.start()
     except:
         print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000", "尝试拉取Suya下载器公告失败")
+        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000",
+                             "尝试拉取Suya下载器公告失败")
 
     window.mainloop()
 
@@ -1122,6 +1162,7 @@ def create_gui():
 
 
 if __name__ == "__main__":
+    initialize_languages()
     app = QApplication(sys.argv)
     splash = TransparentSplashScreen()
     splash.show()
