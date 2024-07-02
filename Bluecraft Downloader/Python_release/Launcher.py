@@ -90,7 +90,7 @@ def Pull_Resources(window):
 
 
 def initialize_languages():
-  global lang_json, spare_lang_json
+    global lang_json, spare_lang_json
     get_language()
     if language == "zh_hans":
         lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
@@ -486,7 +486,7 @@ def start_download_in_new_window(download_link):
                         f.write(zip_file.read(member))
             progress_text.set(get_text("unzip_finished"))
             speed_text.set(get_text("close_tip"))
-            messagebox.showinfo(get_text("tip")), get_text("unzip_finished_tip"))
+            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
             new_window.destroy()  # 关闭新窗口
 
         except Exception as e:
