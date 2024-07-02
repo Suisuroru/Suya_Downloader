@@ -1,4 +1,4 @@
-current_version = "1.0.1.1"
+current_version = "1.0.1.2"
 
 import ctypes
 import errno
