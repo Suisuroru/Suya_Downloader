@@ -124,7 +124,7 @@ def get_text(key):
     text = lang_json[key]
   except:
     text = spare_lang_json[key]
-  return key
+  return text
 
 
 def initialize_settings():
