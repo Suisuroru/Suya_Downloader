@@ -804,13 +804,11 @@ def get_version_status(current_version, latest_version):
 
     if comparison_result1 == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", "您当前运行的下载器版本可能是预发布或测试版，当前版本号：{}".format(
-            current_version)  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version  # 浅蓝
     elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：{}".format(
-            current_version)  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_downloader") + current_version  # 黄色
     else:
-        return "最新正式版", "#009900", "您当前运行的是最新正式版本的下载器，当前版本号：{}".format(current_version)  # 绿色
+        return "最新正式版", get_text("release_downloader") + current_version  # 绿色
 
 
 def update_notice_from_queue(queue, notice_text_area):

@@ -53,5 +53,8 @@
     "update_question_release": "当前已是最新版本！",
     "update_question_check": "版本检查",
     "update_question_unknown": "检查更新时发生错误：",
-    "suya_announcement": "Suya下载器公告："
+    "suya_announcement": "Suya下载器公告：",
+    "dev_downloader": "您当前运行的下载器版本可能是预发布或测试版，当前版本号：",
+    "old_downloader": "您当前运行的下载器版本可能为遗留的旧版本，请及时更新，当前版本号：",
+    "release_downloader": "您当前运行的是最新正式版本的下载器，当前版本号："
 }
