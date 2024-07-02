@@ -5,7 +5,11 @@
     "downloading_process": "下载进度：",
     "downloading_speed": "下载速度：",
     "download_finished": "下载已完成",
-    "unzip_tip": "请等待解压缩完成后根本此窗口"
+    "unzip_tip": "请等待解压缩完成后根本此窗口",
+    "download_window": "下载"
+    "unzip_finished": "解压缩已完成",
+    "close_tip": "您现在可以安全地关闭这个窗口了",
+    "unzip_finished_tip": "客户端下载及解压完成，请前往您设定的安装路径查看",
     "error": "错误",
     "tip": "提示",
     "path_tip1": "请从设置中确认该目录是否为您希望安装的目录",
