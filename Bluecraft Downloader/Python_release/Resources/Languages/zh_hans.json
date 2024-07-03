@@ -59,5 +59,7 @@
     "release_downloader": "您当前运行的是最新正式版本的下载器，当前版本号：",
     "check_error1": "下载器更新检查失败",
     "check_error2": "客户端更新检查失败",
-    "check_error3": "尝试拉取Suya下载器公告失败"
+    "check_error3": "尝试拉取Suya下载器公告失败",
+    "reload_tip": "更新语言设置需要重新启动下载器，是否需要立即重新启动？如果拒绝，本次更改将不会被保存。",
+    "confirm": "确认"
 }
