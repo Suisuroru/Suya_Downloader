@@ -1,4 +1,4 @@
-current_version = "1.0.1.2"
+current_version = "1.0.1.3"
 
 import ctypes
 import errno
@@ -85,14 +85,16 @@ def Open_Updater(window):
 def Pull_Resources(window):
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            setting_json['Update_Partner'] = "Resources"
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                            setting_json = json.load(file)
+                            setting_json['Update_Partner'] = "Resources"
     except:
         setting_json = {'Updater_Partner': "Resources"}
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+    try:
+        setting_json['Pull_Resouces_Count'] += 1
+    except:
+        setting_json['Pull_Resouces_Count'] = 1
+    with open(setting_path, 'w', encoding='utf-8') as file:
+                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
 
 
