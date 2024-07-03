@@ -1119,7 +1119,7 @@ def create_gui():
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                    state="readonly", width=12)  # 设定Combobox宽度为15字符宽
+                                    state="readonly", width=15)  # 设定Combobox宽度为15字符宽
     source_combobox2.pack()
 
     # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
