@@ -1,4 +1,4 @@
-Updater_Version = "1.0.1.0"
+Updater_Version = "1.0.1.3"
 
 import ctypes
 import json
@@ -89,6 +89,12 @@ def fetch_update_info():
             setting_json = {'Updater_Partner': "Full"}
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            Update_Partner = "Full"
+        try:
+            Count = setting_json['Pull_Resouces_Count']
+        except:
+            Count = 1
+        if Count >= 3:
             Update_Partner = "Full"
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
