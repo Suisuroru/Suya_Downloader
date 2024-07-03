@@ -829,16 +829,16 @@ def pull_suya_announcement(version_strip_frame, version_label):
         try:
             return data[key]
         except:
-            return data["suya_announcement"]
+            return data["suya_announcement_message"]
 
     if language == "zh_hans":
-        suya_announcement = try_to_get_suya_announcement("suya_announcement")
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
     elif language == "zh_hant":
-        suya_announcement = try_to_get_suya_announcement("suya_announcement_zh_hant")
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message_zh_hant")
     elif language == "en_us":
-        suya_announcement = try_to_get_suya_announcement("suya_announcement_en_us")
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message_en_us")
     else:
-        suya_announcement = try_to_get_suya_announcement("suya_announcement")
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
                          get_text("suya_announcement") + suya_announcement)
 
