@@ -43,9 +43,9 @@ This version is based on Suya Downloader.
 2. Get the version of the downloader update API
 3. Self-update `Downloader`
 4. Pull `Client` from web non-direct/web direct links
+5. Multi-language support
 
 #### Planned Functions
 
 1. Pull the client using the downloader and unzip it to a specific location
 2. Launch the game client using the downloader without a launcher
-3. Multi-language support
