@@ -1,4 +1,4 @@
-current_version = "1.0.1.1"
+current_version = "1.0.1.2"
 
 import ctypes
 import errno
@@ -52,11 +52,13 @@ def get_language():
             try:
                 language = setting_json['language']
             except:
-                setting_json['language'] = language = "zh_hans"
+                setting_json['language'] = "zh_hans"
+                language = "zh_hans"
                 with open(setting_path, 'w', encoding='utf-8') as file:
                     json.dump(setting_json, file, ensure_ascii=False, indent=4)
     except:
         setting_json = {'language': "zh_hans"}
+        language = "zh_hans"
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
 
@@ -94,14 +96,17 @@ def Pull_Resources(window):
     Open_Updater(window)
 
 
-def initialize_languages():
+def initialize_languages(tag):
     global lang_json, spare_lang_json
     get_language()
-    if language == "zh_hans":
+    lang = language
+    if tag is not None:
+        lang = tag
+    if lang == "zh_hans":
         lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
-    elif language == "zh_hant":
+    elif lang == "zh_hant":
         lang_path = os.path.join("./Resources/Languages", "zh_hant.json")
-    elif language == "en_us":
+    elif lang == "en_us":
         lang_path = os.path.join("./Resources/Languages", "en_us.json")
     else:
         lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
@@ -122,8 +127,8 @@ def initialize_languages():
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
-  
-  
+
+
 def get_text(key):
     try:
         text = lang_json[key]
@@ -355,7 +360,25 @@ def choose_directory():
     return None  # 用户取消选择，返回None
 
 
-def create_setting_window():
+def language_unformated():
+    if language == "zh_hans":
+        return "简体中文"
+    elif language == "zh_hant":
+        return "繁體中文"
+    elif language == "en_us":
+        return "English"
+
+
+def language_formated(selected):
+    if selected == "简体中文":
+        return "zh_hans"
+    elif selected == "繁體中文":
+        return "zh_hant"
+    elif selected == "English":
+        return "en_us"
+
+
+def create_setting_window(event):
     """
     在新窗口中创建设置界面，包含一个按钮用于选择自动拉取的文件夹路径。
     """
@@ -403,6 +426,50 @@ def create_setting_window():
     # 添加一个按钮用于打开文件夹选择对话框
     choose_button = tk.Button(setting_win, text=get_text("choose_folders"), command=on_choose_path)
     choose_button.pack(pady=10)
+
+    lang_frame = tk.Frame(setting_win)
+    lang_frame.pack(side=tk.LEFT, padx=(5, 0), fill=tk.Y)  # 使用fill=tk.Y允许frame填充垂直空间
+
+    inner_frame = tk.Frame(lang_frame)  # 新增内部框架用于垂直对齐
+    inner_frame.pack(fill=tk.Y, expand=True)  # 允许内部框架填充并扩展以保持统一高度
+
+    lang_label = tk.Label(inner_frame, text="Languages: ", anchor="w")
+    lang_label.pack(side=tk.LEFT, padx=(0, 5), pady=(0, 5))  # 设置上下pad以增加间距
+
+    # 选项
+    lang_choice = ["简体中文", "繁體中文", "English"]
+    lang_selected = tk.StringVar(value=language_unformated())  # 初始化
+
+    # 创建Combobox选择框，指定宽度
+    lang_combobox = ttk.Combobox(inner_frame, textvariable=lang_selected, values=lang_choice,
+                                 state="readonly", width=20)  # 设定Combobox宽度为20字符宽
+    lang_combobox.pack(side=tk.LEFT, pady=(0, 5), fill=tk.X)  # 增加上下pad以保持间距，fill=tk.X填充水平空间
+
+    def reload_with_confirm():
+        lang_new = language_formated(lang_selected.get())
+        initialize_languages(lang_new)
+        if lang_new != language:
+            answer = messagebox.askyesno(get_text("tip"), get_text("reload_tip"))
+            if answer:
+                try:
+                    with open(setting_path, 'r', encoding='utf-8') as file:
+                        setting_json = json.load(file)
+                        setting_json['language'] = lang_new
+                    with open(setting_path, 'w', encoding='utf-8') as file:
+                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                except:
+                    setting_json = {'language': lang_new}
+                    with open(setting_path, 'w', encoding='utf-8') as file:
+                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                os.execl(sys.executable, sys.executable, *sys.argv)
+
+    # 创建确认按钮框架，确保与Combobox对齐
+    button_frame = tk.Frame(inner_frame)
+    button_frame.pack(side=tk.LEFT, pady=(0, 5), fill=tk.Y)  # 填充垂直空间以保持高度一致
+
+    # 创建确定按钮并绑定到reload_with_confirm函数
+    confirm_button = tk.Button(button_frame, text=get_text("confirm"), command=reload_with_confirm)
+    confirm_button.pack(fill=tk.BOTH)  # 让按钮填充button_frame的空间
 
     setting_win.mainloop()
 
@@ -509,15 +576,6 @@ def start_download_in_new_window(download_link):
     start_download_and_close(new_window, progress_bar)
 
 
-def open_setting(event):
-    """
-    处理设置按钮点击事件，启动新线程打开设置窗口。
-    """
-    thread = threading.Thread(target=create_setting_window)
-    thread.daemon = True
-    thread.start()
-
-
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
@@ -543,7 +601,7 @@ def direct_download_client(download_link):
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
         else:
-            open_setting(1)
+            create_setting_window(1)
             pass
     if Confirm_tag == "Yes":
         thread = threading.Thread(target=start_download_in_new_window(download_link))
@@ -766,8 +824,23 @@ def pull_suya_announcement(version_strip_frame, version_label):
     api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
+
+    def try_to_get_suya_announcement(key):
+        try:
+            return data[key]
+        except:
+            return data["suya_announcement_message"]
+
+    if language == "zh_hans":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
+    elif language == "zh_hant":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message_zh_hant")
+    elif language == "en_us":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message_en_us")
+    else:
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         get_text("suya_announcement") + data["suya_announcement_message"])
+                         get_text("suya_announcement") + suya_announcement)
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
@@ -1026,7 +1099,7 @@ def create_gui():
     settings_icon_label.pack()
 
     # 绑定设置按钮点击事件
-    settings_icon_label.bind("<Button-1>", open_setting)
+    settings_icon_label.bind("<Button-1>", create_setting_window)
 
     # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
     update_buttons_frame = tk.Frame(bottom_frame)
@@ -1046,7 +1119,7 @@ def create_gui():
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                    state="readonly", width=12)  # 设定Combobox宽度为15字符宽
+                                    state="readonly", width=15)  # 设定Combobox宽度为15字符宽
     source_combobox2.pack()
 
     # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
@@ -1082,7 +1155,8 @@ def create_gui():
                                                command=lambda: update_downloader(window))
     check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
     # 音乐切换按钮及其容器之后，添加创建者信息的Label
-    creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7), fg="gray")
+    creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
+                             fg="gray")
     creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
     # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
@@ -1177,7 +1251,7 @@ def create_gui():
 
 
 if __name__ == "__main__":
-    initialize_languages()
+    initialize_languages(None)
     app = QApplication(sys.argv)
     splash = TransparentSplashScreen()
     splash.show()
