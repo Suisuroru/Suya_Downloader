@@ -50,5 +50,16 @@
   "update_question_dev1": "The current version is already the latest beta version! Want to use the official version? Official version number:",
   "update_question_dev2": "Current version:",
   "update_question_dev3": ". Want to use the official version?",
-  "update_question_release": "Already the latest version!"
+  "update_question_release": "Already the latest version!",
+  "update_question_check": "Version Check",
+  "update_question_unknown": "An error occurred while checking for updates:",
+  "suya_announcement": "Suya Downloader Announcement:",
+  "dev_downloader": "You are currently running a pre-release or beta version of the downloader. Current version: ",
+  "old_downloader": "You are currently running a potentially outdated version of the downloader. Please update it promptly. Current version: ",
+  "release_downloader": "You are currently running the latest official version of the downloader. Current version: ",
+  "check_error1": "Downloader update check failed",
+  "check_error2": "Client update check failed",
+  "check_error3": "Failed to retrieve Suya Downloader announcement",
+  "reload_tip": "Updating language settings requires restarting the downloader. Do you want to restart it immediately? If you decline, the changes will not be saved.",
+  "confirm": "Confirm"
 }
