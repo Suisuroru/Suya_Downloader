@@ -355,13 +355,13 @@ def choose_directory():
     return None  # 用户取消选择，返回None
 
 
-def language_formated:
-  if language == "zh_hans":
-    return "简体中文
-  elif language == "zh_hant":
-    return "繁體中文"
-  elif language == "en_us":
-    return "English"
+def language_formated():
+    if language == "zh_hans":
+        return "简体中文"
+    elif language == "zh_hant":
+        return "繁體中文"
+    elif language == "en_us":
+        return "English"
 
 
 def create_setting_window():
@@ -426,6 +426,7 @@ def create_setting_window():
     # 创建Combobox选择框，指定宽度
     lang_combobox = ttk.Combobox(lang_frame, textvariable=lang_selected, values=lang_choice,
                                     state="readonly", width=20)  # 设定Combobox宽度为20字符宽
+    lang_combobox.pack()
 
     setting_win.mainloop()
 
