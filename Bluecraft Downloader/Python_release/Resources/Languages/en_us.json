@@ -35,7 +35,7 @@
   "start_download_error": "Download start error",
   "start_download_error2": "An error occurred while trying to start the download: ",
   "update_available": "Update Available",
-  "update_available_msg1": "A new version has been found:",
+  "update_available_msg1": "A new version has been found: ",
   "update_available_msg2": ", do you want to download it immediately?",
   "update_unable": "Update Available",
   "update_unable_msg": "The version is the same as the last download. Redownload? Latest official version: ",
