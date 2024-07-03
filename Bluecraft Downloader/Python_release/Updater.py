@@ -92,6 +92,7 @@ def fetch_update_info():
             Update_Partner = "Full"
         try:
             Count = setting_json['Pull_Resouces_Count']
+            print("尝试拉取次数：" + str(Count))
         except:
             Count = 1
         if Count >= 3:
