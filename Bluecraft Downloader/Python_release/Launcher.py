@@ -824,8 +824,23 @@ def pull_suya_announcement(version_strip_frame, version_label):
     api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
+
+    def try_to_get_suya_announcement(key):
+        try:
+            return data[key]
+        except:
+            return data["suya_announcement"]
+
+    if language == "zh_hans":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement")
+    elif language == "zh_hant":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_zh_hant")
+    elif language == "en_us":
+        suya_announcement = try_to_get_suya_announcement("suya_announcement_en_us")
+    else:
+        suya_announcement = try_to_get_suya_announcement("suya_announcement")
     update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         get_text("suya_announcement") + data["suya_announcement_message"])
+                         get_text("suya_announcement") + suya_announcement)
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
