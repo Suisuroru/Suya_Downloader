@@ -1,9 +1,9 @@
 {
-    "version_downloader": "1.0.1.0",
-    "url_downloader": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=Ebc6w7u87HhBvPClPTIprdQBiwwfNTwwqi3mlQs3kNkBqQ",
+    "version_downloader": "1.0.1.1",
+    "url_downloader": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EcicWcqekPJOsgno5euiuZcB2kWgfv79JGsUZkVVFQfhRg",
     "version_updater": "1.0.1.0",
     "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EfDd_OhWJ7pGmrlHJlJE0zUBO1Wg_TBluPEvZFrQOmB5sw",
-    "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EYz3DLDjIhpFmHvKNr37IHoB4bu726XcgQ3tEsoNFVNZ-w",
+    "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EW-XTTN9dn5PoDPqGPcLsscBusDdkYJ4V2nyNmyW6mXkDw",
     "suya_announcement_message": "客户端直接拉取用于解压缩部分代码存在问题暂不可用",
     "suya_announcement_message_zh_hant": "用戶端直接拉取用於解壓縮部分代碼存在問題暫不可用",
     "suya_announcement_message_en_us": "The client pulls directly to uncompress some of the code, which is currently unavailable",
