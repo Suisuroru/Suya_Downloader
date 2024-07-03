@@ -1128,7 +1128,8 @@ def create_gui():
 
     # 然后定义download_source_way_frame并将其放置于右侧
     download_source_way_frame = tk.Frame(update_buttons_frame)
-    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
+    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))
+    # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
 
     # 添加“下载源：”标签
     download_source_label = tk.Label(download_source_frame, text=get_text("download_source"), anchor="w")
@@ -1183,8 +1184,8 @@ def create_gui():
     status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
     strip_downloader, label_downloader = create_version_strip(color_code, message, window)
 
-    # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑）
-    notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)  # 添加state=tk.DISABLED
+    # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑[state=tk.DISABLED]）
+    notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)
     notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
     # 版本检查并创建初始灰色色带(客户端)
@@ -1228,18 +1229,20 @@ def create_gui():
         update_thread.start()
     except:
         print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error1"))
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                             get_text("check_error1"))
     try:
         client_update_thread.start()
     except:
         print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000", get_text("check_error2"))
+        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                             get_text("check_error2"))
     try:
         pull_suya_announcement_thread.start()
     except:
         print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement, "失败", "A00000",
-                             "check_error3")
+        update_version_strip(strip_suya_announcement, label_suya_announcement,
+                             "失败", "A00000", "check_error3")
 
     window.mainloop()
 
