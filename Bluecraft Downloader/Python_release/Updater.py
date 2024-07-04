@@ -27,15 +27,15 @@ if not is_admin():
     sys.exit()
 
 
-def show_message(partner):
+def show_message(partner, partner_en):
     """
     定义一个显示消息框的函数
     """
     root = tkinter.Tk()
     root.withdraw()  # 隐藏主窗口
     messagebox.showinfo("提示 / Tip",
-                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}。\nThe update has been started, after the update is finished, Suya Downloader will start automatically, please wait for the automatic reboot, the type of this update is{}".format(
-                            partner,Update_partner))
+                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}。\nThe update has been started, after the update is finished, Suya Downloader will open automatically, please wait for the automatic reboot, the type of this update is {}".format(
+                            partner,partner_en))
 
 
 # 目标API地址
@@ -74,7 +74,6 @@ def del_Resources():
 
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
-    global Update_Partner
     try:
         try:
             with open(setting_path, 'r', encoding='utf-8') as file:
@@ -104,23 +103,25 @@ def fetch_update_info():
             update_url = data['url_downloader']
             version = data['version_downloader']
             partner = "完整更新模式"
-            message_thread = threading.Thread(target=show_message, args=(partner,))
+            partner_en = "FULL UPDATE MODE"
+            message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
             # 启动线程
             message_thread.start()
             return version, update_url, Update_Partner
         elif Update_Partner == "Resources":
             update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
-            message_thread = threading.Thread(target=show_message, args=(partner,))
+            partner_en = "RESOURCES PULL MODE"
+            message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
             # 启动线程
             message_thread.start()
             return None, update_url, Update_Partner
         else:
             print("传入参数错误")
-            return None, None
+            return None, None, None
     except requests.RequestException as e:
         print(f"请求错误: {e}")
-        return None, None
+        return None, None, None
 
 
 def download_and_install(update_url, Update_partner):
@@ -157,7 +158,6 @@ def download_and_install(update_url, Update_partner):
         count_json['Pull_Resources_Count'] = 0
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(count_json, file, ensure_ascii=False, indent=4)
-
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
