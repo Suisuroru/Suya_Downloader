@@ -91,7 +91,7 @@ def fetch_update_info():
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
             Update_Partner = "Full"
         try:
-            Count = setting_json['Pull_Resouces_Count']
+            Count = setting_json['Pull_Resources_Count']
             print("尝试拉取次数：" + str(Count))
         except:
             Count = 1
@@ -151,6 +151,11 @@ def download_and_install(update_url, Update_partner):
             else:
                 with open(member_path, 'wb') as f:
                     f.write(zip_file.read(member))
+        with open(setting_path, 'r', encoding='utf-8') as file:
+            count_json = json.load(file)
+        count_json['Pull_Resources_Count'] = 0
+        with open(setting_path, 'w', encoding='utf-8') as file:
+            json.dump(count_json, file, ensure_ascii=False, indent=4)
 
         print("更新安装完成")
 

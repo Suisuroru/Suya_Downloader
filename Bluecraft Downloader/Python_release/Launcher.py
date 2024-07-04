@@ -90,9 +90,9 @@ def Pull_Resources(window):
     except:
         setting_json = {'Updater_Partner': "Resources"}
     try:
-        setting_json['Pull_Resouces_Count'] += 1
+        setting_json['Pull_Resources_Count'] += 1
     except:
-        setting_json['Pull_Resouces_Count'] = 1
+        setting_json['Pull_Resources_Count'] = 1
     with open(setting_path, 'w', encoding='utf-8') as file:
                         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
