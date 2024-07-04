@@ -1,4 +1,4 @@
-Updater_Version = "1.0.1.3"
+Updater_Version = "1.0.1.4"
 
 import ctypes
 import json
@@ -33,9 +33,9 @@ def show_message(partner):
     """
     root = tkinter.Tk()
     root.withdraw()  # 隐藏主窗口
-    messagebox.showinfo("提示",
-                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}".format(
-                            partner))
+    messagebox.showinfo("提示 / Tip",
+                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}。\nThe update has been started, after the update is finished, Suya Downloader will start automatically, please wait for the automatic reboot, the type of this update is{}".format(
+                            partner,Update_partner))
 
 
 # 目标API地址
@@ -74,6 +74,7 @@ def del_Resources():
 
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
+    global Update_Partner
     try:
         try:
             with open(setting_path, 'r', encoding='utf-8') as file:
