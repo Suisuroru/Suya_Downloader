@@ -1,7 +1,15 @@
-name: BUG SUBMITTAL
+name: BUG Report
 description: If you think a part of the downloader is not working properly, please submit it here in English.
 labels: ["BUG"  ]
 body:
+- type: checkboxes
+  id: "yml-object"
+  attributes.
+    label: "Downloader Information"
+    description: "Please select the downloader you want to report bugs to"
+    options.
+    - label: "e Language version Downloader"
+    - label: "Suya Downloader"
 - type: checkboxes
   id: "yml-1"
   attributes:
@@ -9,6 +17,7 @@ body:
     description: "Please check the following items one by one and check the box to confirm."
     options:
     - label: "I confirm that this issue still exists in the latest version of the downloader"
+      required: true
     - label: "I confirm that there are no other problems in Issues"
       required: true
 - type: textarea

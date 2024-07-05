@@ -1,7 +1,15 @@
-name: BUG提交
+name: BUG反馈
 description: 如果你觉得下载器的某一部分工作异常，请使用中文在这里提交。
 labels: ["BUG"  ]
 body:
+- type: checkboxes
+  id: "yml-object"
+  attributes:
+    label: "下载器信息"
+    description: "请选择你想要反馈BUG的下载器"
+    options:
+    - label: "易语言版本下载器"
+    - label: "Suya下载器"
 - type: checkboxes
   id: "yml-1"
   attributes:
@@ -9,6 +17,7 @@ body:
     description: "请逐个检查下列项目，并勾选确认。"
     options:
     - label: "我确认此问题在最新版本的下载器中仍然存在"
+      required: true
     - label: "我确认在Issues中并无其他相同问题"
       required: true
 - type: textarea
