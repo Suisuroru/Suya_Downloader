@@ -1,4 +1,4 @@
-current_version = "1.0.1.3"
+current_version = "1.0.1.4"
 
 import ctypes
 import errno
@@ -352,16 +352,6 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def choose_directory():
-    """
-    弹出文件夹选择对话框并返回用户选择的目录路径。
-    """
-    directory = filedialog.askdirectory()  # 打开文件夹选择对话框
-    if directory:  # 如果用户选择了文件夹
-        return directory
-    return None  # 用户取消选择，返回None
-
-
 def language_unformated():
     if language == "zh_hans":
         return "简体中文"
@@ -388,28 +378,49 @@ def create_setting_window(event):
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
         rel_path = initialize_settings()
-        path = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
-        if path:
+        path_default = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
+        def convert_to_english_path(path):
+            """
+            将路径中的中文别名转换为英文别名。
+            注意：此示例仅针对Windows系统，并且是简化的处理逻辑。
+            """
+            # 定义一个映射表，用于替换中文路径别名为英文
+            alias_mapping = {
+                "桌面": "Desktop",
+                "下载": "Downloads",
+                "文档": "Documents"
+            }
+
+            # 分割路径为各部分
+            parts = os.path.normpath(path).split(os.sep)
+
+            # 遍历路径各部分，替换中文别名为英文
+            converted_parts = [alias_mapping.get(part, part) for part in parts]
+
+            # 重新组合路径
+            return os.path.join(*converted_parts)
+        path_user = convert_to_english_path(path_default)
+        if path_user:
             entry.delete(0, tk.END)  # 清除当前文本框内容
-            entry.insert(0, path)  # 插入用户选择的路径
+            entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+                path_user = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
-                entry.insert(0, path)  # 插入默认路径
+                entry.insert(0, path_user)  # 插入默认路径
             else:
-                path = entry.get()
+                path_user = entry.get()
         try:
             with open(setting_path, 'r', encoding='utf-8') as file:
                 setting_json = json.load(file)
-            setting_json['Client_dir'] = path
+            setting_json['Client_dir'] = path_user
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
         except:
-            setting_json = {'Client_dir': path}
+            setting_json = {'Client_dir': path_user}
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        ensure_directory_exists(path)
+        ensure_directory_exists(path_user)
 
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
@@ -545,28 +556,40 @@ def start_download_in_new_window(download_link):
             start_download_client(download_link)
             progress_text.set(get_text("download_finished"))
             speed_text.set(get_text("unzip_tip"))
-            # 下载完成后处理ZIP文件（注意路径已更改）
-            pull_dir = initialize_settings()
-            zip_file = zipfile.ZipFile(zip_content)  # 这里直接使用zip_content
-            for member in zip_file.namelist():
-                # 避免路径遍历攻击
-                member_path = os.path.abspath(os.path.join(pull_dir, member))
-                if not member_path.startswith(pull_dir):
-                    raise Exception("Zip file contains invalid path.")
-                if member.endswith('/'):
-                    os.makedirs(member_path, exist_ok=True)
-                else:
-                    with open(member_path, 'wb') as f:
-                        f.write(zip_file.read(member))
-            progress_text.set(get_text("unzip_finished"))
-            speed_text.set(get_text("close_tip"))
-            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-            new_window.destroy()  # 关闭新窗口
+            try:
+                # 下载完成后处理ZIP文件
+                pull_dir = initialize_settings()
+                zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
 
-        except Exception as e:
-            print(f"下载或解压错误: {e}")
-            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
-            new_window.destroy()  # 发生错误也关闭窗口
+                for member in zip_file.namelist():
+                    # 安全检查
+                    member_path = os.path.abspath(os.path.join(pull_dir, member))
+                    if not member_path.startswith(pull_dir):
+                        raise Exception("Zip file contains invalid path.")
+
+                    # 处理目录和文件
+                    if member.endswith('/'):
+                        os.makedirs(member_path, exist_ok=True)
+                    else:
+                        with open(member_path, 'wb') as f:
+                            f.write(zip_file.read(member))
+
+                # 成功提示
+                progress_text.set(get_text("unzip_finished"))
+                speed_text.set(get_text("close_tip"))
+                messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                new_window.destroy()
+
+            except zipfile.BadZipFile as bz_err:
+                print(f"Bad ZIP file error: {bz_err}")
+                messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
+
+            except Exception as e:
+                print(f"下载或解压错误: {e}")
+                messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
+
+        finally:
+            new_window.destroy()
 
     # 创建一个新的顶级窗口作为下载进度窗口
     new_window = tk.Toplevel()
