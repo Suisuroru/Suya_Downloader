@@ -1,4 +1,4 @@
-name: BUG_SUBMITTAL
+name: BUG SUBMITTAL
 description: If you think a part of the downloader is not working properly, please submit it here in English.
 labels: ["BUG"  ]
 body:
@@ -7,7 +7,6 @@ body:
   attributes:
     label: "Checkboxes"
     description: "Please check the following items one by one and check the box to confirm."
-    description: "Please check each of the following items and confirm them."
     options:
     - label: "I confirm that this issue still exists in the latest version of the downloader"
     - label: "I confirm that there are no other problems in Issues"
