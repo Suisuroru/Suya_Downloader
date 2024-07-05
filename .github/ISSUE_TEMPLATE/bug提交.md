@@ -1,6 +1,6 @@
 name: BUG提交
 description: 如果你觉得下载器的某一部分工作异常，请使用中文在这里提交
-labels: ["BUG"]
+labels: ["BUG"  ]
 body:
 - type: checkboxes
   id: "yml-1"
