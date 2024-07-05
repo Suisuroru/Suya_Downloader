@@ -4,10 +4,10 @@ labels: ["BUG"  ]
 body:
 - type: checkboxes
   id: "yml-object"
-  attributes.
+  attributes:
     label: "Downloader Information"
     description: "Please select the downloader you want to report bugs to"
-    options.
+    options:
     - label: "e Language version Downloader"
     - label: "Suya Downloader"
 - type: checkboxes
