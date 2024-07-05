@@ -1,7 +1,7 @@
 name: BUG_SUBMITTAL
-description: If you think a part of the downloader is not working properly, please submit it here in Chinese.
-labels: ["bug"]
-body: ["BUG"  ].
+description: If you think a part of the downloader is not working properly, please submit it here in English.
+labels: ["BUG"  ]
+body:
 - type: checkboxes
   id: "yml-1"
   attributes.
