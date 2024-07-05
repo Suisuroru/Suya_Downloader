@@ -17,27 +17,26 @@ body:
   attributes:
     label: Provide a description of the question
     placeholder: "-(Please answer here)-"
-  validations: required: true
+  validations:
     required: true
 - type: textarea
   id: "yml-3"
   attributes:
     label: Desired Result
     placeholder: "-(Please answer here)-"
-  validations: required: true
+  validations:
     required: true
 - type: textarea
   id: "yml-4"
   attributes:
     label: How to reproduce (if known)
     placeholder: "-(Please answer here)-"
-  validations:
 - type: textarea
   id: "yml-5"
-  attributes: label: system environment
+  attributes:
     label: System Environment 
     placeholder: "e.g. Windows 7 64-bit SP1, Windows 10 Professional 64-bit 1909, Windows 10 Home 32-bit 2002"
-  validations: required: true
+  validations:
     required: true
 - type: textarea
   id: "yml-6"
