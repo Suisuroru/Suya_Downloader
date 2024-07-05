@@ -2,7 +2,7 @@ name: BUG Report
 description: If you think a part of the downloader is not working properly, please submit it here in English.
 labels: ["BUG"  ]
 body:
-- type: checkboxes
+- type: dropdown
   id: "yml-object"
   attributes:
     label: "Downloader Information"
