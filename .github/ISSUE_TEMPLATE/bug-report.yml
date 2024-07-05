@@ -4,34 +4,34 @@ labels: ["BUG"  ]
 body:
 - type: checkboxes
   id: "yml-1"
-  attributes.
+  attributes:
     label: "Checkboxes"
     description: "Please check the following items one by one and check the box to confirm."
-    description: "Please check each of the following items and confirm them." options.
+    description: "Please check each of the following items and confirm them."
+    options:
     - label: "I confirm that this issue still exists in the latest version of the downloader"
     - label: "I confirm that there are no other problems in Issues"
       required: true
 - type: textarea
   id: "yml-2"
-  attributes.
+  attributes:
     label: Provide a description of the question
     placeholder: "-(Please answer here)-"
   validations: required: true
     required: true
 - type: textarea
   id: "yml-3"
-  attributes.
+  attributes:
     label: Desired Result
     placeholder: "-(Please answer here)-"
   validations: required: true
     required: true
 - type: textarea
   id: "yml-4"
-  attributes.
+  attributes:
     label: How to reproduce (if known)
     placeholder: "-(Please answer here)-"
-  validations.
-    required: true
+  validations:
 - type: textarea
   id: "yml-5"
   attributes: label: system environment
@@ -41,13 +41,13 @@ body:
     required: true
 - type: textarea
   id: "yml-6"
-  attributes.
+  attributes:
     label: Downloader Version
     placeholder: "-(Please answer here)-"
-  validations.
+  validations:
     required: true
 - type: textarea
   id: "yml-7"
-  attributes.
+  attributes:
     label: Other additions
     placeholder: "-(Please answer here)-"
