@@ -1,4 +1,4 @@
-name: BUG SUBMITTAL
+name: BUG_SUBMITTAL
 description: If you think a part of the downloader is not working properly, please submit it here in Chinese.
 labels: ["bug"]
 body: ["BUG"  ].
