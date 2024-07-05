@@ -522,79 +522,78 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
 
 def start_download_in_new_window(download_link):
     def start_download_and_close(new_window, progress_bar):
+        # 添加进度文字标签
+        progress_text = tk.StringVar()
+        progress_label = ttk.Label(new_window, textvariable=progress_text)
+        progress_label.pack(anchor='center', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
+        # 添加百分比标签
+        percentage_text = tk.StringVar()
+        percentage_label = ttk.Label(new_window, textvariable=percentage_text)
+        percentage_label.pack(anchor='center', pady=(0, 10))  # 下方添加百分比，这里原本就是正确的
+        # 添加速度相关变量和标签
+        speed_text = tk.StringVar()
+        speed_label = ttk.Label(new_window, textvariable=speed_text)
+        speed_label.pack(anchor='center', pady=(0, 10))  # 在百分比标签下方添加速度标签
+
+        def update_labels(downloaded, total, start_time=None):
+            """更新进度文字、百分比和速度"""
+            current_time = time.time()
+            if start_time is None:
+                start_time = current_time
+            elapsed_time = current_time - start_time
+
+            percent = round((downloaded / total) * 100, 2) if total else 0
+            speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
+
+            progress_text.set(get_text("downloading_process") + f"{percent}%")
+            speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
+
+        download_start_time = time.time()  # 记录下载开始时间
+
+        def start_download_client(download_link):
+            thread = threading.Thread(target=download_file_with_progress(download_link,
+                                                                         progress_callback=lambda d, t: [
+                                                                             update_progress_bar(progress_bar, d,
+                                                                                                 t),
+                                                                             update_labels(d, t,
+                                                                                           download_start_time)]))
+            thread.daemon = True
+            thread.start()
+
+        start_download_client(download_link)
+        progress_text.set(get_text("download_finished"))
+        speed_text.set(get_text("unzip_tip"))
         try:
-            # 添加进度文字标签
-            progress_text = tk.StringVar()
-            progress_label = ttk.Label(new_window, textvariable=progress_text)
-            progress_label.pack(anchor='center', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
-            # 添加百分比标签
-            percentage_text = tk.StringVar()
-            percentage_label = ttk.Label(new_window, textvariable=percentage_text)
-            percentage_label.pack(anchor='center', pady=(0, 10))  # 下方添加百分比，这里原本就是正确的
-            # 添加速度相关变量和标签
-            speed_text = tk.StringVar()
-            speed_label = ttk.Label(new_window, textvariable=speed_text)
-            speed_label.pack(anchor='center', pady=(0, 10))  # 在百分比标签下方添加速度标签
+            # 下载完成后处理ZIP文件
+            pull_dir = initialize_settings()
+            zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
 
-            def update_labels(downloaded, total, start_time=None):
-                """更新进度文字、百分比和速度"""
-                current_time = time.time()
-                if start_time is None:
-                    start_time = current_time
-                elapsed_time = current_time - start_time
+            for member in zip_file.namelist():
+                # 安全检查
+                member_path = os.path.abspath(os.path.join(pull_dir, member))
+                if not member_path.startswith(pull_dir):
+                    raise Exception("Zip file contains invalid path.")
 
-                percent = round((downloaded / total) * 100, 2) if total else 0
-                speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
+                # 处理目录和文件
+                if member.endswith('/'):
+                    os.makedirs(member_path, exist_ok=True)
+                else:
+                    with open(member_path, 'wb') as f:
+                        f.write(zip_file.read(member))
 
-                progress_text.set(get_text("downloading_process") + f"{percent}%")
-                speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
+            # 成功提示
+            progress_text.set(get_text("unzip_finished"))
+            speed_text.set(get_text("close_tip"))
+            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+            new_window.destroy()
 
-            download_start_time = time.time()  # 记录下载开始时间
+        except zipfile.BadZipFile as bz_err:
+            print(f"Bad ZIP file error: {bz_err}")
+            messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
 
-            def start_download_client(download_link):
-                thread = threading.Thread(target=download_file_with_progress(download_link,
-                                                                             progress_callback=lambda d, t: [
-                                                                                 update_progress_bar(progress_bar, d,
-                                                                                                     t),
-                                                                                 update_labels(d, t,
-                                                                                               download_start_time)]))
-                thread.daemon = True
-                thread.start()
-
-            start_download_client(download_link)
-            progress_text.set(get_text("download_finished"))
-            speed_text.set(get_text("unzip_tip"))
-            try:
-                # 下载完成后处理ZIP文件
-                pull_dir = initialize_settings()
-                zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
-
-                for member in zip_file.namelist():
-                    # 安全检查
-                    member_path = os.path.abspath(os.path.join(pull_dir, member))
-                    if not member_path.startswith(pull_dir):
-                        raise Exception("Zip file contains invalid path.")
-
-                    # 处理目录和文件
-                    if member.endswith('/'):
-                        os.makedirs(member_path, exist_ok=True)
-                    else:
-                        with open(member_path, 'wb') as f:
-                            f.write(zip_file.read(member))
-
-                # 成功提示
-                progress_text.set(get_text("unzip_finished"))
-                speed_text.set(get_text("close_tip"))
-                messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-                new_window.destroy()
-
-            except zipfile.BadZipFile as bz_err:
-                print(f"Bad ZIP file error: {bz_err}")
-                messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
-
-            except Exception as e:
-                print(f"下载或解压错误: {e}")
-                messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
+        except Exception as e:
+            print(f"下载或解压错误: {e}")
+            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
 
         finally:
             new_window.destroy()
