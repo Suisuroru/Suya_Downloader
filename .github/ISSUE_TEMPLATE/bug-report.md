@@ -1,38 +1,53 @@
----
-name: Bug report
-about: Create a report to help us improve
-title: ''
-labels: ''
-assignees: ''
-
----
-
-**Describe the bug**
-A clear and concise description of what the bug is.
-
-**To Reproduce**
-Steps to reproduce the behavior:
-1. Go to '...'
-2. Click on '....'
-3. Scroll down to '....'
-4. See error
-
-**Expected behavior**
-A clear and concise description of what you expected to happen.
-
-**Screenshots**
-If applicable, add screenshots to help explain your problem.
-
-**Desktop (please complete the following information):**
- - OS: [e.g. iOS]
- - Browser [e.g. chrome, safari]
- - Version [e.g. 22]
-
-**Smartphone (please complete the following information):**
- - Device: [e.g. iPhone6]
- - OS: [e.g. iOS8.1]
- - Browser [e.g. stock browser, safari]
- - Version [e.g. 22]
-
-**Additional context**
-Add any other context about the problem here.
+name: BUG SUBMITTAL
+description: If you think a part of the downloader is not working properly, please submit it here in Chinese.
+labels: ["bug"]
+body: ["BUG"].
+- type: checkboxes
+  id: "yml-1"
+  attributes.
+    label: "Checkboxes"
+    description: "Please check the following items one by one and check the box to confirm."
+    description: "Please check each of the following items and confirm them." options.
+    - label: "I confirm that this issue still exists in the latest version of the downloader"
+    - label: "I confirm that there are no other problems in Issues"
+      required: true
+- type: textarea
+  id: "yml-2"
+  attributes.
+    label: Provide a description of the question
+    placeholder: "-(Please answer here)-"
+  validations: required: true
+    required: true
+- type: textarea
+  id: "yml-3"
+  attributes.
+    label: Desired Result
+    placeholder: "-(Please answer here)-"
+  validations: required: true
+    required: true
+- type: textarea
+  id: "yml-4"
+  attributes.
+    label: How to reproduce (if known)
+    placeholder: "-(Please answer here)-"
+  validations.
+    required: true
+- type: textarea
+  id: "yml-5"
+  attributes: label: system environment
+    label: System Environment 
+    placeholder: "e.g. Windows 7 64-bit SP1, Windows 10 Professional 64-bit 1909, Windows 10 Home 32-bit 2002"
+  validations: required: true
+    required: true
+- type: textarea
+  id: "yml-6"
+  attributes.
+    label: Downloader Version
+    placeholder: "-(Please answer here)-"
+  validations.
+    required: true
+- type: textarea
+  id: "yml-7"
+  attributes.
+    label: Other additions
+    placeholder: "-(Please answer here)-"
