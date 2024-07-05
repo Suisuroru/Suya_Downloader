@@ -545,28 +545,44 @@ def start_download_in_new_window(download_link):
             start_download_client(download_link)
             progress_text.set(get_text("download_finished"))
             speed_text.set(get_text("unzip_tip"))
-            # 下载完成后处理ZIP文件（注意路径已更改）
-            pull_dir = initialize_settings()
-            zip_file = zipfile.ZipFile(zip_content)  # 这里直接使用zip_content
-            for member in zip_file.namelist():
-                # 避免路径遍历攻击
-                member_path = os.path.abspath(os.path.join(pull_dir, member))
-                if not member_path.startswith(pull_dir):
-                    raise Exception("Zip file contains invalid path.")
-                if member.endswith('/'):
-                    os.makedirs(member_path, exist_ok=True)
-                else:
-                    with open(member_path, 'wb') as f:
-                        f.write(zip_file.read(member))
-            progress_text.set(get_text("unzip_finished"))
-            speed_text.set(get_text("close_tip"))
-            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-            new_window.destroy()  # 关闭新窗口
+            try:
+                # 确保zip_content有效且是字节类型
+                if not isinstance(zip_content, bytes):
+                    raise ValueError("zip_content must be of type bytes.")
 
-        except Exception as e:
-            print(f"下载或解压错误: {e}")
-            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
-            new_window.destroy()  # 发生错误也关闭窗口
+                # 下载完成后处理ZIP文件
+                pull_dir = initialize_settings()
+                zip_file = zipfile.ZipFile(BytesIO(zip_content))  # 使用BytesIO处理字节数据
+
+                for member in zip_file.namelist():
+                    # 安全检查
+                    member_path = os.path.abspath(os.path.join(pull_dir, member))
+                    if not member_path.startswith(pull_dir):
+                        raise Exception("Zip file contains invalid path.")
+
+                    # 处理目录和文件
+                    if member.endswith('/'):
+                        os.makedirs(member_path, exist_ok=True)
+                    else:
+                        with open(member_path, 'wb') as f:
+                            f.write(zip_file.read(member))
+
+                # 成功提示
+                progress_text.set(get_text("unzip_finished"))
+                speed_text.set(get_text("close_tip"))
+                messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                new_window.destroy()
+
+            except zipfile.BadZipFile as bz_err:
+                print(f"Bad ZIP file error: {bz_err}")
+                messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
+
+            except Exception as e:
+                print(f"下载或解压错误: {e}")
+                messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
+
+        finally:
+            new_window.destroy()
 
     # 创建一个新的顶级窗口作为下载进度窗口
     new_window = tk.Toplevel()
