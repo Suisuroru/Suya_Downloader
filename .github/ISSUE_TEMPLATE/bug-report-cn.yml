@@ -8,8 +8,8 @@ body:
     label: "下载器信息"
     description: "请选择你想要反馈BUG的下载器"
     options:
-    - label: "易语言版本下载器"
-    - label: "Suya下载器"
+    - 易语言版本下载器
+    - Suya下载器
 - type: checkboxes
   id: "yml-1"
   attributes:

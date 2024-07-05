@@ -8,8 +8,8 @@ body:
     label: "Downloader Information"
     description: "Please select the downloader you want to report bugs to"
     options:
-    - label: "e Language version Downloader"
-    - label: "Suya Downloader"
+    - e Language version Downloader
+    - Suya Downloader
 - type: checkboxes
   id: "yml-1"
   attributes:
