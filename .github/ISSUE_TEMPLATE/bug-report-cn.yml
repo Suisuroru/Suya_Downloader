@@ -2,14 +2,15 @@ name: BUG反馈
 description: 如果你觉得下载器的某一部分工作异常，请使用中文在这里提交。
 labels: ["BUG"  ]
 body:
-- type: checkboxes
-  id: "yml-object"
+- type: dropdown
+  id: "yml-0"
   attributes:
     label: "下载器信息"
     description: "请选择你想要反馈BUG的下载器"
     options:
-    - label: "易语言版本下载器"
-    - label: "Suya下载器"
+      - Suya下载器
+      - 易语言版本下载器
+    default: 0
 - type: checkboxes
   id: "yml-1"
   attributes:
@@ -20,6 +21,7 @@ body:
       required: true
     - label: "我确认在Issues中并无其他相同问题"
       required: true
+    - label: "如果你尝试过最新的dev版本的代码，该问题在最新dev版本中仍然存在"
 - type: textarea
   id: "yml-2"
   attributes:

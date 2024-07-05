@@ -2,14 +2,14 @@ name: BUG Report
 description: If you think a part of the downloader is not working properly, please submit it here in English.
 labels: ["BUG"  ]
 body:
-- type: checkboxes
-  id: "yml-object"
+- type: dropdown
+  id: "yml-0"
   attributes:
     label: "Downloader Information"
     description: "Please select the downloader you want to report bugs to"
     options:
-    - label: "e Language version Downloader"
-    - label: "Suya Downloader"
+      - Suya Downloader
+      - e Language version Downloader
 - type: checkboxes
   id: "yml-1"
   attributes:
@@ -20,6 +20,7 @@ body:
       required: true
     - label: "I confirm that there are no other problems in Issues"
       required: true
+    - label: "If you've tried the latest dev version of the code, the problem still exists in the latest dev version"
 - type: textarea
   id: "yml-2"
   attributes:
