@@ -557,15 +557,9 @@ def start_download_in_new_window(download_link):
             progress_text.set(get_text("download_finished"))
             speed_text.set(get_text("unzip_tip"))
             try:
-                try:
-                    # 正确地从BytesIO对象中读取字节内容
-                    zip_bytes = zip_content.getvalue()
-                    # 现在这里的zip_bytes是bytes类型，可以进行相应的字节操作
-                except Exception as e:
-                    raise ValueError(f"Failed to extract bytes from zip_content: {e}")
                 # 下载完成后处理ZIP文件
                 pull_dir = initialize_settings()
-                zip_file = zipfile.ZipFile(zip_content)  # 使用BytesIO处理字节数据
+                zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
 
                 for member in zip_file.namelist():
                     # 安全检查
