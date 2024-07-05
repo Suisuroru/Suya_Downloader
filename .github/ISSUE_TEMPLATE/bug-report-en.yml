@@ -3,13 +3,13 @@ description: If you think a part of the downloader is not working properly, plea
 labels: ["BUG"  ]
 body:
 - type: dropdown
-  id: "yml-object"
+  id: "yml-0"
   attributes:
     label: "Downloader Information"
     description: "Please select the downloader you want to report bugs to"
     options:
-    - e Language version Downloader
-    - Suya Downloader
+      - Suya Downloader
+      - e Language version Downloader
 - type: checkboxes
   id: "yml-1"
   attributes:

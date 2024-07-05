@@ -3,13 +3,14 @@ description: 如果你觉得下载器的某一部分工作异常，请使用中�
 labels: ["BUG"  ]
 body:
 - type: dropdown
-  id: "yml-object"
+  id: "yml-0"
   attributes:
     label: "下载器信息"
     description: "请选择你想要反馈BUG的下载器"
     options:
-    - 易语言版本下载器
-    - Suya下载器
+      - Suya下载器
+      - 易语言版本下载器
+    default: 0
 - type: checkboxes
   id: "yml-1"
   attributes:
