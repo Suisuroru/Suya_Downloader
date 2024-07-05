@@ -352,16 +352,6 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def choose_directory():
-    """
-    弹出文件夹选择对话框并返回用户选择的目录路径。
-    """
-    directory = filedialog.askdirectory()  # 打开文件夹选择对话框
-    if directory:  # 如果用户选择了文件夹
-        return directory
-    return None  # 用户取消选择，返回None
-
-
 def language_unformated():
     if language == "zh_hans":
         return "简体中文"
@@ -388,28 +378,49 @@ def create_setting_window(event):
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
         rel_path = initialize_settings()
-        path = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
-        if path:
+        path_default = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
+        def convert_to_english_path(path):
+            """
+            将路径中的中文别名转换为英文别名。
+            注意：此示例仅针对Windows系统，并且是简化的处理逻辑。
+            """
+            # 定义一个映射表，用于替换中文路径别名为英文
+            alias_mapping = {
+                "桌面": "Desktop",
+                "下载": "Downloads",
+                "文档": "Documents"
+            }
+
+            # 分割路径为各部分
+            parts = os.path.normpath(path).split(os.sep)
+
+            # 遍历路径各部分，替换中文别名为英文
+            converted_parts = [alias_mapping.get(part, part) for part in parts]
+
+            # 重新组合路径
+            return os.path.join(*converted_parts)
+        path_user = convert_to_english_path(path_default)
+        if path_user:
             entry.delete(0, tk.END)  # 清除当前文本框内容
-            entry.insert(0, path)  # 插入用户选择的路径
+            entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+                path_user = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
-                entry.insert(0, path)  # 插入默认路径
+                entry.insert(0, path_user)  # 插入默认路径
             else:
-                path = entry.get()
+                path_user = entry.get()
         try:
             with open(setting_path, 'r', encoding='utf-8') as file:
                 setting_json = json.load(file)
-            setting_json['Client_dir'] = path
+            setting_json['Client_dir'] = path_user
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
         except:
-            setting_json = {'Client_dir': path}
+            setting_json = {'Client_dir': path_user}
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        ensure_directory_exists(path)
+        ensure_directory_exists(path_user)
 
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
