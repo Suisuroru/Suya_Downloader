@@ -1,5 +1,3 @@
-current_version = "1.0.1.4"
-
 import ctypes
 import errno
 import json
@@ -21,6 +19,8 @@ from PIL import Image, ImageTk
 from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+
+current_version = "1.0.1.4"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -521,7 +521,7 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
 
 
 def start_download_in_new_window(download_link):
-    def start_download_and_close(new_window, progress_bar):
+    def start_download_and_close(new_window):
         # 添加进度文字标签
         progress_text = tk.StringVar()
         progress_label = ttk.Label(new_window, textvariable=progress_text)
@@ -549,63 +549,68 @@ def start_download_in_new_window(download_link):
             speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
 
         download_start_time = time.time()  # 记录下载开始时间
+        download_complete_event = threading.Event()
 
-        def start_download_client(download_link):
-            thread = threading.Thread(target=download_file_with_progress(download_link,
-                                                                         progress_callback=lambda d, t: [
-                                                                             update_progress_bar(progress_bar, d,
-                                                                                                 t),
-                                                                             update_labels(d, t,
-                                                                                           download_start_time)]))
+        def start_download_client(download_link_client):
+            def download_and_signal():
+                download_file_with_progress(download_link_client,
+                                            progress_callback=lambda d, t: [
+                                                update_progress_bar(progress_bar, d, t),
+                                                update_labels(d, t, download_start_time)]
+                                            )
+                download_complete_event.set()  # 下载完成后设置事件
+
+            thread = threading.Thread(target=download_and_signal)
             thread.daemon = True
             thread.start()
 
         start_download_client(download_link)
-        progress_text.set(get_text("download_finished"))
-        speed_text.set(get_text("unzip_tip"))
-        try:
-            # 下载完成后处理ZIP文件
-            pull_dir = initialize_settings()
-            zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
 
-            for member in zip_file.namelist():
-                # 安全检查
-                member_path = os.path.abspath(os.path.join(pull_dir, member))
-                if not member_path.startswith(pull_dir):
-                    raise Exception("Zip file contains invalid path.")
+        # 使用after方法定期检查下载是否完成
+        def check_download_completion():
+            if download_complete_event.is_set():  # 如果下载完成
+                progress_text.set(get_text("download_finished"))
+                speed_text.set(get_text("unzip_tip"))
+                pull_dir = initialize_settings()
+                try:
+                    with zipfile.ZipFile(zip_content) as zip_file:  # 使用with语句确保ZipFile对象被正确关闭
+                        for member in zip_file.namelist():
+                            member_path = os.path.abspath(os.path.join(pull_dir, member))
+                            if not member_path.startswith(pull_dir):
+                                raise ValueError("Zip file contains invalid path.")  # 更精确的异常类型
+                            if member.endswith('/'):
+                                os.makedirs(member_path, exist_ok=True)
+                            else:
+                                content = zip_file.read(member)
+                                with open(member_path, 'wb') as f:
+                                    f.write(content)
+                    progress_text.set(get_text("unzip_finished"))
+                    speed_text.set(get_text("close_tip"))
+                    messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                    new_window.destroy()
+                except zipfile.BadZipFile as e:
+                    progress_text.set(get_text("error_unzip"))
+                    speed_text.set(str(e))  # 显示具体错误信息
+                    messagebox.showerror(get_text("error"), str(e))
+                except Exception as e:
+                    # 捕获其他所有异常，并给出提示
+                    progress_text.set(get_text("unknown_error"))
+                    speed_text.set(str(e))
+                    messagebox.showerror(get_text("error"), str(e))
+            else:  # 如果下载未完成，则稍后再次检查
+                download_window.after(100, check_download_completion)  # 每100毫秒检查一次
 
-                # 处理目录和文件
-                if member.endswith('/'):
-                    os.makedirs(member_path, exist_ok=True)
-                else:
-                    with open(member_path, 'wb') as f:
-                        f.write(zip_file.read(member))
-
-            # 成功提示
-            progress_text.set(get_text("unzip_finished"))
-            speed_text.set(get_text("close_tip"))
-            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-            new_window.destroy()
-
-        except zipfile.BadZipFile as bz_err:
-            print(f"Bad ZIP file error: {bz_err}")
-            messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
-
-        except Exception as e:
-            print(f"下载或解压错误: {e}")
-            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
-
-        finally:
-            new_window.destroy()
+        # 初始化检查
+        download_window.after(0, check_download_completion)
 
     # 创建一个新的顶级窗口作为下载进度窗口
-    new_window = tk.Toplevel()
-    new_window.title(get_text("download_window"))
+    download_window = tk.Toplevel()
+    download_window.title(get_text("download_window"))
 
     # 创建并配置进度条
-    progress_bar = ttk.Progressbar(new_window, orient="horizontal", length=200, mode="determinate")
+    progress_bar = ttk.Progressbar(download_window, orient="horizontal", length=200, mode="determinate")
     progress_bar.pack(pady=20)
-    start_download_and_close(new_window, progress_bar)
+    start_download_and_close(download_window)
 
 
 def direct_download_client(download_link):
