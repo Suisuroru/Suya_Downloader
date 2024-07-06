@@ -3,6 +3,7 @@ import errno
 import json
 import os
 import sys
+import tempfile
 import threading
 import time
 import tkinter as tk
@@ -475,22 +476,20 @@ def update_progress_bar(progress_bar, value, max_value):
     progress_bar.update()
 
 
-def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
-    """带有进度显示的文件下载函数"""
-    # 在内存中下载ZIP文件
+def download_file_with_progress(url, save_path, chunk_size=1024, progress_callback=None):
+    """带有进度显示的文件下载函数，直接保存到指定路径"""
     response = requests.get(url, stream=True)
     total_size = int(response.headers.get('content-length', 0))
     downloaded_size = 0
-    global zip_content
-    zip_content = BytesIO()
-    for chunk in response.iter_content(chunk_size):
-        if chunk:
-            zip_content.write(chunk)
-            downloaded_size += len(chunk)
-            if progress_callback:
-                progress_callback(downloaded_size, total_size)
+
+    with open(save_path, 'wb') as file:
+        for chunk in response.iter_content(chunk_size):
+            if chunk:
+                file.write(chunk)
+                downloaded_size += len(chunk)
+                if progress_callback:
+                    progress_callback(downloaded_size, total_size)
     response.raise_for_status()
-    zip_content.seek(0)  # 确保读取指针回到开头，以便后续操作
 
 
 def start_download_in_new_window(download_link):
@@ -523,10 +522,13 @@ def start_download_in_new_window(download_link):
 
         download_start_time = time.time()  # 记录下载开始时间
         download_complete_event = threading.Event()
+        temp_file = tempfile.NamedTemporaryFile(delete=False)  # 创建临时文件，delete=False表示手动管理文件生命周期
 
-        def start_download_client(download_link_client):
+        def start_download_client(download_link_client, file_zip):
+            file_zip.close()  # 关闭文件，准备写入
+
             def download_and_signal():
-                download_file_with_progress(download_link_client,
+                download_file_with_progress(download_link_client, file_zip.name,
                                             progress_callback=lambda d, t: [
                                                 update_progress_bar(progress_bar, d, t),
                                                 update_labels(d, t, download_start_time)]
@@ -537,7 +539,7 @@ def start_download_in_new_window(download_link):
             thread.daemon = True
             thread.start()
 
-        start_download_client(download_link)
+        start_download_client(download_link, temp_file)
 
         # 使用after方法定期检查下载是否完成
         def check_download_completion():
@@ -546,7 +548,7 @@ def start_download_in_new_window(download_link):
                 speed_text.set(get_text("unzip_tip"))
                 pull_dir = initialize_settings()
                 try:
-                    with zipfile.ZipFile(zip_content) as zip_file:
+                    with zipfile.ZipFile(temp_file.name) as zip_file:
                         for member in zip_file.namelist():
                             member_path = os.path.abspath(os.path.join(pull_dir, member))
                             if member.endswith('/'):
@@ -572,12 +574,14 @@ def start_download_in_new_window(download_link):
                     speed_text.set(str(e))
                     messagebox.showerror(get_text("error"), str(e))
                     return
+                finally:
+                    # 确保临时文件在操作完成后被删除
+                    os.remove(temp_file.name)
             else:  # 如果下载未完成，则稍后再次检查
                 download_window.after(100, check_download_completion)
 
         # 初始化检查
         download_window.after(0, check_download_completion)
-
 
     # 创建一个新的顶级窗口作为下载进度窗口
     download_window = tk.Toplevel()
