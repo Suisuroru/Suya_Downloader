@@ -850,7 +850,10 @@ def check_client_update():
             try:
                 debug_url = update_info["debug_url"]
                 print("Unzip_Debug已启用")
-                return latest_version, tag_client_check, debug_url
+                if update_info["debug_tag"] == "True":
+                    return latest_version, tag_client_check, debug_url
+                else:
+                    return latest_version, tag_client_check, "NoDebug"
             except:
                 print("Unzip_Debug已禁用")
                 return latest_version, tag_client_check, "NoDebug"
