@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.4"
+current_version = "1.0.1.5"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -47,21 +47,26 @@ if not is_admin():
 
 def get_language():
     global language
+
+    def set_lang():
+        choose_language()
+        setting_json['language'] = global_selected_lang
+        language = global_selected_lang
+        if language is None:
+            exit(1)
+        return language
+
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
             setting_json = json.load(file)
             try:
                 language = setting_json['language']
             except:
-                choose_language()
-                setting_json['language'] = global_selected_lang
-                language = global_selected_lang
+                language = set_lang()
                 with open(setting_path, 'w', encoding='utf-8') as file:
                     json.dump(setting_json, file, ensure_ascii=False, indent=4)
     except:
-        choose_language()
-        setting_json = {'language': global_selected_lang}
-        language = global_selected_lang
+        language = set_lang()
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
 
