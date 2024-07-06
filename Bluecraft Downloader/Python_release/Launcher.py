@@ -532,10 +532,8 @@ def start_download_in_new_window(download_link):
 
             def download_and_signal():
                 download_file_with_progress(download_link_client, file_zip.name,
-                                            progress_callback=lambda d, t: [
-                                                update_progress_bar(progress_bar, d, t),
-                                                update_labels(d, t, download_start_time)]
-                                            )
+                                            progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
+                                                                            update_labels(d, t, download_start_time)])
                 download_complete_event.set()  # 下载完成后设置事件
 
             thread = threading.Thread(target=download_and_signal)
