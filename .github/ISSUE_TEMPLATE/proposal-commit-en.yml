@@ -27,8 +27,8 @@ body:
   attributes:
     label: Desired Feature
     placeholder: "- (Please answer here) -"
-    validations:
-      required: true
+  validations:
+    required: true
 - type: textarea
   id: "yml-3"
   attributes:
