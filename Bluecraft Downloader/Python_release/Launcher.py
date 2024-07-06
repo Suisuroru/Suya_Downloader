@@ -574,28 +574,16 @@ def start_download_in_new_window(download_link):
                 pull_dir = initialize_settings()
                 try:
                     with zipfile.ZipFile(zip_content) as zip_file:
-                        def safe_join(base, member_path):
-                            # 防止路径逃逸，确保member相对base路径是安全的
-                            abs_base = os.path.abspath(base)
-                            abs_member = os.path.abspath(os.path.join(base, member_path))
-                            return abs_member if abs_member.startswith(abs_base) else None
-                        # 在解压循环中使用safe_join
                         for member in zip_file.namelist():
-                            safe_member_path = safe_join(pull_dir, member)
-                            if safe_member_path is None:
-                                progress_text.set(get_text("warn_path_escape"))
-                                messagebox.showwarning(get_text("warn"), get_text("warn_path_escape_tip"))
-                                continue  # 跳过不安全的路径
-                            if not safe_member_path.startswith(pull_dir):
-                                progress_text.set(get_text("error_invalid_path"))
-                                messagebox.showerror(get_text("error"), get_text("error_invalid_path_tip"))
-                                return  # 结束函数执行
+                            member_path = os.path.abspath(os.path.join(pull_dir, member))
                             if member.endswith('/'):
-                                os.makedirs(safe_member_path, exist_ok=True)
+                                os.makedirs(member_path, exist_ok=True)
+                                print("成功创建文件夹", str(member_path))
                             else:
                                 content = zip_file.read(member)
-                                with open(safe_member_path, 'wb') as f:
+                                with open(member_path, 'wb') as f:
                                     f.write(content)
+                                print("成功写入文件", str(member_path))
                         progress_text.set(get_text("unzip_finished"))
                         speed_text.set(get_text("close_tip"))
                         messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
@@ -603,6 +591,7 @@ def start_download_in_new_window(download_link):
                 except zipfile.BadZipFile as e:
                     progress_text.set(get_text("error_unzip"))
                     speed_text.set(str(e))
+                    print("导出文件出错，相关文件/目录：", str(member))
                     messagebox.showerror(get_text("error"), str(e))
                     return
                 except Exception as e:
@@ -610,17 +599,12 @@ def start_download_in_new_window(download_link):
                     speed_text.set(str(e))
                     messagebox.showerror(get_text("error"), str(e))
                     return
-
-                # 成功解压后的逻辑
-                progress_text.set(get_text("unzip_finished"))
-                speed_text.set(get_text("close_tip"))
-                messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-                new_window.destroy()
             else:  # 如果下载未完成，则稍后再次检查
                 download_window.after(100, check_download_completion)
 
         # 初始化检查
         download_window.after(0, check_download_completion)
+
 
     # 创建一个新的顶级窗口作为下载进度窗口
     download_window = tk.Toplevel()
