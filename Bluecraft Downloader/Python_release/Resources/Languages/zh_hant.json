@@ -61,5 +61,7 @@
     "check_error2": "用戶端更新檢查失敗",
     "check_error3": "嘗試拉取Suya下載器公告失敗",
     "reload_tip": "更新語言設置需要重新啟動下載器，是否需要立即重新啟動？如果拒絕，本次更改將不會被保存。",
-    "confirm": "確認"
+    "confirm": "確認",
+    "unknown_error":  "未知錯誤：",
+    "error_unzip": "解壓縮時遇到錯誤"
 }
