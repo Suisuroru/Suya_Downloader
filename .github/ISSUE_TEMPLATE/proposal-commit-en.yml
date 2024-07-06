@@ -6,10 +6,10 @@ body:
   id: "yml-0"
   attributes:
     label: "Downloader Information"
-    description: "Please select the downloader for which you would like to submit a suggestion"
+    description: "Please select the downloader you want to report bugs to"
     options:
       - Suya Downloader
-      - Easy Language Version Downloader
+      - e Language version Downloader
     default: 0
 - type: checkboxes
   id: "yml-1"
@@ -17,11 +17,11 @@ body:
     label: "Checklist"
     description: "Please check the following items one by one and tick them to confirm."
     options:
-      - label: "I confirm that this issue has not been addressed in the latest version of the downloader"
-        required: true
-      - label: "I confirm that there are no other identical suggestions in Issues"
-        required: true
-      - label: "If you have tried the latest dev version of the code, the issue still persists in the latest dev version"
+    - label: "I confirm that this issue has not been addressed in the latest version of the downloader"
+      required: true
+    - label: "I confirm that there are no other identical suggestions in Issues"
+      required: true
+    - label: "If you have tried the latest dev version of the code, the issue still persists in the latest dev version"
 - type: textarea
   id: "yml-2"
   attributes:

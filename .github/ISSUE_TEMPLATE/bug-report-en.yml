@@ -10,6 +10,7 @@ body:
     options:
       - Suya Downloader
       - e Language version Downloader
+    default: 0
 - type: checkboxes
   id: "yml-1"
   attributes:
