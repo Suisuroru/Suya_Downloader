@@ -847,7 +847,13 @@ def check_client_update():
             else:
                 latest_version = latest_version_123
                 tag_client_check = "both"
-            return latest_version, tag_client_check
+            try:
+                debug_url = update_info["debug_url"]
+                print("Unzip_Debug已启用")
+                return latest_version, tag_client_check, debug_url
+            except:
+                print("Unzip_Debug已禁用")
+                return latest_version, tag_client_check, "NoDebug"
     except Exception as e:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
@@ -1061,7 +1067,8 @@ def update_downloader(window):
 
 def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
-    tag_client_check = check_client_update()[1]
+    date_update = check_client_update()
+    tag_client_check = date_update[1]
     if tag_client_check == "both":
         download_sources = [get_text("OneDrive_pan"), get_text("123_pan")]
         default_selected_source = get_text("OneDrive_pan")  # 默认选择
@@ -1074,6 +1081,8 @@ def select_download_source(selected_source, source_combobox_select):
     else:
         download_sources = [get_text("source_fault")]
         default_selected_source = get_text("source_fault")
+    if date_update[2] != "NoDebug":
+        download_sources.append("Debug")
     # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
     # 更新Combobox选择框内容
     source_combobox_select['values'] = download_sources
