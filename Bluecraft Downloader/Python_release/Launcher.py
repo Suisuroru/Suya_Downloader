@@ -573,35 +573,45 @@ def start_download_in_new_window(download_link):
                 speed_text.set(get_text("unzip_tip"))
                 pull_dir = initialize_settings()
                 try:
-                    with zipfile.ZipFile(zip_content) as zip_file:  # 使用with语句确保ZipFile对象被正确关闭
+                    with zipfile.ZipFile(zip_content) as zip_file:
                         for member in zip_file.namelist():
                             member_path = os.path.abspath(os.path.join(pull_dir, member))
                             if not member_path.startswith(pull_dir):
-                                raise ValueError("Zip file contains invalid path.")  # 更精确的异常类型
+                                progress_text.set(get_text("error_invalid_path"))
+                                messagebox.showerror(get_text("error"), get_text("error_invalid_path_tip"))
+                                return  # 结束函数执行
                             if member.endswith('/'):
                                 os.makedirs(member_path, exist_ok=True)
                             else:
                                 content = zip_file.read(member)
                                 with open(member_path, 'wb') as f:
                                     f.write(content)
-                    progress_text.set(get_text("unzip_finished"))
-                    speed_text.set(get_text("close_tip"))
-                    messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-                    new_window.destroy()
+                        progress_text.set(get_text("unzip_finished"))
+                        speed_text.set(get_text("close_tip"))
+                        messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                        new_window.destroy()
                 except zipfile.BadZipFile as e:
                     progress_text.set(get_text("error_unzip"))
-                    speed_text.set(str(e))  # 显示具体错误信息
+                    speed_text.set(str(e))
                     messagebox.showerror(get_text("error"), str(e))
+                    return
                 except Exception as e:
-                    # 捕获其他所有异常，并给出提示
                     progress_text.set(get_text("unknown_error"))
                     speed_text.set(str(e))
                     messagebox.showerror(get_text("error"), str(e))
+                    return
+
+                # 成功解压后的逻辑
+                progress_text.set(get_text("unzip_finished"))
+                speed_text.set(get_text("close_tip"))
+                messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                new_window.destroy()
             else:  # 如果下载未完成，则稍后再次检查
-                download_window.after(100, check_download_completion)  # 每100毫秒检查一次
+                download_window.after(100, check_download_completion)
 
         # 初始化检查
         download_window.after(0, check_download_completion)
+
 
     # 创建一个新的顶级窗口作为下载进度窗口
     download_window = tk.Toplevel()
