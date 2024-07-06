@@ -53,13 +53,15 @@ def get_language():
             try:
                 language = setting_json['language']
             except:
-                setting_json['language'] = "zh_hans"
-                language = "zh_hans"
+                choose_language()
+                setting_json['language'] = global_selected_lang
+                language = global_selected_lang
                 with open(setting_path, 'w', encoding='utf-8') as file:
                     json.dump(setting_json, file, ensure_ascii=False, indent=4)
     except:
-        setting_json = {'language': "zh_hans"}
-        language = "zh_hans"
+        choose_language()
+        setting_json = {'language': global_selected_lang}
+        language = global_selected_lang
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
 
@@ -97,6 +99,39 @@ def Pull_Resources(window):
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
+
+
+# 全局变量用于存储选择的语言
+global_selected_lang = None
+
+
+def choose_language():
+    # 初始化Tkinter窗口
+    language_choose_window = tk.Tk()
+    language_choose_window.title("Choose Your Language")
+    language_choose_window.geometry("300x150")
+    center_window(language_choose_window)
+
+    # 定义一个变量来存储所选语言，并设置默认值为简体中文
+    selected_lang = tk.StringVar(value="zh_hans")
+
+    # 创建Radiobuttons并绑定到selected_lang
+    languages = [("简体中文", "zh_hans"), ("繁體中文", "zh_hant"), ("English", "en_us")]
+    for lang, value in languages:
+        tk.Radiobutton(language_choose_window, text=lang, variable=selected_lang, value=value).pack(anchor=tk.W)
+
+    # 定义一个函数来获取选择并关闭窗口，同时更新全局变量
+    def get_selection():
+        global global_selected_lang
+        global_selected_lang = selected_lang.get()
+        language_choose_window.destroy()
+
+    # 创建一个按钮来确认选择
+    confirm_button = ttk.Button(language_choose_window, text="Confirm", command=get_selection)
+    confirm_button.pack(pady=10)
+
+    # 运行Tkinter事件循环
+    language_choose_window.mainloop()
 
 
 def initialize_languages(tag):
