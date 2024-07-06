@@ -1,6 +1,6 @@
 name: BUG Report
 description: If you think a part of the downloader is not working properly, please submit it here in English.
-labels: ["BUG"  ]
+labels: ["bug"]
 body:
 - type: dropdown
   id: "yml-0"
