@@ -136,7 +136,10 @@ def get_text(key):
     try:
         text = lang_json[key]
     except:
-        text = spare_lang_json[key]
+        try:
+            text = spare_lang_json[key]
+        except:
+            text = "文本已丢失，丢失的文本的键值为" + key
     return text
 
 
