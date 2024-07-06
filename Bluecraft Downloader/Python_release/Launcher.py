@@ -500,7 +500,7 @@ def start_download_in_new_window(download_link):
         # 添加进度文字标签
         progress_text = tk.StringVar()
         progress_label = ttk.Label(new_window, textvariable=progress_text)
-        progress_label.pack(anchor='center', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
+        progress_label.pack(anchor='w', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
         # 添加百分比标签
         percentage_text = tk.StringVar()
         percentage_label = ttk.Label(new_window, textvariable=percentage_text)
@@ -508,7 +508,7 @@ def start_download_in_new_window(download_link):
         # 添加速度相关变量和标签
         speed_text = tk.StringVar()
         speed_label = ttk.Label(new_window, textvariable=speed_text)
-        speed_label.pack(anchor='center', pady=(0, 10))  # 在百分比标签下方添加速度标签
+        speed_label.pack(anchor='w', pady=(0, 10))  # 在百分比标签下方添加速度标签
 
         def update_labels(downloaded, total, start_time=None):
             """更新进度文字、百分比和速度"""
@@ -521,7 +521,7 @@ def start_download_in_new_window(download_link):
             speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
 
             progress_text.set(get_text("downloading_process") + f"{percent}%")
-            speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
+            speed_text.set(get_text("downloading_speed") + f"{speed} kiB/s")  # 更新速度文本
 
         download_start_time = time.time()  # 记录下载开始时间
         download_complete_event = threading.Event()
@@ -532,10 +532,8 @@ def start_download_in_new_window(download_link):
 
             def download_and_signal():
                 download_file_with_progress(download_link_client, file_zip.name,
-                                            progress_callback=lambda d, t: [
-                                                update_progress_bar(progress_bar, d, t),
-                                                update_labels(d, t, download_start_time)]
-                                            )
+                                            progress_callback=lambda d, t: [update_progress_bar(progress_bar, d, t),
+                                                                            update_labels(d, t, download_start_time)])
                 download_complete_event.set()  # 下载完成后设置事件
 
             thread = threading.Thread(target=download_and_signal)
