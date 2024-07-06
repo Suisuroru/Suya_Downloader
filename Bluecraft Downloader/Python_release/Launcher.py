@@ -521,7 +521,7 @@ def start_download_in_new_window(download_link):
             speed = round((downloaded / elapsed_time) / 1024, 2) if elapsed_time > 0 else 0  # 计算下载速度（KB/s）
 
             progress_text.set(get_text("downloading_process") + f"{percent}%")
-            speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
+            speed_text.set(get_text("downloading_speed") + f"{speed} kiB/s")  # 更新速度文本
 
         download_start_time = time.time()  # 记录下载开始时间
         download_complete_event = threading.Event()
