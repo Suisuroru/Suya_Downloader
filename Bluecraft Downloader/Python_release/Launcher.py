@@ -379,36 +379,9 @@ def create_setting_window(event):
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
         rel_path = initialize_settings()
-        path_default = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
-        print("用户输入路径：" + path_default)
-
-        def convert_to_english_path(path_zh):
-            """
-            将路径中的中文别名转换为英文别名。
-            注意：此示例仅针对Windows系统，并且是简化的处理逻辑。
-            """
-            # 定义一个映射表，用于替换中文路径别名为英文
-            alias_mapping = {
-                "桌面": "Desktop",
-                "下载": "Downloads",
-                "文档": "Documents"
-            }
-
-            # 检测用户输入的分隔符风格
-            sep_style = '/' if '/' in path_zh else '\\'
-
-            # 分割路径为各部分
-            parts = path_zh.split(sep_style)
-
-            # 遍历路径各部分，替换中文别名为英文
-            converted_parts = [alias_mapping.get(part_sp, part_sp) for part_sp in parts]
-
-            # 重新组合路径，使用用户输入时的分隔符风格
-            return sep_style.join(converted_parts)
-
-        path_user = convert_to_english_path(path_default)
-        print("处理后的路径：" + path_user)
-        if path_default:
+        path_user = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
+        print("用户输入路径：" + path_user)
+        if path_user:
             entry.delete(0, tk.END)  # 清除当前文本框内容
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
