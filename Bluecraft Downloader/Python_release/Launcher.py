@@ -500,7 +500,7 @@ def start_download_in_new_window(download_link):
         # 添加进度文字标签
         progress_text = tk.StringVar()
         progress_label = ttk.Label(new_window, textvariable=progress_text)
-        progress_label.pack(anchor='center', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
+        progress_label.pack(anchor='w', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
         # 添加百分比标签
         percentage_text = tk.StringVar()
         percentage_label = ttk.Label(new_window, textvariable=percentage_text)
@@ -508,7 +508,7 @@ def start_download_in_new_window(download_link):
         # 添加速度相关变量和标签
         speed_text = tk.StringVar()
         speed_label = ttk.Label(new_window, textvariable=speed_text)
-        speed_label.pack(anchor='center', pady=(0, 10))  # 在百分比标签下方添加速度标签
+        speed_label.pack(anchor='w', pady=(0, 10))  # 在百分比标签下方添加速度标签
 
         def update_labels(downloaded, total, start_time=None):
             """更新进度文字、百分比和速度"""
