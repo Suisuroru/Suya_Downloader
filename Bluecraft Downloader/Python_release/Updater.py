@@ -1,5 +1,3 @@
-Updater_Version = "1.0.1.4"
-
 import ctypes
 import json
 import os
@@ -12,6 +10,8 @@ from io import BytesIO
 from tkinter import messagebox
 
 import requests
+
+Updater_Version = "1.0.1.4"
 
 
 def is_admin():

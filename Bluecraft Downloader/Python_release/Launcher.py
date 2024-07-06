@@ -1,5 +1,3 @@
-current_version = "1.0.1.4"
-
 import ctypes
 import errno
 import json
@@ -21,6 +19,8 @@ from PIL import Image, ImageTk
 from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
+
+current_version = "1.0.1.4"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -379,36 +379,9 @@ def create_setting_window(event):
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
         rel_path = initialize_settings()
-        path_default = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
-        print("用户输入路径：" + path_default)
-
-        def convert_to_english_path(path_zh):
-            """
-            将路径中的中文别名转换为英文别名。
-            注意：此示例仅针对Windows系统，并且是简化的处理逻辑。
-            """
-            # 定义一个映射表，用于替换中文路径别名为英文
-            alias_mapping = {
-                "桌面": "Desktop",
-                "下载": "Downloads",
-                "文档": "Documents"
-            }
-
-            # 检测用户输入的分隔符风格
-            sep_style = '/' if '/' in path_zh else '\\'
-
-            # 分割路径为各部分
-            parts = path_zh.split(sep_style)
-
-            # 遍历路径各部分，替换中文别名为英文
-            converted_parts = [alias_mapping.get(part_sp, part_sp) for part_sp in parts]
-
-            # 重新组合路径，使用用户输入时的分隔符风格
-            return sep_style.join(converted_parts)
-
-        path_user = convert_to_english_path(path_default)
-        print("处理后的路径：" + path_user)
-        if path_default:
+        path_user = filedialog.askdirectory(initialdir=rel_path)  # 设置默认打开的目录
+        print("用户输入路径：" + path_user)
+        if path_user:
             entry.delete(0, tk.END)  # 清除当前文本框内容
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
@@ -521,7 +494,7 @@ def download_file_with_progress(url, chunk_size=1024, progress_callback=None):
 
 
 def start_download_in_new_window(download_link):
-    def start_download_and_close(new_window, progress_bar):
+    def start_download_and_close(new_window):
         # 添加进度文字标签
         progress_text = tk.StringVar()
         progress_label = ttk.Label(new_window, textvariable=progress_text)
@@ -549,63 +522,71 @@ def start_download_in_new_window(download_link):
             speed_text.set(get_text("downloading_speed") + f"{speed} KB/s")  # 更新速度文本
 
         download_start_time = time.time()  # 记录下载开始时间
+        download_complete_event = threading.Event()
 
-        def start_download_client(download_link):
-            thread = threading.Thread(target=download_file_with_progress(download_link,
-                                                                         progress_callback=lambda d, t: [
-                                                                             update_progress_bar(progress_bar, d,
-                                                                                                 t),
-                                                                             update_labels(d, t,
-                                                                                           download_start_time)]))
+        def start_download_client(download_link_client):
+            def download_and_signal():
+                download_file_with_progress(download_link_client,
+                                            progress_callback=lambda d, t: [
+                                                update_progress_bar(progress_bar, d, t),
+                                                update_labels(d, t, download_start_time)]
+                                            )
+                download_complete_event.set()  # 下载完成后设置事件
+
+            thread = threading.Thread(target=download_and_signal)
             thread.daemon = True
             thread.start()
 
         start_download_client(download_link)
-        progress_text.set(get_text("download_finished"))
-        speed_text.set(get_text("unzip_tip"))
-        try:
-            # 下载完成后处理ZIP文件
-            pull_dir = initialize_settings()
-            zip_file = zipfile.ZipFile(zip_content)  # 读取zip_content数据
 
-            for member in zip_file.namelist():
-                # 安全检查
-                member_path = os.path.abspath(os.path.join(pull_dir, member))
-                if not member_path.startswith(pull_dir):
-                    raise Exception("Zip file contains invalid path.")
+        # 使用after方法定期检查下载是否完成
+        def check_download_completion():
+            if download_complete_event.is_set():  # 如果下载完成
+                progress_text.set(get_text("download_finished"))
+                speed_text.set(get_text("unzip_tip"))
+                pull_dir = initialize_settings()
+                try:
+                    with zipfile.ZipFile(zip_content) as zip_file:
+                        for member in zip_file.namelist():
+                            member_path = os.path.abspath(os.path.join(pull_dir, member))
+                            if member.endswith('/'):
+                                os.makedirs(member_path, exist_ok=True)
+                                print("成功创建文件夹", str(member_path))
+                            else:
+                                content = zip_file.read(member)
+                                with open(member_path, 'wb') as f:
+                                    f.write(content)
+                                print("成功写入文件", str(member_path))
+                        progress_text.set(get_text("unzip_finished"))
+                        speed_text.set(get_text("close_tip"))
+                        messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                        new_window.destroy()
+                except zipfile.BadZipFile as e:
+                    progress_text.set(get_text("error_unzip"))
+                    speed_text.set(str(e))
+                    print("导出文件出错，相关文件/目录：", str(member))
+                    messagebox.showerror(get_text("error"), str(e))
+                    return
+                except Exception as e:
+                    progress_text.set(get_text("unknown_error"))
+                    speed_text.set(str(e))
+                    messagebox.showerror(get_text("error"), str(e))
+                    return
+            else:  # 如果下载未完成，则稍后再次检查
+                download_window.after(100, check_download_completion)
 
-                # 处理目录和文件
-                if member.endswith('/'):
-                    os.makedirs(member_path, exist_ok=True)
-                else:
-                    with open(member_path, 'wb') as f:
-                        f.write(zip_file.read(member))
+        # 初始化检查
+        download_window.after(0, check_download_completion)
 
-            # 成功提示
-            progress_text.set(get_text("unzip_finished"))
-            speed_text.set(get_text("close_tip"))
-            messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
-            new_window.destroy()
-
-        except zipfile.BadZipFile as bz_err:
-            print(f"Bad ZIP file error: {bz_err}")
-            messagebox.showerror(get_text("error"), f"文件可能已损坏或不是有效的ZIP文件: {bz_err}")
-
-        except Exception as e:
-            print(f"下载或解压错误: {e}")
-            messagebox.showerror(get_text("error"), f"下载或解压错误: {e}")
-
-        finally:
-            new_window.destroy()
 
     # 创建一个新的顶级窗口作为下载进度窗口
-    new_window = tk.Toplevel()
-    new_window.title(get_text("download_window"))
+    download_window = tk.Toplevel()
+    download_window.title(get_text("download_window"))
 
     # 创建并配置进度条
-    progress_bar = ttk.Progressbar(new_window, orient="horizontal", length=200, mode="determinate")
+    progress_bar = ttk.Progressbar(download_window, orient="horizontal", length=200, mode="determinate")
     progress_bar.pack(pady=20)
-    start_download_and_close(new_window, progress_bar)
+    start_download_and_close(download_window)
 
 
 def direct_download_client(download_link):
@@ -686,6 +667,9 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                 elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
+                elif chosen_value == "Debug":
+                    download_link = update_info['debug_url']
+                    latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
@@ -847,7 +831,16 @@ def check_client_update():
             else:
                 latest_version = latest_version_123
                 tag_client_check = "both"
-            return latest_version, tag_client_check
+            try:
+                debug_url = update_info["debug_url"]
+                print("Unzip_Debug已启用")
+                if update_info["debug_tag"] == "True":
+                    return latest_version, tag_client_check, debug_url
+                else:
+                    return latest_version, tag_client_check, "NoDebug"
+            except:
+                print("Unzip_Debug已禁用")
+                return latest_version, tag_client_check, "NoDebug"
     except Exception as e:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
 
@@ -1061,7 +1054,8 @@ def update_downloader(window):
 
 def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
-    tag_client_check = check_client_update()[1]
+    date_update = check_client_update()
+    tag_client_check = date_update[1]
     if tag_client_check == "both":
         download_sources = [get_text("OneDrive_pan"), get_text("123_pan")]
         default_selected_source = get_text("OneDrive_pan")  # 默认选择
@@ -1074,6 +1068,8 @@ def select_download_source(selected_source, source_combobox_select):
     else:
         download_sources = [get_text("source_fault")]
         default_selected_source = get_text("source_fault")
+    if date_update[2] != "NoDebug":
+        download_sources.append("Debug")
     # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
     # 更新Combobox选择框内容
     source_combobox_select['values'] = download_sources
@@ -1147,7 +1143,7 @@ def create_gui():
 
     # 资源获取方式选项
     way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
-    way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
+    way_selected_source = tk.StringVar(value=get_text("downloader_direct"))  # 初始化下载源选项
 
     # 创建Combobox选择框，指定宽度
     source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
