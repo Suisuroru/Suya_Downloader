@@ -686,6 +686,9 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                 elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
+                elif chosen_value == "Debug":
+                    download_link = update_info['debug_url']
+                    latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version) > 0:
