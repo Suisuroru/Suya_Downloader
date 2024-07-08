@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.5"
+current_version = "1.0.1.6"
 
 # 获取运行目录
 current_working_dir = os.getcwd()

@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Updater_Version = "1.0.1.4"
+Updater_Version = "1.0.1.6"
 
 
 def is_admin():
