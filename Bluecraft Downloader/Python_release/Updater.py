@@ -3,10 +3,10 @@ import json
 import os
 import shutil
 import sys
+import tempfile
 import threading
 import tkinter
 import zipfile
-from io import BytesIO
 from tkinter import messagebox
 
 import requests
@@ -131,8 +131,12 @@ def download_and_install(update_url, Update_partner):
     try:
         response = requests.get(update_url, stream=True)
         response.raise_for_status()
-        # 使用BytesIO作为临时存储，避免直接写入文件
-        zip_file = zipfile.ZipFile(BytesIO(response.content))
+        # 定义临时目录和临时文件
+        temp_dir = tempfile.mkdtemp()
+        temp_zip_file = os.path.join(temp_dir, "temp.zip")
+        # 将响应内容写入临时文件
+        with open(temp_zip_file, 'wb') as f:
+            shutil.copyfileobj(response.raw, f)
         del_Resources()
         current_dir = os.getcwd()
         if Update_partner == "Resources":
@@ -144,17 +148,23 @@ def download_and_install(update_url, Update_partner):
                 os.makedirs(pull_dir, exist_ok=True)
         else:
             pull_dir = current_dir
-        # 解压到当前目录
-        for member in zip_file.namelist():
-            # 避免路径遍历攻击
-            member_path = os.path.abspath(os.path.join(pull_dir, member))
-            if not member_path.startswith(pull_dir):
-                raise Exception("Zip file contains invalid path.")
-            if member.endswith('/'):
-                os.makedirs(member_path, exist_ok=True)
-            else:
-                with open(member_path, 'wb') as f:
-                    f.write(zip_file.read(member))
+        # 创建ZipFile对象，从临时文件中读取
+        with zipfile.ZipFile(temp_zip_file) as zip_file:
+            # 解压到目标目录
+            for member in zip_file.namelist():
+                # 避免路径遍历攻击
+                member_path = os.path.abspath(os.path.join(pull_dir, member))
+                if not member_path.startswith(pull_dir):
+                    raise Exception("Zip file contains invalid path.")
+                if member.endswith('/'):
+                    os.makedirs(member_path, exist_ok=True)
+                else:
+                    with open(member_path, 'wb') as f:
+                        f.write(zip_file.read(member))
+
+        # 清理临时ZIP文件
+        os.remove(temp_zip_file)
+
         with open(setting_path, 'r', encoding='utf-8') as file:
             count_json = json.load(file)
         count_json['Pull_Resources_Count'] = 0
