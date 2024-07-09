@@ -2,6 +2,7 @@ import ctypes
 import errno
 import json
 import os
+import shutil
 import sys
 import tempfile
 import threading
@@ -10,7 +11,6 @@ import tkinter as tk
 import webbrowser
 import zipfile
 from getpass import getuser
-from io import BytesIO
 from queue import Queue
 from tkinter import messagebox, scrolledtext, ttk, filedialog
 
@@ -21,7 +21,7 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.5"
+current_version = "1.0.1.6"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -1021,21 +1021,32 @@ def download_and_install(update_url, version):
         response = requests.get(update_url, stream=True)
         response.raise_for_status()
 
-        # 使用BytesIO作为临时存储，避免直接写入文件
-        zip_file = zipfile.ZipFile(BytesIO(response.content))
+        # 定义临时目录和临时文件
+        temp_dir = tempfile.mkdtemp()
+        temp_zip_file = os.path.join(temp_dir, "temp.zip")
 
-        # 解压到当前目录
-        for member in zip_file.namelist():
-            current_dir = os.getcwd()
-            # 避免路径遍历攻击
-            member_path = os.path.abspath(os.path.join(current_dir, member))
-            if not member_path.startswith(current_dir):
-                raise Exception("Zip file contains invalid path.")
-            if member.endswith('/'):
-                os.makedirs(member_path, exist_ok=True)
-            else:
-                with open(member_path, 'wb') as f:
-                    f.write(zip_file.read(member))
+        # 将响应内容写入临时文件
+        with open(temp_zip_file, 'wb') as f:
+            shutil.copyfileobj(response.raw, f)
+
+        # 创建ZipFile对象，从临时文件中读取
+        with zipfile.ZipFile(temp_zip_file) as zip_file:
+            # 解压到目标目录
+            for member in zip_file.namelist():
+                # 避免路径遍历攻击
+                member_path = os.path.abspath(os.path.join(current_working_dir, member))
+                if not member_path.startswith(current_working_dir):
+                    raise Exception("Zip file contains invalid path.")
+                if member.endswith('/'):
+                    os.makedirs(member_path, exist_ok=True)
+                else:
+                    with open(member_path, 'wb') as f:
+                        f.write(zip_file.read(member))
+
+        # 清理临时ZIP文件
+        os.remove(temp_zip_file)
+
+        # 更新设置文件
         try:
             with open(setting_path, 'r', encoding='utf-8') as file:
                 setting_json = json.load(file)
