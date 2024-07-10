@@ -78,22 +78,22 @@ def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
         try:
-            with open(setting_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
+            with open(setting_path, 'r', encoding='utf-8') as f:
+                setting_json_inner = json.load(f)
                 try:
-                    Update_Partner = setting_json['Update_Partner']
+                    Update_Partner = setting_json_inner['Update_Partner']
                 except:
-                    setting_json['Updater_Partner'] = "Full"
-                    with open(setting_path, 'w', encoding='utf-8') as file:
-                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                    setting_json_inner['Updater_Partner'] = "Full"
+                    with open(setting_path, 'w', encoding='utf-8') as f:
+                        json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
                     Update_Partner = "Full"
         except:
-            setting_json = {'Updater_Partner': "Full"}
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            setting_json_inner = {'Updater_Partner': "Full"}
+            with open(setting_path, 'w', encoding='utf-8') as f:
+                json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
             Update_Partner = "Full"
         try:
-            Count = setting_json['Pull_Resources_Count']
+            Count = setting_json_inner['Pull_Resources_Count']
             print("尝试拉取次数：" + str(Count))
         except:
             Count = 1
@@ -126,7 +126,7 @@ def fetch_update_info():
         return None, None, None
 
 
-def download_and_install(update_url, Update_partner):
+def download_and_install(update_url, update_partner_2):
     """下载ZIP文件并覆盖安装，完成后运行Launcher.exe"""
     try:
         response = requests.get(update_url, stream=True)
@@ -138,8 +138,7 @@ def download_and_install(update_url, Update_partner):
         with open(temp_zip_file, 'wb') as f:
             shutil.copyfileobj(response.raw, f)
         del_Resources()
-        current_dir = os.getcwd()
-        if Update_partner == "Resources":
+        if update_partner_2 == "Resources":
             # 构建完整的目录路径，基于当前工作目录
             pull_dir = os.path.join(current_dir, "Resources")
             # 确保"Resource"目录存在，如果不存在则创建
@@ -175,9 +174,6 @@ def download_and_install(update_url, Update_partner):
         # 确保Launcher.exe存在于当前目录下再尝试运行
         launcher_path = os.path.join(current_dir, 'Launcher.exe')
         if os.path.isfile(launcher_path):
-            # 使用os.system运行Launcher.exe，这会阻塞直到Launcher.exe执行完毕
-            # os.system(f'start {launcher_path}')
-            # 或者使用subprocess.run，这样可以更好地控制执行过程，下面的代码是非阻塞的执行方式
             import subprocess
             subprocess.Popen([launcher_path])
             print("Launcher.exe 已启动。")
