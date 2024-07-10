@@ -25,7 +25,6 @@ current_version = "1.0.1.6"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
-global setting_path
 setting_path = os.path.join(".", "settings.json")
 
 # 打印运行目录以确认
@@ -51,10 +50,11 @@ def get_language():
     def set_lang():
         choose_language()
         setting_json['language'] = global_selected_lang
-        language = global_selected_lang
-        if language is None:
+        final_language = global_selected_lang
+        if final_language is not None:
+            return final_language
+        else:
             exit(1)
-        return language
 
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
@@ -63,10 +63,12 @@ def get_language():
                 language = setting_json['language']
             except:
                 language = set_lang()
+                setting_json['language'] = language
                 with open(setting_path, 'w', encoding='utf-8') as file:
                     json.dump(setting_json, file, ensure_ascii=False, indent=4)
     except:
         language = set_lang()
+        setting_json['language'] = language
         with open(setting_path, 'w', encoding='utf-8') as file:
             json.dump(setting_json, file, ensure_ascii=False, indent=4)
 
@@ -240,8 +242,8 @@ def read_client_version_from_file():
 
     try:
         with open(file_path, 'r') as file:
-            client_version = file.read().strip()
-            return client_version
+            client_version_inner = file.read().strip()
+            return client_version_inner
     except FileNotFoundError:
         print("版本文件未找到，正在尝试创建并写入默认版本号...")
         try:
@@ -667,7 +669,7 @@ def direct_download_client(download_link):
         thread.start()
 
 
-def check_for_client_updates(current_version, selected_source, way_selected_source):
+def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
 
     try:
@@ -717,7 +719,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                     latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
-            if compare_client_versions(latest_version, current_version) > 0:
+            if compare_client_versions(latest_version, current_version_inner) > 0:
                 # 如果有新版本，提示用户并提供下载链接
                 user_response = messagebox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
                                                     latest_version + get_text("update_available_msg2"))
@@ -727,7 +729,7 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
-            elif compare_client_versions(latest_version, current_version) == 0:
+            elif compare_client_versions(latest_version, current_version_inner) == 0:
                 user_response = messagebox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
                                                     latest_version)
                 if user_response:
@@ -751,13 +753,13 @@ def check_for_client_updates(current_version, selected_source, way_selected_sour
         print(f"检查更新时发生错误: {e}")
 
 
-def threaded_check_for_updates(current_version, selected_source, way_selected_source):
+def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
     """
     在一个独立的线程中检查客户端更新。
     """
 
     def target():
-        check_for_client_updates(current_version, selected_source, way_selected_source)
+        check_for_client_updates(current_version_inner, selected_source, way_selected_source)
 
     try:
         thread = threading.Thread(target=target)
@@ -783,20 +785,20 @@ def compare_client_versions(version1, version2):
     return 0
 
 
-def get_client_status(current_version, latest_version):
+def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result = compare_client_versions(current_version, latest_version)
+    comparison_result = compare_client_versions(current_version_inner, latest_version)
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 浅蓝
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", get_text("old_client") + current_version  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
     else:
-        return "最新正式版", "#009900", get_text("release_client") + current_version  # 绿色
+        return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
 
 
-def check_for_updates_with_confirmation(current_version, window):
+def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
         api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
@@ -809,21 +811,21 @@ def check_for_updates_with_confirmation(current_version, window):
             if answer:  # 用户选择是
                 Open_Updater(window)
 
-        if current_version == "url":
+        if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result1, comparison_result2 = compare_versions(latest_version, current_version)
+        comparison_result1, comparison_result2 = compare_versions(latest_version, current_version_inner)
 
         if comparison_result1 > 0:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
-                               get_text("update_question_available2") + current_version +
+                               get_text("update_question_available2") + current_version_inner +
                                get_text("update_question_available3"))
             answer = messagebox.askyesno("更新可用", update_question)
             Update(answer, window)
 
         elif comparison_result2 > 0:
             update_question = (get_text("update_question_dev1") + latest_version +
-                               get_text("update_question_dev2") + current_version +
+                               get_text("update_question_dev2") + current_version_inner +
                                get_text("update_question_dev3"))
             answer = messagebox.askyesno("获取正式版", update_question)
             Update(answer, window)
@@ -841,7 +843,7 @@ def compare_versions(version1, version2):
                int(v) for v in version2.split('.')]
 
 
-def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
+def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
         api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
@@ -849,7 +851,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         data = json.loads(json_str)
         latest_version = data['version_downloader']
 
-        update_version_strip(version_strip_frame, version_label, current_version, latest_version, 0)
+        update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except Exception as e:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
@@ -913,10 +915,10 @@ def pull_suya_announcement(version_strip_frame, version_label):
                          get_text("suya_announcement") + suya_announcement)
 
 
-def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version):
+def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并创建版本状态色带"""
     latest_version = check_client_update()[0]
-    update_version_strip(version_strip_frame, version_label, current_version, latest_version, 1)
+    update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
 
 
 def create_version_strip(color_code, message, window):
@@ -929,16 +931,16 @@ def create_version_strip(color_code, message, window):
     return version_strip, version_label
 
 
-def update_version_strip(version_strip_frame, version_label, current_version, latest_version, type):
+def update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, type):
     """
     更新色带的背景颜色和内部标签的文本。
     """
     if type == 0:
-        status, color_code, message = get_version_status(current_version, latest_version)
+        status, color_code, message = get_version_status(current_version_inner, latest_version)
     elif type == 1:
-        status, color_code, message = get_client_status(current_version, latest_version)
+        status, color_code, message = get_client_status(current_version_inner, latest_version)
     else:
-        status, color_code, message = current_version, latest_version, type
+        status, color_code, message = current_version_inner, latest_version, type
 
     # 更新色带背景颜色
     version_strip_frame.config(bg=color_code)
@@ -946,17 +948,17 @@ def update_version_strip(version_strip_frame, version_label, current_version, la
     version_label.config(text=message, bg=color_code)
 
 
-def get_version_status(current_version, latest_version):
+def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result1, comparison_result2 = compare_versions(current_version, latest_version)
+    comparison_result1, comparison_result2 = compare_versions(current_version_inner, latest_version)
 
     if comparison_result1 == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version  # 浅蓝
+        return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
     elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", get_text("old_downloader") + current_version  # 黄色
+        return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
     else:
-        return "最新正式版", "#009900", get_text("release_downloader") + current_version  # 绿色
+        return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
 
 
 def update_notice_from_queue(queue, notice_text_area):
@@ -1102,10 +1104,10 @@ def Version_Check_for_Updater(online_version):
 
 
 def update_downloader(window):
-    update_thread = threading.Thread(target=check_for_updates_with_confirmation,
-                                     args=(current_version, window))
-    update_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
-    update_thread.start()
+    update_downloader_thread = threading.Thread(target=check_for_updates_with_confirmation,
+                                                args=(current_version, window))
+    update_downloader_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
+    update_downloader_thread.start()
 
 
 def select_download_source(selected_source, source_combobox_select):
