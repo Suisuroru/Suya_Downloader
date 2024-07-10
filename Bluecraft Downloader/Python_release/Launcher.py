@@ -57,20 +57,20 @@ def get_language():
             exit(1)
 
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
+        with open(setting_path, 'r', encoding='utf-8') as file_r:
+            setting_json = json.load(file_r)
             try:
                 language = setting_json['language']
             except:
                 language = set_lang()
                 setting_json['language'] = language
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                with open(setting_path, 'w', encoding='utf-8') as file_w:
+                    json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
     except:
         language = set_lang()
         setting_json['language'] = language
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        with open(setting_path, 'w', encoding='utf-8') as file_w:
+            json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
 
 
 def Open_Updater(window):
