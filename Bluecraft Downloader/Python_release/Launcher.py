@@ -232,16 +232,24 @@ def export_info(event):
 
         # Disk Information
         system_info_box.insert(tk.END, f"Disk Information:\n")
-        for part in psutil.disk_partitions(all=False):
-            usage = psutil.disk_usage(part.mountpoint)
-            system_info_box.insert(tk.END, f"Device: {part.device}\n")
-            system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
-            system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
-            system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
-            system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
-            system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
-            system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
-            system_info_box.insert(tk.END, f"\n")
+        try:
+            for part in psutil.disk_partitions(all=False):
+                if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
+                    try:
+                        usage = psutil.disk_usage(part.mountpoint)
+                        system_info_box.insert(tk.END, f"Device: {part.device}\n")
+                        system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
+                        system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
+                        system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
+                        system_info_box.insert(tk.END, f"\n")
+                    except Exception as e:
+                        system_info_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
+                        system_info_box.insert(tk.END, f"\n")
+        except Exception as e:
+            system_info_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
 
         # Network Information
         system_info_box.insert(tk.END, f"Network Information:\n")
