@@ -189,13 +189,46 @@ def get_text(key):
 
 def export_info(event):
     def show_ui():
+        # 导出按钮点击事件处理函数
+        def on_export_button_click():
+            try:
+                file_path = write_to_file(system_info_box)
+                messagebox.showinfo(get_text("export_information"), get_text("export_information_success") + f"{file_path}")
+            except Exception as e:
+                messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
+
         # 创建一个新的顶级窗口
         export_info_window = tk.Toplevel()
         export_info_window.title(get_text("export_information"))
 
-        # 文本显示框
-        system_info_box = tk.Text(export_info_window, width=50, height=10)
-        system_info_box.pack(pady=10)
+        # 创建一个框架来容纳文本框和滚动条
+        text_scroll_frame = tk.Frame(export_info_window)
+        text_scroll_frame.pack(fill="both", expand=True)
+
+        # 创建文本显示框
+        system_info_box = tk.Text(text_scroll_frame, width=50, height=10)
+
+        # 创建滚动条
+        scrollbar = tk.Scrollbar(text_scroll_frame, orient="vertical", command=system_info_box.yview)
+
+        # 将滚动条与文本框关联
+        system_info_box.config(yscrollcommand=scrollbar.set)
+
+        # 打包文本框和滚动条到text_scroll_frame中
+        system_info_box.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # 创建一个框架来容纳按钮
+        buttons_frame = tk.Frame(export_info_window)
+        buttons_frame.pack(fill="x", pady=(5, 0), side="bottom")  # 明确指定side="bottom"
+
+        # 导出数据按钮
+        export_button = tk.Button(buttons_frame, text=get_text("export_data"), command=on_export_button_click)
+        export_button.pack(side="left", padx=5)
+
+        # 关闭窗口按钮
+        close_button = tk.Button(buttons_frame, text=get_text("close"), command=export_info_window.destroy)
+        close_button.pack(side="right", padx=5)
 
         import platform
         import psutil
@@ -291,17 +324,7 @@ def export_info(event):
             file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
             with open(file_path, 'w') as file:
                 file.write(info_text)
-
-        # 导出按钮点击事件处理函数
-        def on_export_button_click():
-            write_to_file(system_info_box)
-
-        export_button = tk.Button(export_info_window, text=get_text("export_data"), command=on_export_button_click)
-        export_button.pack(pady=5)
-
-        # 关闭窗口按钮
-        close_button = tk.Button(export_info_window, text=get_text("close"), command=export_info_window.destroy)
-        close_button.pack(pady=5)
+            return file_path
 
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
