@@ -185,6 +185,72 @@ def get_text(key):
     return text
 
 
+def export_info(event):
+    def show_ui():
+        # 创建一个新的顶级窗口
+        export_info_window = tk.Toplevel()
+        export_info_window.title(get_text("export_information"))
+
+        # 文本显示框
+        system_info_box = tk.Text(export_info_window, width=50, height=10)
+        system_info_box.pack(pady=10)
+
+        import platform
+        import psutil
+        # 清空文本框内容
+        system_info_box.delete('1.0', tk.END)
+        # 获取系统信息
+        system_info = platform.platform()
+        cpu_info = platform.processor()
+        memory_info = psutil.virtual_memory()
+        disk_info = psutil.disk_usage('/')
+        # 输出系统信息到文本框
+        system_info_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+        system_info_box.insert(tk.END, f"Running path: {current_working_dir}\n")
+        system_info_box.insert(tk.END, f"System Information:\n")
+        system_info_box.insert(tk.END, f"OS: {system_info}\n")
+        system_info_box.insert(tk.END, f"CPU: {cpu_info}\n")
+        system_info_box.insert(tk.END, f"Total Memory: {memory_info.total / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Used Memory: {memory_info.used / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Free Memory: {memory_info.free / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Total Disk Space: {disk_info.total / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Used Disk Space: {disk_info.used / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Free Disk Space: {disk_info.free / (1024 ** 3):.2f} GB\n")
+        # 禁止编辑文本框
+        system_info_box.configure(state=tk.DISABLED)
+
+        # 将文本框内容写入文件的函数
+        def write_to_file(text_box):
+            # 获取文本框内容
+            info_text = text_box.get('1.0', tk.END)
+
+            # 确定下载文件夹路径
+            if os.name == 'nt':  # Windows
+                download_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+            else:  # Unix or Linux
+                download_folder = os.path.expanduser("~/Downloads")
+
+            # 写入文件
+            file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
+            with open(file_path, 'w') as file:
+                file.write(info_text)
+
+        # 导出按钮点击事件处理函数
+        def on_export_button_click():
+            write_to_file(system_info_box)
+
+        export_button = tk.Button(export_info_window, text="Export Data", command=on_export_button_click)
+        export_button.pack(pady=5)
+
+        # 关闭窗口按钮
+        close_button = tk.Button(export_info_window, text="Close", command=export_info_window.destroy)
+        close_button.pack(pady=5)
+
+    # 创建并启动新线程
+    thread = threading.Thread(target=show_ui)
+    thread.start()
+
+
 def initialize_settings():
     path_from_file = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
     ensure_directory_exists(path_from_file)
@@ -1155,6 +1221,7 @@ def create_gui():
         play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources/Pictures/Icons/outline_music_off_black_24dp.png")
         setting_icon = Image.open("./Resources/Pictures/Icons/outline_settings_black_24dp.png")
+        export_icon = Image.open("./Resources/Pictures/Icons/outline_info_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
@@ -1162,6 +1229,7 @@ def create_gui():
         play_icon_image = ImageTk.PhotoImage(play_icon)
         stop_icon_image = ImageTk.PhotoImage(stop_icon)
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
+        export_icon_image = ImageTk.PhotoImage(export_icon)
     except:
         Pull_Resources(window)
 
@@ -1178,7 +1246,7 @@ def create_gui():
 
     # 设置按钮及其容器
     settings_frame = tk.Frame(bottom_frame)
-    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在右侧
+    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在左侧
 
     # 设置图标Label
     settings_icon_label = tk.Label(settings_frame, image=setting_icon_image)
@@ -1186,6 +1254,17 @@ def create_gui():
 
     # 绑定设置按钮点击事件
     settings_icon_label.bind("<Button-1>", create_setting_window)
+
+    # 导出信息按钮及其容器
+    export_info_frame = tk.Frame(bottom_frame)
+    export_info_frame.pack(side=tk.LEFT, pady=10)  # 确保按钮位于设置按钮的右侧
+
+    # 导出信息图标Label
+    export_info_icon_label = tk.Label(export_info_frame, image=export_icon_image)
+    export_info_icon_label.pack()
+
+    # 绑定设置按钮点击事件
+    export_info_icon_label.bind("<Button-1>", export_info)
 
     # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
     update_buttons_frame = tk.Frame(bottom_frame)
