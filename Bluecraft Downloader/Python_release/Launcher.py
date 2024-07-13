@@ -9,6 +9,7 @@ import threading
 import time
 import tkinter as tk
 import webbrowser
+import winreg
 import zipfile
 from getpass import getuser
 from queue import Queue
@@ -226,7 +227,18 @@ def export_info(event):
 
             # 确定下载文件夹路径
             if os.name == 'nt':  # Windows
-                download_folder = os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+                def get_download_folder():
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                        print("从注册表获取到下载文件夹路径成功")
+                        return winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')[0]
+                    except FileNotFoundError:
+                        # 如果上述方法失败，回退到默认路径
+                        return os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+
+                download_folder = get_download_folder()
+                print("获取到下载文件夹路径：" + download_folder)
             else:  # Unix or Linux
                 download_folder = os.path.expanduser("~/Downloads")
 
@@ -239,11 +251,11 @@ def export_info(event):
         def on_export_button_click():
             write_to_file(system_info_box)
 
-        export_button = tk.Button(export_info_window, text="Export Data", command=on_export_button_click)
+        export_button = tk.Button(export_info_window, text=get_text("export_data"), command=on_export_button_click)
         export_button.pack(pady=5)
 
         # 关闭窗口按钮
-        close_button = tk.Button(export_info_window, text="Close", command=export_info_window.destroy)
+        close_button = tk.Button(export_info_window, text=get_text("close"), command=export_info_window.destroy)
         close_button.pack(pady=5)
 
     # 创建并启动新线程
