@@ -3,6 +3,7 @@ import errno
 import json
 import os
 import shutil
+import socket
 import sys
 import tempfile
 import threading
@@ -200,23 +201,59 @@ def export_info(event):
         import psutil
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
-        # 获取系统信息
-        system_info = platform.platform()
-        cpu_info = platform.processor()
-        memory_info = psutil.virtual_memory()
-        disk_info = psutil.disk_usage('/')
+
         # 输出系统信息到文本框
         system_info_box.insert(tk.END, f"Downloader Version: {current_version}\n")
-        system_info_box.insert(tk.END, f"Running path: {current_working_dir}\n")
+        system_info_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
         system_info_box.insert(tk.END, f"System Information:\n")
-        system_info_box.insert(tk.END, f"OS: {system_info}\n")
-        system_info_box.insert(tk.END, f"CPU: {cpu_info}\n")
-        system_info_box.insert(tk.END, f"Total Memory: {memory_info.total / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Used Memory: {memory_info.used / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Free Memory: {memory_info.free / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Total Disk Space: {disk_info.total / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Used Disk Space: {disk_info.used / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Free Disk Space: {disk_info.free / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
+        system_info_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
+        system_info_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
+        system_info_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # CPU Information
+        system_info_box.insert(tk.END, f"CPU Information:\n")
+        system_info_box.insert(tk.END, f"Model: {platform.processor()}\n")
+        system_info_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
+        system_info_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
+        system_info_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
+        system_info_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # Memory Information
+        system_info_box.insert(tk.END, f"Memory Information:\n")
+        mem = psutil.virtual_memory()
+        system_info_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # Disk Information
+        system_info_box.insert(tk.END, f"Disk Information:\n")
+        for part in psutil.disk_partitions(all=False):
+            usage = psutil.disk_usage(part.mountpoint)
+            system_info_box.insert(tk.END, f"Device: {part.device}\n")
+            system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
+            system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
+            system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
+            system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
+            system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
+            system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
+            system_info_box.insert(tk.END, f"\n")
+
+        # Network Information
+        system_info_box.insert(tk.END, f"Network Information:\n")
+        for interface, addrs in psutil.net_if_addrs().items():
+            for addr in addrs:
+                if addr.family == socket.AF_INET:
+                    system_info_box.insert(tk.END, f"Interface: {interface}\n")
+                    system_info_box.insert(tk.END, f"IP Address: {addr.address}\n")
+                    system_info_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
+                    system_info_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
+                    system_info_box.insert(tk.END, f"\n")
+
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
 
