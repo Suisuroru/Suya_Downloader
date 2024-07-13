@@ -63,5 +63,10 @@
     "reload_tip": "更新語言設置需要重新啟動下載器，是否需要立即重新啟動？如果拒絕，本次更改將不會被保存。",
     "confirm": "確認",
     "unknown_error":  "未知錯誤：",
-    "error_unzip": "解壓縮時遇到錯誤"
+    "error_unzip": "解壓縮時遇到錯誤",
+    "export_information": "導出系統資訊",
+    "export_data": "導出數據至txt",
+    "close": "關閉",
+    "export_information_success": "匯出資訊成功，已匯出數據至：",
+    "export_information_error": "匯出資訊失敗，錯誤原因："
 }
