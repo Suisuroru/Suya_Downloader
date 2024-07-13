@@ -3,12 +3,14 @@ import errno
 import json
 import os
 import shutil
+import socket
 import sys
 import tempfile
 import threading
 import time
 import tkinter as tk
 import webbrowser
+import winreg
 import zipfile
 from getpass import getuser
 from queue import Queue
@@ -21,7 +23,7 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.6"
+current_version = "1.0.1.7"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -57,20 +59,20 @@ def get_language():
             exit(1)
 
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
+        with open(setting_path, 'r', encoding='utf-8') as file_r:
+            setting_json = json.load(file_r)
             try:
                 language = setting_json['language']
             except:
                 language = set_lang()
                 setting_json['language'] = language
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                with open(setting_path, 'w', encoding='utf-8') as file_w:
+                    json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
     except:
         language = set_lang()
         setting_json['language'] = language
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        with open(setting_path, 'w', encoding='utf-8') as file_w:
+            json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
 
 
 def Open_Updater(window):
@@ -183,6 +185,150 @@ def get_text(key):
         except:
             text = "文本已丢失，丢失的文本的键值为" + key
     return text
+
+
+def export_info(event):
+    def show_ui():
+        # 导出按钮点击事件处理函数
+        def on_export_button_click():
+            try:
+                file_path = write_to_file(system_info_box)
+                messagebox.showinfo(get_text("export_information"), get_text("export_information_success") + f"{file_path}")
+            except Exception as e:
+                messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
+
+        # 创建一个新的顶级窗口
+        export_info_window = tk.Toplevel()
+        export_info_window.title(get_text("export_information"))
+
+        # 创建一个框架来容纳文本框和滚动条
+        text_scroll_frame = tk.Frame(export_info_window)
+        text_scroll_frame.pack(fill="both", expand=True)
+
+        # 创建文本显示框
+        system_info_box = tk.Text(text_scroll_frame, width=50, height=10)
+
+        # 创建滚动条
+        scrollbar = tk.Scrollbar(text_scroll_frame, orient="vertical", command=system_info_box.yview)
+
+        # 将滚动条与文本框关联
+        system_info_box.config(yscrollcommand=scrollbar.set)
+
+        # 打包文本框和滚动条到text_scroll_frame中
+        system_info_box.pack(side="left", fill="both", expand=True)
+        scrollbar.pack(side="right", fill="y")
+
+        # 创建一个框架来容纳按钮
+        buttons_frame = tk.Frame(export_info_window)
+        buttons_frame.pack(fill="x", pady=(5, 0), side="bottom")  # 明确指定side="bottom"
+
+        # 导出数据按钮
+        export_button = tk.Button(buttons_frame, text=get_text("export_data"), command=on_export_button_click)
+        export_button.pack(side="left", padx=5)
+
+        # 关闭窗口按钮
+        close_button = tk.Button(buttons_frame, text=get_text("close"), command=export_info_window.destroy)
+        close_button.pack(side="right", padx=5)
+
+        import platform
+        import psutil
+        # 清空文本框内容
+        system_info_box.delete('1.0', tk.END)
+
+        # 输出系统信息到文本框
+        system_info_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+        system_info_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
+        system_info_box.insert(tk.END, f"System Information:\n")
+        system_info_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
+        system_info_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
+        system_info_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
+        system_info_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # CPU Information
+        system_info_box.insert(tk.END, f"CPU Information:\n")
+        system_info_box.insert(tk.END, f"Model: {platform.processor()}\n")
+        system_info_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
+        system_info_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
+        system_info_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
+        system_info_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # Memory Information
+        system_info_box.insert(tk.END, f"Memory Information:\n")
+        mem = psutil.virtual_memory()
+        system_info_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
+        system_info_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
+        system_info_box.insert(tk.END, f"\n")
+
+        # Disk Information
+        system_info_box.insert(tk.END, f"Disk Information:\n")
+        try:
+            for part in psutil.disk_partitions(all=False):
+                if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
+                    try:
+                        usage = psutil.disk_usage(part.mountpoint)
+                        system_info_box.insert(tk.END, f"Device: {part.device}\n")
+                        system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
+                        system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
+                        system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
+                        system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
+                        system_info_box.insert(tk.END, f"\n")
+                    except Exception as e:
+                        system_info_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
+                        system_info_box.insert(tk.END, f"\n")
+        except Exception as e:
+            system_info_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
+
+        # Network Information
+        system_info_box.insert(tk.END, f"Network Information:\n")
+        for interface, addrs in psutil.net_if_addrs().items():
+            for addr in addrs:
+                if addr.family == socket.AF_INET:
+                    system_info_box.insert(tk.END, f"Interface: {interface}\n")
+                    system_info_box.insert(tk.END, f"IP Address: {addr.address}\n")
+                    system_info_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
+                    system_info_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
+                    system_info_box.insert(tk.END, f"\n")
+
+        # 禁止编辑文本框
+        system_info_box.configure(state=tk.DISABLED)
+
+        # 将文本框内容写入文件的函数
+        def write_to_file(text_box):
+            # 获取文本框内容
+            info_text = text_box.get('1.0', tk.END)
+
+            # 确定下载文件夹路径
+            if os.name == 'nt':  # Windows
+                def get_download_folder():
+                    try:
+                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                        print("从注册表获取到下载文件夹路径成功")
+                        return winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')[0]
+                    except FileNotFoundError:
+                        # 如果上述方法失败，回退到默认路径
+                        return os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+
+                download_folder = get_download_folder()
+                print("获取到下载文件夹路径：" + download_folder)
+            else:  # Unix or Linux
+                download_folder = os.path.expanduser("~/Downloads")
+
+            # 写入文件
+            file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
+            with open(file_path, 'w') as file:
+                file.write(info_text)
+            return file_path
+
+    # 创建并启动新线程
+    thread = threading.Thread(target=show_ui)
+    thread.start()
 
 
 def initialize_settings():
@@ -1155,6 +1301,7 @@ def create_gui():
         play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources/Pictures/Icons/outline_music_off_black_24dp.png")
         setting_icon = Image.open("./Resources/Pictures/Icons/outline_settings_black_24dp.png")
+        export_icon = Image.open("./Resources/Pictures/Icons/outline_info_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
@@ -1162,6 +1309,7 @@ def create_gui():
         play_icon_image = ImageTk.PhotoImage(play_icon)
         stop_icon_image = ImageTk.PhotoImage(stop_icon)
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
+        export_icon_image = ImageTk.PhotoImage(export_icon)
     except:
         Pull_Resources(window)
 
@@ -1178,7 +1326,7 @@ def create_gui():
 
     # 设置按钮及其容器
     settings_frame = tk.Frame(bottom_frame)
-    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在右侧
+    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在左侧
 
     # 设置图标Label
     settings_icon_label = tk.Label(settings_frame, image=setting_icon_image)
@@ -1186,6 +1334,17 @@ def create_gui():
 
     # 绑定设置按钮点击事件
     settings_icon_label.bind("<Button-1>", create_setting_window)
+
+    # 导出信息按钮及其容器
+    export_info_frame = tk.Frame(bottom_frame)
+    export_info_frame.pack(side=tk.LEFT, pady=10)  # 确保按钮位于设置按钮的右侧
+
+    # 导出信息图标Label
+    export_info_icon_label = tk.Label(export_info_frame, image=export_icon_image)
+    export_info_icon_label.pack()
+
+    # 绑定设置按钮点击事件
+    export_info_icon_label.bind("<Button-1>", export_info)
 
     # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
     update_buttons_frame = tk.Frame(bottom_frame)

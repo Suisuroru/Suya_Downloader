@@ -63,5 +63,10 @@
   "reload_tip": "Updating language settings requires restarting the downloader. Do you want to restart it immediately? If you decline, the changes will not be saved.",
   "confirm": "Confirm",
   "unknown_error": "Unknown error: ",
-  "error_unzip": "An error was encountered while unzipping"
+  "error_unzip": "An error was encountered while unzipping",
+  "export_information": "Export System Information",
+  "export_data": "Export data to txt",
+  "close": "close",
+  "export_information_success": "The information exported successfully, the data has been exported to:",
+  "export_information_error": "Failed to export information, error reason:"
 }
