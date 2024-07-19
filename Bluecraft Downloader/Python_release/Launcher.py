@@ -4,11 +4,13 @@ import json
 import os
 import shutil
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
 import time
 import tkinter as tk
+import traceback
 import webbrowser
 import winreg
 import zipfile
@@ -44,6 +46,105 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+
+def export_system_info(msg_box):
+    import psutil
+    import platform
+    # 输出系统信息到文本框
+    msg_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+    msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
+    msg_box.insert(tk.END, f"System Information:\n")
+    msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
+    msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
+    msg_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
+    msg_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # CPU Information
+    msg_box.insert(tk.END, f"CPU Information:\n")
+    msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
+    msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
+    msg_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
+    msg_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
+    msg_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # Memory Information
+    msg_box.insert(tk.END, f"Memory Information:\n")
+    mem = psutil.virtual_memory()
+    msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # Disk Information
+    msg_box.insert(tk.END, f"Disk Information:\n")
+
+    try:
+        for part in psutil.disk_partitions(all=False):
+            if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
+                try:
+                    usage = psutil.disk_usage(part.mountpoint)
+                    msg_box.insert(tk.END, f"Device: {part.device}\n")
+                    msg_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
+                    msg_box.insert(tk.END, f"File System Type: {part.fstype}\n")
+                    msg_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
+                    msg_box.insert(tk.END, f"\n")
+                except Exception as e:
+                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
+                    msg_box.insert(tk.END, f"\n")
+    except Exception as e:
+        msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
+
+    # Network Information
+    msg_box.insert(tk.END, f"Network Information:\n")
+    for interface, addrs in psutil.net_if_addrs().items():
+        for addr in addrs:
+            if addr.family == socket.AF_INET:
+                msg_box.insert(tk.END, f"Interface: {interface}\n")
+                msg_box.insert(tk.END, f"IP Address: {addr.address}\n")
+                msg_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
+                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
+                msg_box.insert(tk.END, f"\n")
+
+
+def get_traceback_info():
+    """获取当前线程的堆栈跟踪信息"""
+    return traceback.format_exc()
+
+
+def dupe_crash_report(error_message=None):
+    # 创建主窗口
+    root = tk.Tk()
+    root.title("Crash Report")
+
+    # 创建一个滚动条和文本框
+    scrollbar = tk.Scrollbar(root)
+    scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
+
+    msg_box = tk.Text(root, yscrollcommand=scrollbar.set)
+    msg_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
+
+    scrollbar.config(command=msg_box.yview)
+
+    # 如果有错误消息，先输出错误消息
+    if error_message:
+        msg_box.insert(tk.END, f"Error:\n{error_message}\n\n")
+
+    # 输出堆栈跟踪信息
+    traceback_info = get_traceback_info()
+    msg_box.insert(tk.END, f"Traceback Info:\n{traceback_info}\n\n")
+
+    # 输出系统信息
+    export_system_info(msg_box)
+
+    # 主事件循环
+    root.mainloop()
 
 
 def get_language():
@@ -190,10 +291,24 @@ def get_text(key):
 def export_info(event):
     def show_ui():
         # 导出按钮点击事件处理函数
+
+        def open_directory(path):
+            import subprocess
+            """在操作系统默认的文件管理器中打开指定路径的目录"""
+            if os.name == 'nt':  # Windows
+                os.startfile(os.path.dirname(path))
+            elif os.name == 'posix':  # Unix/Linux/MacOS
+                subprocess.run(['xdg-open', os.path.dirname(path)])
+            else:
+                print("Unsupported operating system")
+
         def on_export_button_click():
             try:
-                file_path = write_to_file(system_info_box)
-                messagebox.showinfo(get_text("export_information"), get_text("export_information_success") + f"{file_path}")
+                file_path = write_to_file(system_info_box)  # 返回文件的完整路径
+                messagebox.showinfo(get_text("export_information"),
+                                    get_text("export_information_success") + f"{file_path}")
+                # 打开文件所在目录
+                open_directory(file_path)
             except Exception as e:
                 messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
 
@@ -229,72 +344,10 @@ def export_info(event):
         # 关闭窗口按钮
         close_button = tk.Button(buttons_frame, text=get_text("close"), command=export_info_window.destroy)
         close_button.pack(side="right", padx=5)
-
-        import platform
-        import psutil
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
-
-        # 输出系统信息到文本框
-        system_info_box.insert(tk.END, f"Downloader Version: {current_version}\n")
-        system_info_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
-        system_info_box.insert(tk.END, f"System Information:\n")
-        system_info_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
-        system_info_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
-        system_info_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
-        system_info_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # CPU Information
-        system_info_box.insert(tk.END, f"CPU Information:\n")
-        system_info_box.insert(tk.END, f"Model: {platform.processor()}\n")
-        system_info_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
-        system_info_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
-        system_info_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
-        system_info_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # Memory Information
-        system_info_box.insert(tk.END, f"Memory Information:\n")
-        mem = psutil.virtual_memory()
-        system_info_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # Disk Information
-        system_info_box.insert(tk.END, f"Disk Information:\n")
-        try:
-            for part in psutil.disk_partitions(all=False):
-                if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
-                    try:
-                        usage = psutil.disk_usage(part.mountpoint)
-                        system_info_box.insert(tk.END, f"Device: {part.device}\n")
-                        system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
-                        system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
-                        system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
-                        system_info_box.insert(tk.END, f"\n")
-                    except Exception as e:
-                        system_info_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
-                        system_info_box.insert(tk.END, f"\n")
-        except Exception as e:
-            system_info_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
-
-        # Network Information
-        system_info_box.insert(tk.END, f"Network Information:\n")
-        for interface, addrs in psutil.net_if_addrs().items():
-            for addr in addrs:
-                if addr.family == socket.AF_INET:
-                    system_info_box.insert(tk.END, f"Interface: {interface}\n")
-                    system_info_box.insert(tk.END, f"IP Address: {addr.address}\n")
-                    system_info_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
-                    system_info_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
-                    system_info_box.insert(tk.END, f"\n")
-
+        # 写入系统信息
+        export_system_info(system_info_box)
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
 
@@ -1312,184 +1365,186 @@ def create_gui():
         export_icon_image = ImageTk.PhotoImage(export_icon)
     except:
         Pull_Resources(window)
+    try:
+        # 创建一个容器Frame来对齐公告和检查更新按钮
+        bottom_frame = tk.Frame(window)
+        bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
-    # 创建一个容器Frame来对齐公告和检查更新按钮
-    bottom_frame = tk.Frame(window)
-    bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        # 音乐切换按钮及其容器
+        music_frame = tk.Frame(bottom_frame)
+        music_frame.pack(side=tk.LEFT, pady=10)
+        icon_label = tk.Label(music_frame, image=play_icon_image)
+        icon_label.pack()
+        icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
 
-    # 音乐切换按钮及其容器
-    music_frame = tk.Frame(bottom_frame)
-    music_frame.pack(side=tk.LEFT, pady=10)
-    icon_label = tk.Label(music_frame, image=play_icon_image)
-    icon_label.pack()
-    icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+        # 设置按钮及其容器
+        settings_frame = tk.Frame(bottom_frame)
+        settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在左侧
 
-    # 设置按钮及其容器
-    settings_frame = tk.Frame(bottom_frame)
-    settings_frame.pack(side=tk.LEFT, pady=10)  # 设置按钮放在左侧
+        # 设置图标Label
+        settings_icon_label = tk.Label(settings_frame, image=setting_icon_image)
+        settings_icon_label.pack()
 
-    # 设置图标Label
-    settings_icon_label = tk.Label(settings_frame, image=setting_icon_image)
-    settings_icon_label.pack()
+        # 绑定设置按钮点击事件
+        settings_icon_label.bind("<Button-1>", create_setting_window)
 
-    # 绑定设置按钮点击事件
-    settings_icon_label.bind("<Button-1>", create_setting_window)
+        # 导出信息按钮及其容器
+        export_info_frame = tk.Frame(bottom_frame)
+        export_info_frame.pack(side=tk.LEFT, pady=10)  # 确保按钮位于设置按钮的右侧
 
-    # 导出信息按钮及其容器
-    export_info_frame = tk.Frame(bottom_frame)
-    export_info_frame.pack(side=tk.LEFT, pady=10)  # 确保按钮位于设置按钮的右侧
+        # 导出信息图标Label
+        export_info_icon_label = tk.Label(export_info_frame, image=export_icon_image)
+        export_info_icon_label.pack()
 
-    # 导出信息图标Label
-    export_info_icon_label = tk.Label(export_info_frame, image=export_icon_image)
-    export_info_icon_label.pack()
+        # 绑定设置按钮点击事件
+        export_info_icon_label.bind("<Button-1>", export_info)
 
-    # 绑定设置按钮点击事件
-    export_info_icon_label.bind("<Button-1>", export_info)
+        # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
+        update_buttons_frame = tk.Frame(bottom_frame)
+        update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
 
-    # 创建检查更新按钮容器，并将其放置在底部框架的中间和右侧
-    update_buttons_frame = tk.Frame(bottom_frame)
-    update_buttons_frame.pack(side=tk.RIGHT, padx=(0, 10))  # 右侧留出一点间距
+        # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
+        download_source_way_frame = tk.Frame(update_buttons_frame)
+        download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
-    # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
-    download_source_way_frame = tk.Frame(update_buttons_frame)
-    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
+        # 添加“资源获取方式：”标签
+        download_source_way_label = tk.Label(download_source_way_frame, text=get_text("pull_resources"), anchor="w")
+        download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
-    # 添加“资源获取方式：”标签
-    download_source_way_label = tk.Label(download_source_way_frame, text=get_text("pull_resources"), anchor="w")
-    download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
+        # 资源获取方式选项
+        way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
+        way_selected_source = tk.StringVar(value=get_text("downloader_direct"))  # 初始化下载源选项
 
-    # 资源获取方式选项
-    way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
-    way_selected_source = tk.StringVar(value=get_text("downloader_direct"))  # 初始化下载源选项
+        # 创建Combobox选择框，指定宽度
+        source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
+                                        state="readonly", width=15)  # 设定Combobox宽度为15字符宽
+        source_combobox2.pack()
 
-    # 创建Combobox选择框，指定宽度
-    source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                    state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-    source_combobox2.pack()
+        # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
+        download_source_frame = tk.Frame(update_buttons_frame)
+        download_source_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
-    # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
-    download_source_frame = tk.Frame(update_buttons_frame)
-    download_source_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
+        # 然后定义download_source_way_frame并将其放置于右侧
+        download_source_way_frame = tk.Frame(update_buttons_frame)
+        download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))
+        # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
 
-    # 然后定义download_source_way_frame并将其放置于右侧
-    download_source_way_frame = tk.Frame(update_buttons_frame)
-    download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))
-    # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
+        # 添加“下载源：”标签
+        download_source_label = tk.Label(download_source_frame, text=get_text("download_source"), anchor="w")
+        download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
-    # 添加“下载源：”标签
-    download_source_label = tk.Label(download_source_frame, text=get_text("download_source"), anchor="w")
-    download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
+        # 下载源选项
+        download_sources = [get_text("source_wait1"), get_text("source_wait2")]
+        selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
 
-    # 下载源选项
-    download_sources = [get_text("source_wait1"), get_text("source_wait2")]
-    selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
+        # 创建Combobox选择框，指定宽度
+        source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
+                                       state="readonly", width=15)  # 设定Combobox宽度为15字符宽
+        source_combobox.pack()
 
-    # 创建Combobox选择框，指定宽度
-    source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
-                                   state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-    source_combobox.pack()
+        # 检查BC客户端更新按钮
+        check_bc_update_button = tk.Button(update_buttons_frame, text=get_text("check_client_update"),
+                                           command=lambda: threaded_check_for_updates(client_version, selected_source,
+                                                                                      way_selected_source))
+        check_bc_update_button.pack(side=tk.LEFT,
+                                    padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
-    # 检查BC客户端更新按钮
-    check_bc_update_button = tk.Button(update_buttons_frame, text=get_text("check_client_update"),
-                                       command=lambda: threaded_check_for_updates(client_version, selected_source,
-                                                                                  way_selected_source))
-    check_bc_update_button.pack(side=tk.LEFT,
-                                padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
+        # 检查下载器更新按钮
+        check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
+                                                   command=lambda: update_downloader(window))
+        check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
+        # 音乐切换按钮及其容器之后，添加创建者信息的Label
+        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
+                                 fg="gray")
+        creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
-    # 检查下载器更新按钮
-    check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
-                                               command=lambda: update_downloader(window))
-    check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
-    # 音乐切换按钮及其容器之后，添加创建者信息的Label
-    creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
-                             fg="gray")
-    creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
+        # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
+        status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
+        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
 
-    # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
-    status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
-    strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
+        # 创建一个蓝色色带Frame
+        blue_strip = tk.Frame(window, bg="#0060C0", height=80)
+        blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
-    # 创建一个蓝色色带Frame
-    blue_strip = tk.Frame(window, bg="#0060C0", height=80)
-    blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
-
-    # 在蓝色色带上添加文字
-    welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
-                             font=("Microsoft YaHei", 30),
-                             fg="white", bg="#0060C0")
-    welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
-
-    # 第二行文字示例（如果需要的话）
-    second_line_label = tk.Label(blue_strip, text=get_text("description"),
-                                 font=("Microsoft YaHei", 15),
+        # 在蓝色色带上添加文字
+        welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
+                                 font=("Microsoft YaHei", 30),
                                  fg="white", bg="#0060C0")
-    second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
+        welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
-    # 版本检查并创建初始灰色色带(下载器)
-    status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
-    strip_downloader, label_downloader = create_version_strip(color_code, message, window)
+        # 第二行文字示例（如果需要的话）
+        second_line_label = tk.Label(blue_strip, text=get_text("description"),
+                                     font=("Microsoft YaHei", 15),
+                                     fg="white", bg="#0060C0")
+        second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
-    # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑[state=tk.DISABLED]）
-    notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)
-    notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
+        # 版本检查并创建初始灰色色带(下载器)
+        status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
+        strip_downloader, label_downloader = create_version_strip(color_code, message, window)
 
-    # 版本检查并创建初始灰色色带(客户端)
-    status, color_code, message = "检测中", "#808080", get_text("checking_client_update")
-    strip_client, label_client = create_version_strip(color_code, message, window)
+        # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑[state=tk.DISABLED]）
+        notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)
+        notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
-    # 初始化pygame音乐模块并设置音乐循环播放
-    pygame.mixer.init()
+        # 版本检查并创建初始灰色色带(客户端)
+        status, color_code, message = "检测中", "#808080", get_text("checking_client_update")
+        strip_client, label_client = create_version_strip(color_code, message, window)
 
-    try:
-        # 加载音乐并设置为循环播放
-        pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+        # 初始化pygame音乐模块并设置音乐循环播放
+        pygame.mixer.init()
+
+        try:
+            # 加载音乐并设置为循环播放
+            pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+        except:
+            Pull_Resources(window)
+
+        toggle_music(icon_label)  # 添加这一行来启动音乐播放
+
+        # 确保在所有窗口部件布局完成后调用center_window
+        window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
+        center_window(window)  # 居中窗口
+        initialize_settings()  # 初始化设置内容
+        # 将部分操作移动至此处以减少启动时卡顿
+        try:
+            start_select_thread(selected_source, source_combobox)
+        except:
+            print("下载源列表拉取失败，错误代码：{e}")
+        try:
+            start_fetch_notice(notice_text_area)
+        except:
+            print("公告拉取失败，错误代码：{e}")
+
+        update_thread_args = (strip_downloader, label_downloader, current_version)
+        client_update_thread_args = (strip_client, label_client, client_version)
+        pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
+        # 启动线程
+        update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
+        client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
+                                                args=client_update_thread_args)
+        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
+        try:
+            update_thread.start()
+        except:
+            print("下载器更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error1"))
+        try:
+            client_update_thread.start()
+        except:
+            print("客户端更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error2"))
+        try:
+            pull_suya_announcement_thread.start()
+        except:
+            print("Suya公告拉取失败，错误代码：{e}")
+            update_version_strip(strip_suya_announcement, label_suya_announcement,
+                                 "失败", "A00000", "check_error3")
+
+        window.mainloop()
     except:
-        Pull_Resources(window)
-
-    toggle_music(icon_label)  # 添加这一行来启动音乐播放
-
-    # 确保在所有窗口部件布局完成后调用center_window
-    window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
-    center_window(window)  # 居中窗口
-    initialize_settings()  # 初始化设置内容
-    # 将部分操作移动至此处以减少启动时卡顿
-    try:
-        start_select_thread(selected_source, source_combobox)
-    except:
-        print("下载源列表拉取失败，错误代码：{e}")
-    try:
-        start_fetch_notice(notice_text_area)
-    except:
-        print("公告拉取失败，错误代码：{e}")
-
-    update_thread_args = (strip_downloader, label_downloader, current_version)
-    client_update_thread_args = (strip_client, label_client, client_version)
-    pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
-    # 启动线程
-    update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
-    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                            args=client_update_thread_args)
-    pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
-    try:
-        update_thread.start()
-    except:
-        print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error1"))
-    try:
-        client_update_thread.start()
-    except:
-        print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error2"))
-    try:
-        pull_suya_announcement_thread.start()
-    except:
-        print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement,
-                             "失败", "A00000", "check_error3")
-
-    window.mainloop()
+        dupe_crash_report(str(Exception))
 
     # 在Tkinter的主循环中调用handle_events来处理音乐事件
     while True:
@@ -1500,10 +1555,13 @@ def create_gui():
 
 if __name__ == "__main__":
     initialize_languages(None)
-    app = QApplication(sys.argv)
-    splash = TransparentSplashScreen()
-    splash.show()
-    QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
+    try:
+        app = QApplication(sys.argv)
+        splash = TransparentSplashScreen()
+        splash.show()
+        QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
+    except:
+        dupe_crash_report(str(Exception))
     try:
         if Version_Check_for_Updater(fetch_update_info()[0]):
             # 如果有新版本，启动新线程执行更新操作
