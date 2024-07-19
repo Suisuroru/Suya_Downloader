@@ -46,6 +46,71 @@ if not is_admin():
     sys.exit()
 
 
+def export_system_info(msg_box):
+    import psutil
+    import platform
+    # 输出系统信息到文本框
+    msg_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+    msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
+    msg_box.insert(tk.END, f"System Information:\n")
+    msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
+    msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
+    msg_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
+    msg_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # CPU Information
+    msg_box.insert(tk.END, f"CPU Information:\n")
+    msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
+    msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
+    msg_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
+    msg_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
+    msg_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # Memory Information
+    msg_box.insert(tk.END, f"Memory Information:\n")
+    mem = psutil.virtual_memory()
+    msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
+    msg_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
+    msg_box.insert(tk.END, f"\n")
+
+    # Disk Information
+    msg_box.insert(tk.END, f"Disk Information:\n")
+
+    try:
+        for part in psutil.disk_partitions(all=False):
+            if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
+                try:
+                    usage = psutil.disk_usage(part.mountpoint)
+                    msg_box.insert(tk.END, f"Device: {part.device}\n")
+                    msg_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
+                    msg_box.insert(tk.END, f"File System Type: {part.fstype}\n")
+                    msg_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
+                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
+                    msg_box.insert(tk.END, f"\n")
+                except Exception as e:
+                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
+                    msg_box.insert(tk.END, f"\n")
+    except Exception as e:
+        msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
+
+    # Network Information
+    msg_box.insert(tk.END, f"Network Information:\n")
+    for interface, addrs in psutil.net_if_addrs().items():
+        for addr in addrs:
+            if addr.family == socket.AF_INET:
+                msg_box.insert(tk.END, f"Interface: {interface}\n")
+                msg_box.insert(tk.END, f"IP Address: {addr.address}\n")
+                msg_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
+                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
+                msg_box.insert(tk.END, f"\n")
+
+
 def get_language():
     global language
 
@@ -193,7 +258,8 @@ def export_info(event):
         def on_export_button_click():
             try:
                 file_path = write_to_file(system_info_box)
-                messagebox.showinfo(get_text("export_information"), get_text("export_information_success") + f"{file_path}")
+                messagebox.showinfo(get_text("export_information"),
+                                    get_text("export_information_success") + f"{file_path}")
             except Exception as e:
                 messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
 
@@ -229,72 +295,10 @@ def export_info(event):
         # 关闭窗口按钮
         close_button = tk.Button(buttons_frame, text=get_text("close"), command=export_info_window.destroy)
         close_button.pack(side="right", padx=5)
-
-        import platform
-        import psutil
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
-
-        # 输出系统信息到文本框
-        system_info_box.insert(tk.END, f"Downloader Version: {current_version}\n")
-        system_info_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
-        system_info_box.insert(tk.END, f"System Information:\n")
-        system_info_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
-        system_info_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
-        system_info_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
-        system_info_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # CPU Information
-        system_info_box.insert(tk.END, f"CPU Information:\n")
-        system_info_box.insert(tk.END, f"Model: {platform.processor()}\n")
-        system_info_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
-        system_info_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
-        system_info_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
-        system_info_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # Memory Information
-        system_info_box.insert(tk.END, f"Memory Information:\n")
-        mem = psutil.virtual_memory()
-        system_info_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
-        system_info_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
-        system_info_box.insert(tk.END, f"\n")
-
-        # Disk Information
-        system_info_box.insert(tk.END, f"Disk Information:\n")
-        try:
-            for part in psutil.disk_partitions(all=False):
-                if os.path.isdir(part.mountpoint):  # 检查挂载点是否是一个有效的目录
-                    try:
-                        usage = psutil.disk_usage(part.mountpoint)
-                        system_info_box.insert(tk.END, f"Device: {part.device}\n")
-                        system_info_box.insert(tk.END, f"Mountpoint: {part.mountpoint}\n")
-                        system_info_box.insert(tk.END, f"File System Type: {part.fstype}\n")
-                        system_info_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
-                        system_info_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
-                        system_info_box.insert(tk.END, f"\n")
-                    except Exception as e:
-                        system_info_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
-                        system_info_box.insert(tk.END, f"\n")
-        except Exception as e:
-            system_info_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
-
-        # Network Information
-        system_info_box.insert(tk.END, f"Network Information:\n")
-        for interface, addrs in psutil.net_if_addrs().items():
-            for addr in addrs:
-                if addr.family == socket.AF_INET:
-                    system_info_box.insert(tk.END, f"Interface: {interface}\n")
-                    system_info_box.insert(tk.END, f"IP Address: {addr.address}\n")
-                    system_info_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
-                    system_info_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
-                    system_info_box.insert(tk.END, f"\n")
-
+        # 写入系统信息
+        export_system_info(system_info_box)
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
 
