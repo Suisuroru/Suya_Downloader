@@ -1,5 +1,5 @@
 name: Submit Suggestion
-description: If you have any suggestions for the downloader, you can submit them here.
+description: If you have any suggestions for the downloader, you can submit them here in English.
 labels: ["enhancement"]
 body:
 - type: dropdown
