@@ -4,6 +4,7 @@ import json
 import os
 import shutil
 import socket
+import subprocess
 import sys
 import tempfile
 import threading
@@ -290,11 +291,24 @@ def get_text(key):
 def export_info(event):
     def show_ui():
         # 导出按钮点击事件处理函数
+
+        def open_directory(path):
+            import subprocess
+            """在操作系统默认的文件管理器中打开指定路径的目录"""
+            if os.name == 'nt':  # Windows
+                os.startfile(os.path.dirname(path))
+            elif os.name == 'posix':  # Unix/Linux/MacOS
+                subprocess.run(['xdg-open', os.path.dirname(path)])
+            else:
+                print("Unsupported operating system")
+
         def on_export_button_click():
             try:
-                file_path = write_to_file(system_info_box)
+                file_path = write_to_file(system_info_box)  # 返回文件的完整路径
                 messagebox.showinfo(get_text("export_information"),
                                     get_text("export_information_success") + f"{file_path}")
+                # 打开文件所在目录
+                open_directory(file_path)
             except Exception as e:
                 messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
 
