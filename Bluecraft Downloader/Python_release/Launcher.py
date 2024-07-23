@@ -48,6 +48,15 @@ if not is_admin():
     sys.exit()
 
 
+def global_config():
+    global_config_path = os.path.join("./Resources", "global_config.json")
+    try:
+        with open(global_config_path, 'r', encoding='utf-8') as file:
+            global_json = json.load(file)
+    except:
+        global_json = {}
+
+
 def export_system_info(msg_box):
     import psutil
     import platform
