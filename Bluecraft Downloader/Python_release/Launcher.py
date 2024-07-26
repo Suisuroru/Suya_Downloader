@@ -29,6 +29,7 @@ current_version = "1.0.1.9"
 # 获取运行目录
 current_working_dir = os.getcwd()
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -47,13 +48,13 @@ if not is_admin():
     sys.exit()
 
 
-def global_config():
-    global_config_path = os.path.join("./Settings", "global_config.json")
+def get_global_config():
     try:
         with open(global_config_path, 'r', encoding='utf-8') as file:
             global_json = json.load(file)
     except:
         global_json = {}
+    return global_json
 
 
 def export_system_info(msg_box):

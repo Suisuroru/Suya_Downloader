@@ -48,6 +48,17 @@ current_dir = os.getcwd()
 
 # 指定版本文件的路径
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
+
+
+def get_global_config():
+    try:
+        with open(global_config_path, 'r', encoding='utf-8') as file:
+            global_json = json.load(file)
+    except:
+        global_json = {}
+    return global_json
+
 
 # 创建或覆盖版本文件
 try:
