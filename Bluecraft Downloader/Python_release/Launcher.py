@@ -49,12 +49,12 @@ if not is_admin():
 
 
 def get_global_config():
+    global global_json
     try:
         with open(global_config_path, 'r', encoding='utf-8') as file:
             global_json = json.load(file)
     except:
         global_json = {}
-    return global_json
 
 
 def export_system_info(msg_box):

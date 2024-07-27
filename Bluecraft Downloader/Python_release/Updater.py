@@ -52,12 +52,12 @@ global_config_path = os.path.join("./Settings", "global_config.json")
 
 
 def get_global_config():
+    global global_json
     try:
         with open(global_config_path, 'r', encoding='utf-8') as file:
             global_json = json.load(file)
     except:
         global_json = {}
-    return global_json
 
 
 # 创建或覆盖版本文件
