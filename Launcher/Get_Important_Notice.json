@@ -1,8 +1,8 @@
 {
-    "title":"服务器地址 - 123",
-    "text":"测试 \n \n 123",
-    "top_bar_color":"78,137,255",
-    "text_font_name":"黑体",
+    "title":"服务器地址",
+    "text":"服务器 IP #1\nbc.bluecraft.top",
+    "top_bar_color":"217,0,0",
+    "text_font_name":"微软雅黑",
     "text_font_size":"18",
-    "text_font_color":"78,137,255"
+    "text_font_color":"0,0,0"
 }
