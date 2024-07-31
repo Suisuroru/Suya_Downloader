@@ -2,7 +2,7 @@
     "title":"服务器地址",
     "text":"测试 \n \n 123",
     "top_bar_color":"217,0,0",
-    "text_font":"微软雅黑",
+    "text_font_name":"微软雅黑",
     "text_font_size":"9",
     "text_font_color":"0,0,0"
 }
