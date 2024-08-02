@@ -510,8 +510,8 @@ class TransparentSplashScreen(QWidget):
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
         screen = QApplication.desktop().availableGeometry()
         try:
-            pic_ratio = QPixmap("./Resources/Pictures/BC.png").size().width() / QPixmap(
-                "./Resources/Pictures/BC.png").size().height()
+            pic_ratio = QPixmap("Resources/Pictures/Server.png").size().width() / QPixmap(
+                "Resources/Pictures/Server.png").size().height()
         except:
             Pull_Resources(None)
         window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
@@ -522,9 +522,9 @@ class TransparentSplashScreen(QWidget):
 
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
         try:
-            self.pixmap = QPixmap("./Resources/Pictures/BC.png").scaled(window_width, window_height,
-                                                                        Qt.KeepAspectRatio,
-                                                                        Qt.SmoothTransformation)
+            self.pixmap = QPixmap("Resources/Pictures/Server.png").scaled(window_width, window_height,
+                                                                          Qt.KeepAspectRatio,
+                                                                          Qt.SmoothTransformation)
         except:
             Pull_Resources(None)
 
@@ -1361,7 +1361,7 @@ def create_gui():
 
     # 设置窗口图标
     try:
-        window.iconbitmap("./Resources/Pictures/BC.ico")
+        window.iconbitmap("./Resources/Pictures/Server.ico")
 
         # 图标加载与初始化
         play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
