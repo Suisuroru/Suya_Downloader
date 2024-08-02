@@ -24,20 +24,7 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.2.0"
-
-# 获取运行目录
-current_working_dir = os.getcwd()
-settings_path = os.path.join("./Settings")
-setting_path = os.path.join("./Settings", "Downloader_Settings.json")
-global_config_path = os.path.join("./Settings", "global_config.json")
-
-# 确保设置的文件夹存在
-if not os.path.exists(settings_path):
-    os.makedirs(settings_path)
-
-# 打印运行目录以确认
-print("运行目录:", current_working_dir)
+Suya_Downloader_Version = "1.0.2.0"
 
 
 def is_admin():
@@ -51,6 +38,19 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+# 获取运行目录
+current_working_dir = os.getcwd()
+settings_path = os.path.join("./Settings")
+setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
+
+# 确保设置的文件夹存在
+if not os.path.exists(settings_path):
+    os.makedirs(settings_path)
+
+# 打印运行目录以确认
+print("运行目录:", current_working_dir)
 
 
 def get_global_config():
@@ -78,7 +78,7 @@ def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+    msg_box.insert(tk.END, f"Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
@@ -1144,7 +1144,7 @@ def create_version_strip(color_code, message, window):
     version_strip = tk.Frame(window, bg=color_code, height=40)  # 创建色带Frame
     version_strip.pack(fill=tk.X, pady=(10, 0))  # 设置在蓝色色带下方
 
-    version_label = tk.Label(version_strip, text=message.format(current_version), font=("Microsoft YaHei", 12),
+    version_label = tk.Label(version_strip, text=message.format(Suya_Downloader_Version), font=("Microsoft YaHei", 12),
                              fg="white", bg=color_code)
     version_label.pack(anchor=tk.CENTER)  # 文字居中显示
     return version_strip, version_label
@@ -1322,7 +1322,7 @@ def Version_Check_for_Updater(online_version):
 
 def update_downloader(window):
     update_downloader_thread = threading.Thread(target=check_for_updates_with_confirmation,
-                                                args=(current_version, window))
+                                                args=(Suya_Downloader_Version, window))
     update_downloader_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
     update_downloader_thread.start()
 
@@ -1533,7 +1533,7 @@ def create_gui():
         except:
             print("公告拉取失败，错误代码：{e}")
 
-        update_thread_args = (strip_downloader, label_downloader, current_version)
+        update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
         client_update_thread_args = (strip_client, label_client, client_version)
         pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
         # 启动线程
