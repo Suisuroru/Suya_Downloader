@@ -46,6 +46,11 @@ current_dir = os.getcwd()
 # 指定版本文件的路径
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
+settings_path = os.path.join("./Settings")
+
+# 确保设置的文件夹存在
+if not os.path.exists(settings_path):
+    os.makedirs(settings_path)
 
 
 def get_global_config():
