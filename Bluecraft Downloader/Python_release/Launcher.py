@@ -28,8 +28,13 @@ current_version = "1.0.1.9"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
+settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
+
+# 确保设置的文件夹存在
+if not os.path.exists(settings_path):
+    os.makedirs(settings_path)
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
