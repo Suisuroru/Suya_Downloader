@@ -62,10 +62,13 @@ def get_global_config():
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
     return global_json_file
 
+
 global_json = get_global_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
+
+
 def export_system_info(msg_box):
     import psutil
     import platform
@@ -1532,7 +1535,8 @@ def create_gui():
         update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
         client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
                                                 args=client_update_thread_args)
-        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
+        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                         args=pull_suya_announcement_args)
         try:
             update_thread.start()
         except:
