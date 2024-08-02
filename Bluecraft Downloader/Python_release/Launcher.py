@@ -4,7 +4,6 @@ import json
 import os
 import shutil
 import socket
-import subprocess
 import sys
 import tempfile
 import threading
@@ -25,11 +24,12 @@ from PyQt5.QtCore import Qt, QTimer, QRectF
 from PyQt5.QtGui import QPixmap, QPainter
 from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.8"
+current_version = "1.0.1.9"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
-setting_path = os.path.join(".", "settings.json")
+setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -46,6 +46,27 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+
+def get_global_config():
+    try:
+        with open(global_config_path, 'r', encoding='utf-8') as file:
+            global_json_file = json.load(file)
+    except:
+        global_json_file = {
+            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
+        }
+        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+    return global_json_file
+
+
+global_json = get_global_config()
+update_url = global_json['update_url']
+api_url = global_json['api_url']
+announcement_url = global_json['announcement_url']
 
 
 def export_system_info(msg_box):
@@ -869,8 +890,6 @@ def direct_download_client(download_link):
 
 
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
-
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
@@ -1000,7 +1019,6 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
         update_url = data['url_downloader']
@@ -1045,7 +1063,6 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
         latest_version = data['version_downloader']
@@ -1057,7 +1074,6 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 
 def check_client_update():
-    update_url = "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json"
     try:
         # 发送GET请求获取更新信息
         response = requests.get(update_url)
@@ -1092,7 +1108,6 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
     json_str = requests.get(api_url).text.strip()
     data = json.loads(json_str)
 
@@ -1173,8 +1188,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        url = "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
-        response = requests.get(url)
+        response = requests.get(announcement_url)
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1205,9 +1219,8 @@ def check_notice_queue(queue, notice_text_area):
 
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
-    get_Updater_api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
     try:
-        json_str = requests.get(get_Updater_api_url).text.strip()
+        json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
         update_url = data['url_updater']
         version = data['version_updater']
@@ -1522,7 +1535,8 @@ def create_gui():
         update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
         client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
                                                 args=client_update_thread_args)
-        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, args=pull_suya_announcement_args)
+        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                         args=pull_suya_announcement_args)
         try:
             update_thread.start()
         except:

@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Updater_Version = "1.0.1.6"
+Updater_Version = "1.0.1.9"
 
 
 def is_admin():
@@ -40,14 +40,28 @@ def show_message(partner, partner_en):
                             partner, partner_en))
 
 
-# 目标API地址
-api_url = "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json"
-
 # 当前工作目录
 current_dir = os.getcwd()
 
 # 指定版本文件的路径
-setting_path = os.path.join(".", "settings.json")
+setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
+
+
+def get_global_config():
+    try:
+        with open(global_config_path, 'r', encoding='utf-8') as file:
+            global_json_file = json.load(file)
+    except:
+        global_json_file = {
+            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
+        }
+        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+    return global_json_file
+
 
 # 创建或覆盖版本文件
 try:
@@ -61,6 +75,11 @@ except:
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     print(f"版本文件已创建于: {setting_path}")
+
+global_json = get_global_config()
+update_url = global_json['update_url']
+api_url = global_json['api_url']
+announcement_url = global_json['announcement_url']
 
 
 def del_Resources():
@@ -102,22 +121,22 @@ def fetch_update_info():
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
         if Update_Partner == "Full":
-            update_url = data['url_downloader']
+            downloader_update_url = data['url_downloader']
             version = data['version_downloader']
             partner = "完整更新模式"
             partner_en = "FULL UPDATE MODE"
             message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
             # 启动线程
             message_thread.start()
-            return version, update_url, Update_Partner
+            return version, downloader_update_url, Update_Partner
         elif Update_Partner == "Resources":
-            update_url = data['url_resource']
+            downloader_update_url = data['url_resource']
             partner = "重新拉取资源文件模式"
             partner_en = "RESOURCES PULL MODE"
             message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
             # 启动线程
             message_thread.start()
-            return None, update_url, Update_Partner
+            return None, downloader_update_url, Update_Partner
         else:
             print("传入参数错误")
             return None, None, None
@@ -126,10 +145,10 @@ def fetch_update_info():
         return None, None, None
 
 
-def download_and_install(update_url, update_partner_2):
+def download_and_install(downloader_update_url, update_partner_2):
     """下载ZIP文件并覆盖安装，完成后运行Launcher.exe"""
     try:
-        response = requests.get(update_url, stream=True)
+        response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
         # 定义临时目录和临时文件
         temp_dir = tempfile.mkdtemp()
@@ -184,13 +203,13 @@ def download_and_install(update_url, update_partner_2):
 
 
 def Update_Launcher():
-    version, update_url, Update_partner = fetch_update_info()
-    if version and update_url:
+    version, downloader_update_url, Update_partner = fetch_update_info()
+    if version and downloader_update_url:
         print(f"发现新版本: {version}，开始下载...")
-        download_and_install(update_url, Update_partner)
-    elif update_url:
+        download_and_install(downloader_update_url, Update_partner)
+    elif downloader_update_url:
         print("正在重新拉取Resources")
-        download_and_install(update_url, Update_partner)
+        download_and_install(downloader_update_url, Update_partner)
     else:
         print("没有找到新版本的信息。")
 
