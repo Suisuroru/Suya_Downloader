@@ -20,24 +20,8 @@ from tkinter import messagebox, scrolledtext, ttk, filedialog
 import pygame
 import requests
 from PIL import Image, ImageTk
-from PyQt5.QtCore import Qt, QTimer, QRectF
-from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
-current_version = "1.0.1.9"
-
-# 获取运行目录
-current_working_dir = os.getcwd()
-settings_path = os.path.join("./Settings")
-setting_path = os.path.join("./Settings", "Downloader_Settings.json")
-global_config_path = os.path.join("./Settings", "global_config.json")
-
-# 确保设置的文件夹存在
-if not os.path.exists(settings_path):
-    os.makedirs(settings_path)
-
-# 打印运行目录以确认
-print("运行目录:", current_working_dir)
+Suya_Downloader_Version = "1.0.2.0"
 
 
 def is_admin():
@@ -51,6 +35,19 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
+
+# 获取运行目录
+current_working_dir = os.getcwd()
+settings_path = os.path.join("./Settings")
+setting_path = os.path.join("./Settings", "Downloader_Settings.json")
+global_config_path = os.path.join("./Settings", "global_config.json")
+
+# 确保设置的文件夹存在
+if not os.path.exists(settings_path):
+    os.makedirs(settings_path)
+
+# 打印运行目录以确认
+print("运行目录:", current_working_dir)
 
 
 def get_global_config():
@@ -78,7 +75,7 @@ def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"Downloader Version: {current_version}\n")
+    msg_box.insert(tk.END, f"Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
@@ -506,92 +503,65 @@ def center_window(window, width=None, height=None):
     window.geometry(f"{window_width}x{window_height}+{x_cordinate}+{y_cordinate}")
 
 
-class TransparentSplashScreen(QWidget):
+class TkTransparentSplashScreen:
     def __init__(self):
-        super().__init__()
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.root = tk.Tk()
+        self.root.overrideredirect(True)  # 移除标题栏和边框
+        self.root.wm_attributes("-topmost", True)  # 置顶窗口
+        self.root.wm_attributes("-transparentcolor", "white")  # 设置透明颜色为白色
 
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
-        screen = QApplication.desktop().availableGeometry()
-        try:
-            pic_ratio = QPixmap("./Resources/Pictures/BC.png").size().width() / QPixmap(
-                "./Resources/Pictures/BC.png").size().height()
-        except:
-            Pull_Resources(None)
-        window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
-        window_height = round(window_width / pic_ratio)
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
 
-        # 初始化透明度为0（完全透明）
-        self.alpha = 0
+        try:
+            img = Image.open("./Resources/Pictures/Server.png")
+            pic_ratio = img.size[0] / img.size[1]
+        except FileNotFoundError:
+            # 如果图片不存在，则使用默认大小
+            img = Image.new('RGB', (200, 200), color='white')
+            pic_ratio = 1.0
+
+        window_width = min(int(screen_width * 0.8), int(screen_height * 0.6 * pic_ratio))
+        window_height = int(window_width / pic_ratio)
 
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
-        try:
-            self.pixmap = QPixmap("./Resources/Pictures/BC.png").scaled(window_width, window_height,
-                                                                        Qt.KeepAspectRatio,
-                                                                        Qt.SmoothTransformation)
-        except:
-            Pull_Resources(None)
+        img = img.resize((window_width, window_height), Image.LANCZOS)
+        self.photo = ImageTk.PhotoImage(img)
 
-        # 使用 QGraphicsView 和 QGraphicsScene 来实现图像的自适应缩放
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene, self)
-        self.view.setRenderHint(QPainter.Antialiasing)
-        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        # 设置视图的背景为透明并去除可能的边框效果
-        self.view.setStyleSheet("QGraphicsView {border-style: none; background-color: transparent;}")
-
-        # 将图像放入场景
-        graphics_item = QGraphicsPixmapItem(self.pixmap)
-        self.scene.addItem(graphics_item)
-
-        # 设置场景大小与图片匹配，避免边框
-        self.scene.setSceneRect(QRectF(0, 0, self.pixmap.width(), self.pixmap.height()))
-
-        # 调整视图大小以适应图片，无边框
-        self.view.setGeometry(0, 0, self.pixmap.width(), self.pixmap.height())
-
-        # 确保窗口大小与视图一致
-        self.resize(self.pixmap.width(), self.pixmap.height())
+        # 创建一个 Canvas 用于显示图片
+        self.canvas = tk.Canvas(self.root, width=window_width, height=window_height, bg="white")
+        self.canvas.pack()
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
 
         # 设置窗口居中显示
-        self.center()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
         # 模拟启动过程，2秒后关闭splash screen
-        QTimer.singleShot(2000, self.close_splash)
+        self.root.after(2000, self.close_splash)
 
         # 设置淡入定时器
-        self.fade_in_timer = QTimer(self)
-        self.fade_in_timer.timeout.connect(self.fade_in_step)
-        self.fade_in_timer.start(50)  # 每50毫秒执行一次淡入步骤
+        self.alpha = 0
+        self.fade_in()
 
-    def fade_in_step(self):
+    def fade_in(self):
         """淡入步骤函数，逐步增加窗口的透明度"""
-        self.alpha += 20  # 每次增加的透明度值，根据需要调整
+        self.alpha += 20  # 每次增加的透明度值
         if self.alpha >= 255:
             self.alpha = 255
-            self.fade_in_timer.stop()
-        self.setWindowOpacity(self.alpha / 255.0)
+            return
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QApplication.desktop().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        # 更新透明度
+        self.root.wm_attributes("-alpha", self.alpha / 255.0)
 
-    def resizeEvent(self, event):
-        # 当窗口大小改变时，调整视图大小并保持图像比例
-        self.view.setGeometry(self.rect())  # 保证视图始终充满窗口
-        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatioByExpanding)
-        super().resizeEvent(event)
+        # 每50毫秒执行一次淡入步骤
+        self.root.after(50, self.fade_in)
 
     def close_splash(self):
-        self.close()
+        self.root.destroy()
         create_gui()
-        # 这里可以启动主应用窗口
-        pass
 
 
 # 初始化pygame音乐模块
@@ -1144,7 +1114,7 @@ def create_version_strip(color_code, message, window):
     version_strip = tk.Frame(window, bg=color_code, height=40)  # 创建色带Frame
     version_strip.pack(fill=tk.X, pady=(10, 0))  # 设置在蓝色色带下方
 
-    version_label = tk.Label(version_strip, text=message.format(current_version), font=("Microsoft YaHei", 12),
+    version_label = tk.Label(version_strip, text=message.format(Suya_Downloader_Version), font=("Microsoft YaHei", 12),
                              fg="white", bg=color_code)
     version_label.pack(anchor=tk.CENTER)  # 文字居中显示
     return version_strip, version_label
@@ -1322,7 +1292,7 @@ def Version_Check_for_Updater(online_version):
 
 def update_downloader(window):
     update_downloader_thread = threading.Thread(target=check_for_updates_with_confirmation,
-                                                args=(current_version, window))
+                                                args=(Suya_Downloader_Version, window))
     update_downloader_thread.daemon = True  # 设置为守护线程，主程序退出时自动结束
     update_downloader_thread.start()
 
@@ -1358,15 +1328,16 @@ def start_select_thread(selected_source, source_combobox_select):
 
 
 def create_gui():
-    global music_playing, play_icon_image, stop_icon_image
+    global music_playing, play_icon_image, stop_icon_image, window_main
 
     music_playing = False
-    window = tk.Tk()
-    window.title("Suya Downloader for BlueCraft Client")
+    window_main = tk.Tk()
+    window_main.title("Suya Downloader for BlueCraft Client")
+    window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
     try:
-        window.iconbitmap("./Resources/Pictures/BC.ico")
+        window_main.iconbitmap("./Resources/Pictures/Server.ico")
 
         # 图标加载与初始化
         play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
@@ -1382,10 +1353,10 @@ def create_gui():
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
         export_icon_image = ImageTk.PhotoImage(export_icon)
     except:
-        Pull_Resources(window)
+        Pull_Resources(window_main)
     try:
         # 创建一个容器Frame来对齐公告和检查更新按钮
-        bottom_frame = tk.Frame(window)
+        bottom_frame = tk.Frame(window_main)
         bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         # 音乐切换按钮及其容器
@@ -1469,7 +1440,7 @@ def create_gui():
 
         # 检查下载器更新按钮
         check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
-                                                   command=lambda: update_downloader(window))
+                                                   command=lambda: update_downloader(window_main))
         check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
         # 音乐切换按钮及其容器之后，添加创建者信息的Label
         creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
@@ -1478,10 +1449,10 @@ def create_gui():
 
         # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
         status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
-        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
+        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window_main)
 
         # 创建一个蓝色色带Frame
-        blue_strip = tk.Frame(window, bg="#0060C0", height=80)
+        blue_strip = tk.Frame(window_main, bg="#0060C0", height=80)
         blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
         # 在蓝色色带上添加文字
@@ -1498,15 +1469,15 @@ def create_gui():
 
         # 版本检查并创建初始灰色色带(下载器)
         status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
-        strip_downloader, label_downloader = create_version_strip(color_code, message, window)
+        strip_downloader, label_downloader = create_version_strip(color_code, message, window_main)
 
         # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑[state=tk.DISABLED]）
-        notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)
+        notice_text_area = scrolledtext.ScrolledText(window_main, width=60, height=15, state=tk.DISABLED)
         notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         # 版本检查并创建初始灰色色带(客户端)
         status, color_code, message = "检测中", "#808080", get_text("checking_client_update")
-        strip_client, label_client = create_version_strip(color_code, message, window)
+        strip_client, label_client = create_version_strip(color_code, message, window_main)
 
         # 初始化pygame音乐模块并设置音乐循环播放
         pygame.mixer.init()
@@ -1515,13 +1486,13 @@ def create_gui():
             # 加载音乐并设置为循环播放
             pygame.mixer.music.load("./Resources/Sounds/music.mp3")
         except:
-            Pull_Resources(window)
+            Pull_Resources(window_main)
 
         toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
         # 确保在所有窗口部件布局完成后调用center_window
-        window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
-        center_window(window)  # 居中窗口
+        window_main.update_idletasks()  # 更新窗口状态以获取准确的尺寸
+        center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         try:
@@ -1533,7 +1504,7 @@ def create_gui():
         except:
             print("公告拉取失败，错误代码：{e}")
 
-        update_thread_args = (strip_downloader, label_downloader, current_version)
+        update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
         client_update_thread_args = (strip_client, label_client, client_version)
         pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
         # 启动线程
@@ -1561,34 +1532,42 @@ def create_gui():
             update_version_strip(strip_suya_announcement, label_suya_announcement,
                                  "失败", "A00000", "check_error3")
 
-        window.mainloop()
+        window_main.mainloop()
     except:
         dupe_crash_report(str(Exception))
 
     # 在Tkinter的主循环中调用handle_events来处理音乐事件
     while True:
         handle_events()  # 处理pygame事件，包括音乐结束事件
-        window.update_idletasks()  # 更新Tkinter窗口
-        window.update()  # 运行Tkinter事件循环
+        window_main.update_idletasks()  # 更新Tkinter窗口
+        window_main.update()  # 运行Tkinter事件循环
+
+
+def on_closing():
+    pygame.mixer.music.stop()
+    window_main.destroy()
 
 
 if __name__ == "__main__":
     initialize_languages(None)
     try:
-        app = QApplication(sys.argv)
-        splash = TransparentSplashScreen()
-        splash.show()
-        QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
-    except:
-        dupe_crash_report(str(Exception))
-    try:
-        if Version_Check_for_Updater(fetch_update_info()[0]):
-            # 如果有新版本，启动新线程执行更新操作
-            print("启动更新线程...")
-            update_thread = threading.Thread(target=Update_Updater)
-            update_thread.start()
-        else:
-            print("无需更新。")
+        def Check_Update_for_Updater():
+            if Version_Check_for_Updater(fetch_update_info()[0]):
+                # 如果有新版本，启动新线程执行更新操作
+                print("启动更新线程...")
+                update_thread = threading.Thread(target=Update_Updater)
+                update_thread.start()
+            else:
+                print("无需更新。")
+
+
+        check_thread = threading.Thread(target=Check_Update_for_Updater)
+        check_thread.start()
     except requests.RequestException as e:
         print("更新拉取失败，错误代码：{e}")
-    sys.exit(app.exec_())
+    try:
+        splash = TkTransparentSplashScreen()
+        # 主循环，等待启动画面关闭
+        splash.root.mainloop()
+    except:
+        dupe_crash_report(str(Exception))
