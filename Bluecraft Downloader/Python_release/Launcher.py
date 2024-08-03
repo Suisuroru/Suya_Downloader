@@ -1455,13 +1455,23 @@ def create_gui():
         blue_strip = tk.Frame(window_main, bg="#0060C0", height=80)
         blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
+        # 加载图片并调整大小
+        image_path = "./Resources/Pictures/Server.png"
+        image = Image.open(image_path)
+        image = image.resize((80, 80))  # 调整图片大小以匹配蓝色色带的高度
+        photo = ImageTk.PhotoImage(image)
+
+        # 在蓝色色带上添加图片
+        image_label = tk.Label(blue_strip, image=photo, bg="#0060C0")
+        image_label.pack(side=tk.LEFT, padx=10)  # 设置水平填充以增加间距
+
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
                                  font=("Microsoft YaHei", 30),
                                  fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
-        # 第二行文字示例（如果需要的话）
+        # 第二行文字
         second_line_label = tk.Label(blue_strip, text=get_text("description"),
                                      font=("Microsoft YaHei", 15),
                                      fg="white", bg="#0060C0")
