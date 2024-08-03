@@ -1531,7 +1531,6 @@ def create_gui():
             print("Suya公告拉取失败，错误代码：{e}")
             update_version_strip(strip_suya_announcement, label_suya_announcement,
                                  "失败", "A00000", "check_error3")
-
         window_main.mainloop()
     except:
         dupe_crash_report(str(Exception))
@@ -1559,8 +1558,6 @@ if __name__ == "__main__":
                 update_thread.start()
             else:
                 print("无需更新。")
-
-
         check_thread = threading.Thread(target=Check_Update_for_Updater)
         check_thread.start()
     except requests.RequestException as e:
