@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Updater_Version = "1.0.1.9"
+Suya_Updater_Version = "1.0.2.0"
 
 
 def is_admin():
@@ -72,11 +72,11 @@ def get_global_config():
 try:
     with open(setting_path, 'r', encoding='utf-8') as file:
         setting_json = json.load(file)
-    setting_json['Updater_Version'] = Updater_Version
+    setting_json['Updater_Version'] = Suya_Updater_Version
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
 except:
-    setting_json = {'Updater_Version': Updater_Version}
+    setting_json = {'Updater_Version': Suya_Updater_Version}
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     print(f"版本文件已创建于: {setting_path}")
