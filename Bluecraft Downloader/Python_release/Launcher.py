@@ -1582,13 +1582,16 @@ if __name__ == "__main__":
     except:
         dupe_crash_report(str(Exception))
     try:
-        if Version_Check_for_Updater(fetch_update_info()[0]):
-            # 如果有新版本，启动新线程执行更新操作
-            print("启动更新线程...")
-            update_thread = threading.Thread(target=Update_Updater)
-            update_thread.start()
-        else:
-            print("无需更新。")
+        def Check_Update_for_Updater():
+            if Version_Check_for_Updater(fetch_update_info()[0]):
+                # 如果有新版本，启动新线程执行更新操作
+                print("启动更新线程...")
+                update_thread = threading.Thread(target=Update_Updater)
+                update_thread.start()
+            else:
+                print("无需更新。")
+        check_thread = threading.Thread(target=Check_Update_for_Updater)
+        check_thread.start()
     except requests.RequestException as e:
         print("更新拉取失败，错误代码：{e}")
     sys.exit(app.exec_())
