@@ -21,7 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.0"
+Suya_Downloader_Version = "1.0.2.1"
 
 
 def is_admin():
