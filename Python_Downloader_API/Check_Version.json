@@ -4,8 +4,8 @@
     "version_updater": "1.0.1.9",
     "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EUc3NsqdSxFJttWblBJr66MBJfKioBw72ssdz_sryUtFNA",
     "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=ES2Gjxnp5k9ArN9cvG6UIwABy21b-TA6dJ1Ia30FYHciwQ",
-    "suya_announcement_message": "客户端直接拉取用于解压缩部分代码已尝试修复，请在1.0.1.4以上版本使用相关功能",
-    "suya_announcement_message_zh_hant": "用戶端直接拉取用於解壓縮部分代碼已嘗試修復，請在1.0.1.4以上版本使用相關功能",
-    "suya_announcement_message_en_us": "Some of the code used to decompress directly from the client has been fixed, please use the relevant functions later than version 1.0.1.4",
+    "suya_announcement_message": "已确认1.0.1.9版本存在一定缺陷，如已打开更新Updater，请等待修复发布",
+    "suya_announcement_message_zh_hant": "已確認1.0.1.9版本存在一定缺陷，如已打開更新Updater，請等待修復發佈",
+    "suya_announcement_message_en_us": "It has been confirmed that version 1.0.1.9 has some defects, if you have enabled the update updater, please wait for the fix to be released",
     "suya_announcement_color": "#009900"
 }
