@@ -21,7 +21,8 @@ body:
       required: true
     - label: "I confirm that there are no other problems in Issues"
       required: true
-    - label: "If you've tried the latest dev version of the code, the problem still exists in the latest dev version"
+    - label: "If you've tried the latest dev version of the code, please select this option"
+    - label: "The problem still exists in the latest dev version"
 - type: textarea
   id: "yml-2"
   attributes:

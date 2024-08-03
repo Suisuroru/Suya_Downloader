@@ -21,7 +21,8 @@ body:
       required: true
     - label: "我确认在Issues中并无其他相同建议"
       required: true
-    - label: "如果你尝试过最新的dev版本的代码，该功能在最新dev版本中仍然未制作"
+    - label: "如果你尝试过最新的dev版本的代码，请选择此选项"
+    - label: "该功能在最新dev版本中仍然未制作"
 - type: textarea
   id: "yml-2"
   attributes:

@@ -21,7 +21,8 @@ body:
       required: true
     - label: "I confirm that there are no other identical suggestions in Issues"
       required: true
-    - label: "If you have tried the latest dev version of the code, the issue still persists in the latest dev version"
+    - label: "If you have tried the latest dev version of the code, please select this option"
+    - label: "the issue still persists in the latest dev version"
 - type: textarea
   id: "yml-2"
   attributes:
