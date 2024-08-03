@@ -4,8 +4,8 @@
     "version_updater": "1.0.2.0",
     "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=ESgMtLnU1lJOk51a9vxXA_kB89-8UzQm_ZjjkJR7lUvxpQ",
     "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=Ef9pp0GvtFZHs7qe6vqIlnsB9fj1skOcnvE9WM4cvtjHbA",
-    "suya_announcement_message": "已确认1.0.1.9版本存在一定缺陷，如已打开更新Updater，请等待修复发布",
-    "suya_announcement_message_zh_hant": "已確認1.0.1.9版本存在一定缺陷，如已打開更新Updater，請等待修復發佈",
-    "suya_announcement_message_en_us": "It has been confirmed that version 1.0.1.9 has some defects, if you have enabled the update updater, please wait for the fix to be released",
+    "suya_announcement_message": "1.0.2.0版本已发布，欢迎您来体验",
+    "suya_announcement_message_zh_hant": "1.0.2.0版本已發佈，歡迎您來體驗",
+    "suya_announcement_message_en_us": "Version 1.0.2.0 has been released, and you are welcome to experience it",
     "suya_announcement_color": "#009900"
 }
