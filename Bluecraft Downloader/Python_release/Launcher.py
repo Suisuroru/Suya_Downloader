@@ -20,9 +20,6 @@ from tkinter import messagebox, scrolledtext, ttk, filedialog
 import pygame
 import requests
 from PIL import Image, ImageTk
-from PyQt5.QtCore import Qt, QTimer, QRectF
-from PyQt5.QtGui import QPixmap, QPainter
-from PyQt5.QtWidgets import QApplication, QWidget, QGraphicsPixmapItem, QGraphicsView, QGraphicsScene
 
 current_version = "1.0.1.9"
 
@@ -506,92 +503,70 @@ def center_window(window, width=None, height=None):
     window.geometry(f"{window_width}x{window_height}+{x_cordinate}+{y_cordinate}")
 
 
-class TransparentSplashScreen(QWidget):
+class TkTransparentSplashScreen:
     def __init__(self):
-        super().__init__()
-        self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.root = tk.Tk()
+        self.root.overrideredirect(True)  # 移除标题栏和边框
+        self.root.wm_attributes("-topmost", True)  # 置顶窗口
+        self.root.wm_attributes("-transparentcolor", "white")  # 设置透明颜色为白色
 
         # 获取屏幕尺寸以计算窗口大小，保持图片比例适应屏幕
-        screen = QApplication.desktop().availableGeometry()
-        try:
-            pic_ratio = QPixmap("./Resources/Pictures/BC.png").size().width() / QPixmap(
-                "./Resources/Pictures/BC.png").size().height()
-        except:
-            Pull_Resources(None)
-        window_width = round(min(screen.width() * 0.8, screen.height() * 0.6 * pic_ratio))
-        window_height = round(window_width / pic_ratio)
+        screen_width = self.root.winfo_screenwidth()
+        screen_height = self.root.winfo_screenheight()
 
-        # 初始化透明度为0（完全透明）
-        self.alpha = 0
+        try:
+            img = Image.open("./Resources/Pictures/BC.png")
+            pic_ratio = img.size[0] / img.size[1]
+        except FileNotFoundError:
+            # 如果图片不存在，则使用默认大小
+            img = Image.new('RGB', (200, 200), color='white')
+            pic_ratio = 1.0
+
+        window_width = min(int(screen_width * 0.8), int(screen_height * 0.6 * pic_ratio))
+        window_height = int(window_width / pic_ratio)
 
         # 加载背景图像并按窗口大小调整，确保不失真且尽可能大
-        try:
-            self.pixmap = QPixmap("./Resources/Pictures/BC.png").scaled(window_width, window_height,
-                                                                        Qt.KeepAspectRatio,
-                                                                        Qt.SmoothTransformation)
-        except:
-            Pull_Resources(None)
+        img = img.resize((window_width, window_height), Image.LANCZOS)
+        self.photo = ImageTk.PhotoImage(img)
 
-        # 使用 QGraphicsView 和 QGraphicsScene 来实现图像的自适应缩放
-        self.scene = QGraphicsScene(self)
-        self.view = QGraphicsView(self.scene, self)
-        self.view.setRenderHint(QPainter.Antialiasing)
-        self.view.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.view.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-
-        # 设置视图的背景为透明并去除可能的边框效果
-        self.view.setStyleSheet("QGraphicsView {border-style: none; background-color: transparent;}")
-
-        # 将图像放入场景
-        graphics_item = QGraphicsPixmapItem(self.pixmap)
-        self.scene.addItem(graphics_item)
-
-        # 设置场景大小与图片匹配，避免边框
-        self.scene.setSceneRect(QRectF(0, 0, self.pixmap.width(), self.pixmap.height()))
-
-        # 调整视图大小以适应图片，无边框
-        self.view.setGeometry(0, 0, self.pixmap.width(), self.pixmap.height())
-
-        # 确保窗口大小与视图一致
-        self.resize(self.pixmap.width(), self.pixmap.height())
+        # 创建一个 Canvas 用于显示图片
+        self.canvas = tk.Canvas(self.root, width=window_width, height=window_height, bg="white")
+        self.canvas.pack()
+        self.canvas.create_image(0, 0, anchor=tk.NW, image=self.photo)
 
         # 设置窗口居中显示
-        self.center()
+        x = (screen_width - window_width) // 2
+        y = (screen_height - window_height) // 2
+        self.root.geometry(f"{window_width}x{window_height}+{x}+{y}")
 
         # 模拟启动过程，2秒后关闭splash screen
-        QTimer.singleShot(2000, self.close_splash)
+        self.root.after(2000, self.close_splash)
 
         # 设置淡入定时器
-        self.fade_in_timer = QTimer(self)
-        self.fade_in_timer.timeout.connect(self.fade_in_step)
-        self.fade_in_timer.start(50)  # 每50毫秒执行一次淡入步骤
+        self.alpha = 0
+        self.fade_in()
 
-    def fade_in_step(self):
+    def fade_in(self):
         """淡入步骤函数，逐步增加窗口的透明度"""
-        self.alpha += 20  # 每次增加的透明度值，根据需要调整
+        self.alpha += 20  # 每次增加的透明度值
         if self.alpha >= 255:
             self.alpha = 255
-            self.fade_in_timer.stop()
-        self.setWindowOpacity(self.alpha / 255.0)
+            return
 
-    def center(self):
-        qr = self.frameGeometry()
-        cp = QApplication.desktop().availableGeometry().center()
-        qr.moveCenter(cp)
-        self.move(qr.topLeft())
+        # 更新透明度
+        self.root.wm_attributes("-alpha", self.alpha / 255.0)
 
-    def resizeEvent(self, event):
-        # 当窗口大小改变时，调整视图大小并保持图像比例
-        self.view.setGeometry(self.rect())  # 保证视图始终充满窗口
-        self.view.fitInView(self.scene.sceneRect(), Qt.KeepAspectRatioByExpanding)
-        super().resizeEvent(event)
+        # 每50毫秒执行一次淡入步骤
+        self.root.after(50, self.fade_in)
 
     def close_splash(self):
-        self.close()
+        self.root.destroy()
         create_gui()
-        # 这里可以启动主应用窗口
-        pass
+
+
+# 假设 create_gui 是外部定义的一个函数
+def create_gui():
+    print("Creating GUI...")
 
 
 # 初始化pygame音乐模块
@@ -1575,13 +1550,6 @@ def create_gui():
 if __name__ == "__main__":
     initialize_languages(None)
     try:
-        app = QApplication(sys.argv)
-        splash = TransparentSplashScreen()
-        splash.show()
-        QTimer.singleShot(2000, app.quit)  # 例如，2秒后自动退出
-    except:
-        dupe_crash_report(str(Exception))
-    try:
         def Check_Update_for_Updater():
             if Version_Check_for_Updater(fetch_update_info()[0]):
                 # 如果有新版本，启动新线程执行更新操作
@@ -1590,8 +1558,15 @@ if __name__ == "__main__":
                 update_thread.start()
             else:
                 print("无需更新。")
+
+
         check_thread = threading.Thread(target=Check_Update_for_Updater)
         check_thread.start()
     except requests.RequestException as e:
         print("更新拉取失败，错误代码：{e}")
-    sys.exit(app.exec_())
+    try:
+        splash = TkTransparentSplashScreen()
+        # 主循环，等待启动画面关闭
+        splash.root.mainloop()
+    except:
+        dupe_crash_report(str(Exception))
