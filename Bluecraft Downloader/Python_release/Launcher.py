@@ -1458,7 +1458,7 @@ def create_gui():
         # 加载图片并调整大小
         image_path = "./Resources/Pictures/Server.png"
         image = Image.open(image_path)
-        image = image.resize((80, 80))  # 调整图片大小以匹配蓝色色带的高度
+        image = image.resize((100, 100))  # 调整图片大小以匹配蓝色色带的高度
         photo = ImageTk.PhotoImage(image)
 
         # 在蓝色色带上添加图片
