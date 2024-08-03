@@ -24,12 +24,12 @@ There are 2 versions of this downloader:
 
 E language version is developed by KFACBT.
 
-#### Functionalities that has been implemented
+#### Related features
 
-1. Get client latest version
-2. Get the version of the downloader update API
-3. Download `Downloader` and download `Client`
-4. With debugging window, easy for developers to analyze errors
+- [x] Get client latest version
+- [x] Get the version of the downloader update API
+- [x] Download `Downloader` and download `Client`
+- [x] With debugging window, easy for developers to analyze errors
 
 ### Python language version
 
@@ -37,16 +37,13 @@ Python language version developed by Suisuroru.
 
 This version is based on Suya Downloader.
 
-#### Functionalities that has been implemented
+#### Related features
 
-1. Get client latest version
-2. Get the version of the downloader update API
-3. Self-update `Downloader`
-4. Pull `Client` from web non-direct/web direct links
-5. Multi-language support
-6. Pull the client using the downloader and unzip it to a specific location
-
-#### Planned Functions
-
-1. Launch the game client using the downloader without a launcher
-2. Independently update the project, and will be updated in the future with a version that is easy to customize
+- [x] Get client latest version
+- [x] Get the version of the downloader update API
+- [x] Self-update `Downloader`
+- [x] Pull `Client` from web non-direct/web direct links
+- [x] Multi-language support
+- [x] Pull the client using the downloader and unzip it to a specific location
+- [ ] Launch the game client using the downloader without a launcher
+- [ ] Independently update the project, and will be updated in the future with a version that is easy to customize
