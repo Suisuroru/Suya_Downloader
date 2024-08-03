@@ -564,11 +564,6 @@ class TkTransparentSplashScreen:
         create_gui()
 
 
-# 假设 create_gui 是外部定义的一个函数
-def create_gui():
-    print("Creating GUI...")
-
-
 # 初始化pygame音乐模块
 pygame.mixer.init()
 
