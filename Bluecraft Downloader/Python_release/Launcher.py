@@ -1328,15 +1328,16 @@ def start_select_thread(selected_source, source_combobox_select):
 
 
 def create_gui():
-    global music_playing, play_icon_image, stop_icon_image
+    global music_playing, play_icon_image, stop_icon_image, window_main
 
     music_playing = False
-    window = tk.Tk()
-    window.title("Suya Downloader for BlueCraft Client")
+    window_main = tk.Tk()
+    window_main.title("Suya Downloader for BlueCraft Client")
+    window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
     try:
-        window.iconbitmap("./Resources/Pictures/Server.ico")
+        window_main.iconbitmap("./Resources/Pictures/Server.ico")
 
         # 图标加载与初始化
         play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
@@ -1352,10 +1353,10 @@ def create_gui():
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
         export_icon_image = ImageTk.PhotoImage(export_icon)
     except:
-        Pull_Resources(window)
+        Pull_Resources(window_main)
     try:
         # 创建一个容器Frame来对齐公告和检查更新按钮
-        bottom_frame = tk.Frame(window)
+        bottom_frame = tk.Frame(window_main)
         bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
 
         # 音乐切换按钮及其容器
@@ -1439,7 +1440,7 @@ def create_gui():
 
         # 检查下载器更新按钮
         check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
-                                                   command=lambda: update_downloader(window))
+                                                   command=lambda: update_downloader(window_main))
         check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
         # 音乐切换按钮及其容器之后，添加创建者信息的Label
         creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
@@ -1448,10 +1449,10 @@ def create_gui():
 
         # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
         status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
-        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window)
+        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window_main)
 
         # 创建一个蓝色色带Frame
-        blue_strip = tk.Frame(window, bg="#0060C0", height=80)
+        blue_strip = tk.Frame(window_main, bg="#0060C0", height=80)
         blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
         # 在蓝色色带上添加文字
@@ -1468,15 +1469,15 @@ def create_gui():
 
         # 版本检查并创建初始灰色色带(下载器)
         status, color_code, message = "检测中", "#808080", get_text("checking_downloader_update")
-        strip_downloader, label_downloader = create_version_strip(color_code, message, window)
+        strip_downloader, label_downloader = create_version_strip(color_code, message, window_main)
 
         # 创建公告栏（使用scrolledtext以支持滚动，但设置为不可编辑[state=tk.DISABLED]）
-        notice_text_area = scrolledtext.ScrolledText(window, width=60, height=15, state=tk.DISABLED)
+        notice_text_area = scrolledtext.ScrolledText(window_main, width=60, height=15, state=tk.DISABLED)
         notice_text_area.pack(padx=10, pady=10, fill=tk.BOTH, expand=True)
 
         # 版本检查并创建初始灰色色带(客户端)
         status, color_code, message = "检测中", "#808080", get_text("checking_client_update")
-        strip_client, label_client = create_version_strip(color_code, message, window)
+        strip_client, label_client = create_version_strip(color_code, message, window_main)
 
         # 初始化pygame音乐模块并设置音乐循环播放
         pygame.mixer.init()
@@ -1485,13 +1486,13 @@ def create_gui():
             # 加载音乐并设置为循环播放
             pygame.mixer.music.load("./Resources/Sounds/music.mp3")
         except:
-            Pull_Resources(window)
+            Pull_Resources(window_main)
 
         toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
         # 确保在所有窗口部件布局完成后调用center_window
-        window.update_idletasks()  # 更新窗口状态以获取准确的尺寸
-        center_window(window)  # 居中窗口
+        window_main.update_idletasks()  # 更新窗口状态以获取准确的尺寸
+        center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         try:
@@ -1531,15 +1532,20 @@ def create_gui():
             update_version_strip(strip_suya_announcement, label_suya_announcement,
                                  "失败", "A00000", "check_error3")
 
-        window.mainloop()
+        window_main.mainloop()
     except:
         dupe_crash_report(str(Exception))
 
     # 在Tkinter的主循环中调用handle_events来处理音乐事件
     while True:
         handle_events()  # 处理pygame事件，包括音乐结束事件
-        window.update_idletasks()  # 更新Tkinter窗口
-        window.update()  # 运行Tkinter事件循环
+        window_main.update_idletasks()  # 更新Tkinter窗口
+        window_main.update()  # 运行Tkinter事件循环
+
+
+def on_closing():
+    pygame.mixer.music.stop()
+    window_main.destroy()
 
 
 if __name__ == "__main__":
