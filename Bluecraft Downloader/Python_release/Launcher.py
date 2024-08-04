@@ -68,6 +68,7 @@ def get_config():
             personalization_file = json.load(file)
     except:
         personalization_file = {
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
         }
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
@@ -427,7 +428,7 @@ def export_info(event):
 
 
 def initialize_settings():
-    path_from_file = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+    path_from_file = personalization_json["initialize_path"]
     ensure_directory_exists(path_from_file)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
