@@ -71,9 +71,6 @@ def get_config():
             personalization_file = json.load(file)
     except:
         personalization_file = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
         }
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
