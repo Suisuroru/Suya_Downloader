@@ -6,9 +6,9 @@ This is a repository of API interfaces for the Bluecraft Client Downloader and i
 
 [简体中文](https://bluecraft-server.github.io/API/multi-languages/zh_hans)
 
-[繁體中文](https://github.com/Bluecraft-Server/API/multi-languages/zh_hant)
+[繁體中文](https://bluecraft-server.github.io/API/multi-languages/zh_hant)
 
-[English](https://github.com/Bluecraft-Server/API/multi-languages/en_us)
+[English](https://bluecraft-server.github.io/API/multi-languages/en_us)
 
 ## Usage
 
