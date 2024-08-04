@@ -313,14 +313,24 @@ def initialize_languages(tag):
 
 
 def get_text(key):
-    try:
-        text = lang_json[key]
-    except:
+    if key == "lost_key":
         try:
-            text = spare_lang_json[key]
+            text = lang_json[key]
         except:
-            text = "文本已丢失，丢失的文本的键值为" + key
-    return text
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = "文本已丢失，丢失的文本的键值为"
+        return text
+    else:
+        try:
+            text = lang_json[key]
+        except:
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = get_text("lost_key") + key
+        return text
 
 
 def export_info(event):

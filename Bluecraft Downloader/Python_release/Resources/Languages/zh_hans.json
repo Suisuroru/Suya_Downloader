@@ -69,5 +69,6 @@
     "export_data": "导出数据至txt",
     "close": "关闭",
     "export_information_success": "导出信息成功，已导出数据至：",
-    "export_information_error": "导出信息失败，错误原因："
+    "export_information_error": "导出信息失败，错误原因：",
+    "lost_key": "文本已丢失，丢失的文本的键值为"
 }
