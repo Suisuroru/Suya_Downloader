@@ -51,27 +51,50 @@ if not os.path.exists(settings_path):
 print("运行目录:", current_working_dir)
 
 
+def merge_jsons(default_json, file_path):
+    """
+    合并两个 JSON 对象，优先使用文件中的数据。
+    :param default_json: 默认的 JSON 字典
+    :param file_path: 文件路径
+    :return: 合并后的 JSON 字典
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_json = json.load(file)
+            # 使用文件中的数据覆盖默认值
+            return {**default_json, **loaded_json}
+    except FileNotFoundError:
+        # 如果文件不存在，直接返回默认值
+        return default_json
+    except Exception as e:
+        # 如果发生其他错误，打印错误信息并返回默认值
+        print(f"Error loading JSON from {file_path}: {e}")
+        return default_json
+
+
 def get_config():
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            global_json_file = json.load(file)
-    except:
-        global_json_file = {
+        default_global_config = {
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
         }
+        global_json_file = merge_jsons(default_global_config, global_config_path)
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    try:
-        with open(personalization_path, 'r', encoding='utf-8') as file:
-            personalization_file = json.load(file)
     except:
-        personalization_file = {
+        dupe_crash_report(str(Exception))
+        exit(1)
+    try:
+        default_personalization = {
             "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
         }
+        personalization_file = merge_jsons(default_personalization, personalization_path)
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
     return global_json_file, personalization_file
 
 
