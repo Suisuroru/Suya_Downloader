@@ -1,4 +1,5 @@
 {
+    "main_title": "Suya下載器 --- Bluecraft定製版",
     "settings": "設置",
     "direct_pull_path": "直接拉取安裝路徑：",
     "choose_folders": "選擇資料夾",
@@ -27,8 +28,8 @@
     "check_client_update": "檢查BC用戶端更新",
     "check_downloader_update": "檢查下載器更新",
     "wait_message": "等待Suya下載器公告數據回傳中",
-    "welcome": "歡迎使用 BlueCraft 用戶端Suya下載器！",
-    "description": "快速、方便地下載或更新 BlueCraft 用戶端",
+    "welcome": "歡迎使用 Bluecraft 用戶端Suya下載器！",
+    "description": "快速、方便地下載或更新 Bluecraft 用戶端",
     "checking_downloader_update": "檢查下載器更新中…",
     "checking_client_update": "檢查BC用戶端更新中…",
     "cant_make_dir": "無法創建目錄: ",
