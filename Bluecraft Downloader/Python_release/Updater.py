@@ -43,17 +43,18 @@ def show_message(partner, partner_en):
 # 当前工作目录
 current_dir = os.getcwd()
 
-# 指定版本文件的路径
+# 指定路径
+settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
-settings_path = os.path.join("./Settings")
+personalization_path = os.path.join("./Settings", "personalization.json")
 
 # 确保设置的文件夹存在
 if not os.path.exists(settings_path):
     os.makedirs(settings_path)
 
 
-def get_global_config():
+def get_config():
     try:
         with open(global_config_path, 'r', encoding='utf-8') as file:
             global_json_file = json.load(file)
@@ -65,7 +66,18 @@ def get_global_config():
         }
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    return global_json_file
+    try:
+        with open(personalization_path, 'r', encoding='utf-8') as file:
+            personalization_file = json.load(file)
+    except:
+        personalization_file = {
+            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
+        }
+        with open(personalization_path, 'w', encoding='utf-8') as file_w:
+            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    return global_json_file, personalization_file
 
 
 # 创建或覆盖版本文件
@@ -81,7 +93,7 @@ except:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     print(f"版本文件已创建于: {setting_path}")
 
-global_json = get_global_config()
+global_json, personalization_json = get_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
