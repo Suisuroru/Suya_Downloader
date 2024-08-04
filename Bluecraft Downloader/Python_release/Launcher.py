@@ -21,7 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.1"
+Suya_Downloader_Version = "1.0.2.2"
 
 
 def is_admin():
@@ -206,7 +206,7 @@ def dupe_crash_report(error_message=None):
 def get_language():
     global language
 
-    def set_lang():
+    def set_lang(setting_json):
         choose_language()
         setting_json['language'] = global_selected_lang
         final_language = global_selected_lang
@@ -226,7 +226,9 @@ def get_language():
                 with open(setting_path, 'w', encoding='utf-8') as file_w:
                     json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
     except:
-        language = set_lang()
+        setting_json = {
+        }
+        language = set_lang(setting_json)
         setting_json['language'] = language
         with open(setting_path, 'w', encoding='utf-8') as file_w:
             json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
