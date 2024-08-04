@@ -637,7 +637,7 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def language_unformated():
+def language_unformatted():
     if language == "zh_hans":
         return "简体中文"
     elif language == "zh_hant":
@@ -716,7 +716,7 @@ def create_setting_window(event):
 
     # 选项
     lang_choice = ["简体中文", "繁體中文", "English"]
-    lang_selected = tk.StringVar(value=language_unformated())  # 初始化
+    lang_selected = tk.StringVar(value=language_unformatted())  # 初始化
 
     # 创建Combobox选择框，指定宽度
     lang_combobox = ttk.Combobox(inner_frame, textvariable=lang_selected, values=lang_choice,
