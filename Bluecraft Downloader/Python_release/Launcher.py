@@ -670,7 +670,7 @@ def create_setting_window(event):
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path_user = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+                path_user = personalization_json["initialize_path"]
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path_user)  # 插入默认路径
             else:
@@ -1135,9 +1135,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
         except:
             return data["suya_announcement_message"]
 
-    if language == "zh_hans":
-        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
-    elif language == "zh_hant":
+    if language == "zh_hant":
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message_zh_hant")
     elif language == "en_us":
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message_en_us")
