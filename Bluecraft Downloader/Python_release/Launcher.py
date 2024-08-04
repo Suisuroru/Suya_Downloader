@@ -1449,7 +1449,8 @@ def create_gui():
 
         # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
         status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
-        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray, window_main)
+        strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray,
+                                                                                window_main)
 
         # 创建一个蓝色色带Frame
         blue_strip = tk.Frame(window_main, bg="#0060C0", height=80)
@@ -1568,6 +1569,8 @@ if __name__ == "__main__":
                 update_thread.start()
             else:
                 print("无需更新。")
+
+
         check_thread = threading.Thread(target=Check_Update_for_Updater)
         check_thread.start()
     except requests.RequestException as e:
