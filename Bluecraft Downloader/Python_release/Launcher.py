@@ -1049,6 +1049,14 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
         def Update(answer, window):
             if answer:  # 用户选择是
+                try:
+                    with open(setting_path, 'r', encoding='utf-8') as file:
+                        setting_json = json.load(file)
+                        setting_json['Update_Partner'] = "Full"
+                except:
+                    setting_json = {'Updater_Partner': "Full"}
+                with open(setting_path, 'w', encoding='utf-8') as file:
+                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
                 Open_Updater(window)
 
         if current_version_inner == "url":
