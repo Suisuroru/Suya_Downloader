@@ -99,7 +99,6 @@ def get_config():
 global_json, personalization_json = get_config()
 api_url = global_json['api_url']
 
-
 # 创建或覆盖版本文件
 try:
     with open(setting_path, 'r', encoding='utf-8') as file:
