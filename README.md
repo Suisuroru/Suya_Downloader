@@ -1,6 +1,6 @@
 # API
 
-这是为 BlueCraft 客户端下载器及其调用的 API 接口的存储库。
+这是为 Bluecraft 客户端下载器及其调用的 API 接口的存储库。
 
 ## Languages
 

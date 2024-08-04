@@ -1344,7 +1344,7 @@ def create_gui():
 
     music_playing = False
     window_main = tk.Tk()
-    window_main.title("Suya Downloader for BlueCraft Client")
+    window_main.title(get_text("main_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标

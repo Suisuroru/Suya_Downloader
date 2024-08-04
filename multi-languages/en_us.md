@@ -1,6 +1,6 @@
 # API
 
-This is a repository of API interfaces for the BlueCraft Client Downloader and its calls.
+This is a repository of API interfaces for the Bluecraft Client Downloader and its calls.
 
 ## Languages
 
