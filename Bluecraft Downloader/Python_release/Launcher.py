@@ -724,6 +724,7 @@ def create_setting_window(event):
     lang_combobox.pack(side=tk.LEFT, pady=(0, 5), fill=tk.X)  # 增加上下pad以保持间距，fill=tk.X填充水平空间
 
     def reload_with_confirm():
+        lang_old = language_unformatted()
         lang_new = language_formated(lang_selected.get())
         initialize_languages(lang_new)
         if lang_new != language:
@@ -740,6 +741,8 @@ def create_setting_window(event):
                     with open(setting_path, 'w', encoding='utf-8') as file:
                         json.dump(setting_json, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
+            else:
+                initialize_languages(lang_old)
 
     # 创建确认按钮框架，确保与Combobox对齐
     button_frame = tk.Frame(inner_frame)
