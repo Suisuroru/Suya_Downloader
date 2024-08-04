@@ -51,29 +51,50 @@ if not os.path.exists(settings_path):
 print("运行目录:", current_working_dir)
 
 
+def merge_jsons(default_json, file_path):
+    """
+    合并两个 JSON 对象，优先使用文件中的数据。
+    :param default_json: 默认的 JSON 字典
+    :param file_path: 文件路径
+    :return: 合并后的 JSON 字典
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_json = json.load(file)
+            # 使用文件中的数据覆盖默认值
+            return {**default_json, **loaded_json}
+    except FileNotFoundError:
+        # 如果文件不存在，直接返回默认值
+        return default_json
+    except Exception as e:
+        # 如果发生其他错误，打印错误信息并返回默认值
+        print(f"Error loading JSON from {file_path}: {e}")
+        return default_json
+
+
 def get_config():
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            global_json_file = json.load(file)
-    except:
-        global_json_file = {
+        default_global_config = {
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
         }
+        global_json_file = merge_jsons(default_global_config, global_config_path)
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    try:
-        with open(personalization_path, 'r', encoding='utf-8') as file:
-            personalization_file = json.load(file)
     except:
-        personalization_file = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
+        dupe_crash_report(str(Exception))
+        exit(1)
+    try:
+        default_personalization = {
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
         }
+        personalization_file = merge_jsons(default_personalization, personalization_path)
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
     return global_json_file, personalization_file
 
 
@@ -313,14 +334,24 @@ def initialize_languages(tag):
 
 
 def get_text(key):
-    try:
-        text = lang_json[key]
-    except:
+    if key == "lost_key":
         try:
-            text = spare_lang_json[key]
+            text = lang_json[key]
         except:
-            text = "文本已丢失，丢失的文本的键值为" + key
-    return text
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = "文本已丢失，丢失的文本的键值为"
+        return text
+    else:
+        try:
+            text = lang_json[key]
+        except:
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = get_text("lost_key") + key
+        return text
 
 
 def export_info(event):
@@ -420,7 +451,7 @@ def export_info(event):
 
 
 def initialize_settings():
-    path_from_file = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+    path_from_file = personalization_json["initialize_path"]
     ensure_directory_exists(path_from_file)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
@@ -606,7 +637,7 @@ def handle_events():
                 pygame.mixer.music.play(loops=-1)  # 重新播放音乐
 
 
-def language_unformated():
+def language_unformatted():
     if language == "zh_hans":
         return "简体中文"
     elif language == "zh_hant":
@@ -639,7 +670,7 @@ def create_setting_window(event):
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path_user = fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+                path_user = personalization_json["initialize_path"]
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path_user)  # 插入默认路径
             else:
@@ -685,7 +716,7 @@ def create_setting_window(event):
 
     # 选项
     lang_choice = ["简体中文", "繁體中文", "English"]
-    lang_selected = tk.StringVar(value=language_unformated())  # 初始化
+    lang_selected = tk.StringVar(value=language_unformatted())  # 初始化
 
     # 创建Combobox选择框，指定宽度
     lang_combobox = ttk.Combobox(inner_frame, textvariable=lang_selected, values=lang_choice,
@@ -1104,9 +1135,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
         except:
             return data["suya_announcement_message"]
 
-    if language == "zh_hans":
-        suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
-    elif language == "zh_hant":
+    if language == "zh_hant":
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message_zh_hant")
     elif language == "en_us":
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message_en_us")
