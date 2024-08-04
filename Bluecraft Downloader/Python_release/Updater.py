@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.2.0"
+Suya_Updater_Version = "1.0.2.1"
 
 
 def is_admin():
@@ -43,30 +43,61 @@ def show_message(partner, partner_en):
 # 当前工作目录
 current_dir = os.getcwd()
 
-# 指定版本文件的路径
+# 指定路径
+settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
-settings_path = os.path.join("./Settings")
+personalization_path = os.path.join("./Settings", "personalization.json")
 
 # 确保设置的文件夹存在
 if not os.path.exists(settings_path):
     os.makedirs(settings_path)
 
 
-def get_global_config():
+def merge_jsons(default_json, file_path):
+    """
+    合并两个 JSON 对象，优先使用文件中的数据。
+    :param default_json: 默认的 JSON 字典
+    :param file_path: 文件路径
+    :return: 合并后的 JSON 字典
+    """
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            global_json_file = json.load(file)
-    except:
-        global_json_file = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_json = json.load(file)
+            # 使用文件中的数据覆盖默认值
+            return {**default_json, **loaded_json}
+    except FileNotFoundError:
+        # 如果文件不存在，直接返回默认值
+        return default_json
+    except Exception as e:
+        # 如果发生其他错误，打印错误信息并返回默认值
+        print(f"Error loading JSON from {file_path}: {e}")
+        return default_json
+
+
+def get_config():
+    try:
+        default_global_config = {
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
         }
+        global_json_file = merge_jsons(default_global_config, global_config_path)
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    return global_json_file
+    except:
+        exit(1)
+    try:
+        default_personalization = {
+        }
+        personalization_file = merge_jsons(default_personalization, personalization_path)
+        with open(personalization_path, 'w', encoding='utf-8') as file_w:
+            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        exit(1)
+    return global_json_file, personalization_file
 
+
+global_json, personalization_json = get_config()
+api_url = global_json['api_url']
 
 # 创建或覆盖版本文件
 try:
@@ -80,11 +111,6 @@ except:
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     print(f"版本文件已创建于: {setting_path}")
-
-global_json = get_global_config()
-update_url = global_json['update_url']
-api_url = global_json['api_url']
-announcement_url = global_json['announcement_url']
 
 
 def del_Resources():
