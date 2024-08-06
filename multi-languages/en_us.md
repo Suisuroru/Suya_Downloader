@@ -17,12 +17,12 @@ To use this downloader, please join the QQ group chat `555822991` for updates.
 ## Versions
 
 There are 2 versions of this downloader:
- - E language version
- - Python language version
+ - Easy Programming Language version
+ - Python Language version
 
-### E language version
+### Easy Programming Language version
 
-E language version is developed by KFACBT.
+Easy Programming Language version is developed by KFACBT.
 
 #### Related features
 
@@ -31,9 +31,9 @@ E language version is developed by KFACBT.
 - [x] Download `Downloader` and download `Client`
 - [x] With debugging window, easy for developers to analyze errors
 
-### Python language version
+### Python Language version
 
-Python language version developed by Suisuroru.
+Python Language version developed by Suisuroru.
 
 This version is based on Suya Downloader.
 
