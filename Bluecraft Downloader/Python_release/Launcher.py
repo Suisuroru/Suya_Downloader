@@ -23,7 +23,7 @@ from PIL import Image, ImageTk
 
 Suya_Downloader_Version = "1.0.2.2"
 
-
+'''
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -35,7 +35,7 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
-
+'''
 # 获取运行目录
 current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
@@ -871,6 +871,7 @@ def start_download_in_new_window(download_link):
 
     # 创建一个新的顶级窗口作为下载进度窗口
     download_window = tk.Toplevel()
+    download_window.geometry("205x177")  # 设置下载提示窗口大小
     download_window.title(get_text("download_window"))
 
     # 创建并配置进度条
@@ -1028,15 +1029,20 @@ def compare_client_versions(version1, version2):
 
 def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result = compare_client_versions(current_version_inner, latest_version)
-
-    if comparison_result == 1:
-        # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 浅蓝
-    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
+    if current_version_inner == '0.0.0.0':
+        # 当前版本号为“0.0.0.0”即未发现本地客户端版本，提示用户需要下载客户端
+        print("未发现客户端")
+        return "未发现客户端版本", "#FF0000", get_text("no_client")
     else:
-        return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
+        comparison_result = compare_client_versions(current_version_inner, latest_version)  # 红色
+
+        if comparison_result == 1:
+            # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
+            return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 浅蓝
+        elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
+            return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
+        else:
+            return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
 
 
 def check_for_updates_with_confirmation(current_version_inner, window):
