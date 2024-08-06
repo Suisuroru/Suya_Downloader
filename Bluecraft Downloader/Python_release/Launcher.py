@@ -23,7 +23,7 @@ from PIL import Image, ImageTk
 
 Suya_Downloader_Version = "1.0.2.2"
 
-'''
+
 def is_admin():
     try:
         return ctypes.windll.shell32.IsUserAnAdmin()
@@ -35,7 +35,7 @@ if not is_admin():
     # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
-'''
+
 # 获取运行目录
 current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
