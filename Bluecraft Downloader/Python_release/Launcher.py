@@ -164,6 +164,7 @@ def get_config():
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+            "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
             "debug": "False"
         }
         global_json_file = merge_jsons(default_global_config, global_config_path)
@@ -1328,6 +1329,71 @@ def Update_Updater():
             print("没有找到新版本的信息或返回消息异常。")
 
 
+def rgb_to_hex(rgb_string):
+    # 移除逗号并分割成三个部分
+    r, g, b = rgb_string.split(',')
+
+    # 将每个部分转换为整数
+    r = int(r)
+    g = int(g)
+    b = int(b)
+
+    # 转换为十六进制格式
+    hex_color = f"#{r:02X}{g:02X}{b:02X}"
+
+    return hex_color
+
+
+def get_important_notice():
+    important_notice_url = global_json["important_notice_url"]
+    try:
+        # 发送GET请求
+        response = requests.get(important_notice_url)
+
+        # 检查请求是否成功
+        if response.status_code == 200:
+            # 解析JSON响应
+            data = response.json()
+
+            # 打印JSON内容
+            print("获取到以下内容", data)
+        else:
+            print(f"Failed to retrieve data: {response.status_code}")
+            messagebox.showerror("错误", get_text("unable_to_get_IN"))
+            return
+    except:
+        print("无法获取重要公告:" + str(Exception))
+        messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
+        return
+
+    root = tk.Tk()
+    root.title(get_text("important_notice"))
+
+    # 创建一个顶部色带Frame
+    top_bar = tk.Frame(root, bg=rgb_to_hex(data['top_bar_color']), height=160)
+    top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
+
+    # 在顶部色带中添加标题
+    title_label = tk.Label(top_bar,font = (data["text_font_name"], int(str(2 * int(data["text_font_size"]))), "bold"),
+                           text=data["title"], fg="white", bg=top_bar.cget('bg'))
+    title_label.pack(side=tk.LEFT, padx=10, pady=10)
+
+    # 创建公告栏
+    announcement_box = scrolledtext.ScrolledText(root, width=40, height=10, state='disabled')
+    announcement_box.pack(padx=10, pady=10)
+    # 启用编辑
+    announcement_box['state'] = 'normal'
+    # 插入文本
+    announcement_box.insert(tk.END, data["text"])
+    # 禁止编辑
+    announcement_box['state'] = 'disabled'
+    # 设置字体
+    font = (data["text_font_name"], int(data["text_font_size"]), "normal")
+    announcement_box.configure(font=font, fg=rgb_to_hex(data['text_font_color']))
+
+    root.mainloop()
+
+
 def Version_Check_for_Updater(online_version):
     # 版本文件所在目录
     try:
@@ -1573,6 +1639,11 @@ def create_gui():
         center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
+        try:
+            get_important_notice_thread = threading.Thread(target=get_important_notice)
+            get_important_notice_thread.start()
+        except:
+            print(f"公告拉取失败，错误代码：{Exception}")
         try:
             start_select_thread(selected_source, source_combobox)
         except:
