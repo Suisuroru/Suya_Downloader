@@ -1623,13 +1623,15 @@ if __name__ == "__main__":
     initialize_languages(None)
     try:
         def Check_Update_for_Updater():
-            if Version_Check_for_Updater(fetch_update_info()[0]):
-                # 如果有新版本，启动新线程执行更新操作
-                print("启动更新线程...")
-                update_thread = threading.Thread(target=Update_Updater)
-                update_thread.start()
-            else:
-                print("无需更新。")
+            if not bool(global_json['debug']):
+                if Version_Check_for_Updater(fetch_update_info()[0]):
+                    # 如果有新版本，启动新线程执行更新操作
+                    print("启动更新线程...")
+                    update_thread = threading.Thread(target=Update_Updater)
+                    update_thread.start()
+                else:
+                    print("无需更新。")
+            print("跳过更新检查")
 
 
         check_thread = threading.Thread(target=Check_Update_for_Updater)
