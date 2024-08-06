@@ -38,79 +38,6 @@ if not os.path.exists(settings_path):
 print("运行目录:", current_working_dir)
 
 
-def merge_jsons(default_json, file_path):
-    """
-    合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
-    :param file_path: 文件路径
-    :return: 合并后的 JSON 字典
-    """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
-
-
-def get_config():
-    try:
-        default_global_config = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
-            "debug": "False"
-        }
-        global_json_file = merge_jsons(default_global_config, global_config_path)
-        with open(global_config_path, 'w', encoding='utf-8') as file_w:
-            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    try:
-        default_personalization = {
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
-        }
-        personalization_file = merge_jsons(default_personalization, personalization_path)
-        with open(personalization_path, 'w', encoding='utf-8') as file_w:
-            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    return global_json_file, personalization_file
-
-
-global_json, personalization_json = get_config()
-update_url = global_json['update_url']
-api_url = global_json['api_url']
-announcement_url = global_json['announcement_url']
-
-
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
-
-
-if not is_admin():
-    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-    try:
-        if not bool(global_json['debug']):
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
-        print("非管理员模式运行")
-    except:
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
-
-
 def export_system_info(msg_box):
     import psutil
     import platform
@@ -208,6 +135,79 @@ def dupe_crash_report(error_message=None):
 
     # 主事件循环
     root.mainloop()
+
+
+def merge_jsons(default_json, file_path):
+    """
+    合并两个 JSON 对象，优先使用文件中的数据。
+    :param default_json: 默认的 JSON 字典
+    :param file_path: 文件路径
+    :return: 合并后的 JSON 字典
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_json = json.load(file)
+            # 使用文件中的数据覆盖默认值
+            return {**default_json, **loaded_json}
+    except FileNotFoundError:
+        # 如果文件不存在，直接返回默认值
+        return default_json
+    except Exception as e:
+        # 如果发生其他错误，打印错误信息并返回默认值
+        print(f"Error loading JSON from {file_path}: {e}")
+        return default_json
+
+
+def get_config():
+    try:
+        default_global_config = {
+            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+            "debug": "False"
+        }
+        global_json_file = merge_jsons(default_global_config, global_config_path)
+        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
+    try:
+        default_personalization = {
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+        }
+        personalization_file = merge_jsons(default_personalization, personalization_path)
+        with open(personalization_path, 'w', encoding='utf-8') as file_w:
+            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
+    return global_json_file, personalization_file
+
+
+global_json, personalization_json = get_config()
+update_url = global_json['update_url']
+api_url = global_json['api_url']
+announcement_url = global_json['announcement_url']
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+    try:
+        if not bool(global_json['debug']):
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
+        print("非管理员模式运行")
+    except:
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
 
 def get_language():
