@@ -1039,9 +1039,9 @@ def get_client_status(current_version_inner, latest_version):
     if current_version_inner == '0.0.0.0':
         # 当前版本号为“0.0.0.0”即未发现本地客户端版本，提示用户需要下载客户端
         print("未发现客户端")
-        return "未发现客户端版本", "#FF0000", get_text("no_client")
+        return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
     else:
-        comparison_result = compare_client_versions(current_version_inner, latest_version)  # 红色
+        comparison_result = compare_client_versions(current_version_inner, latest_version)
 
         if comparison_result == 1:
             # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
