@@ -23,19 +23,6 @@ from PIL import Image, ImageTk
 
 Suya_Downloader_Version = "1.0.2.2"
 
-
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
-
-
-if not is_admin():
-    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
-
 # 获取运行目录
 current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
@@ -77,7 +64,8 @@ def get_config():
         default_global_config = {
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+            "debug": "False"
         }
         global_json_file = merge_jsons(default_global_config, global_config_path)
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
@@ -102,6 +90,25 @@ global_json, personalization_json = get_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+    try:
+        if not bool(global_json['debug']):
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
+        print("非管理员模式运行")
+    except:
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
 
 def export_system_info(msg_box):
