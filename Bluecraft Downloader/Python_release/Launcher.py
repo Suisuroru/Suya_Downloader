@@ -1640,7 +1640,7 @@ def create_gui():
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         try:
-            get_important_notice_thread = threading.Thread(target=get_important_notice)
+            get_important_notice_thread = threading.Thread(target=get_important_notice, daemon=True)
             get_important_notice_thread.start()
         except:
             print(f"公告拉取失败，错误代码：{Exception}")
@@ -1659,8 +1659,8 @@ def create_gui():
         # 启动线程
         update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
         client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                                args=client_update_thread_args)
-        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                args=client_update_thread_args, daemon=True)
+        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
                                                          args=pull_suya_announcement_args)
         try:
             update_thread.start()
