@@ -21,20 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.2"
-
-
-def is_admin():
-    try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
-    except:
-        return False
-
-
-if not is_admin():
-    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+Suya_Downloader_Version = "1.0.2.3"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -49,59 +36,6 @@ if not os.path.exists(settings_path):
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
-
-
-def merge_jsons(default_json, file_path):
-    """
-    合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
-    :param file_path: 文件路径
-    :return: 合并后的 JSON 字典
-    """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
-
-
-def get_config():
-    try:
-        default_global_config = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement"
-        }
-        global_json_file = merge_jsons(default_global_config, global_config_path)
-        with open(global_config_path, 'w', encoding='utf-8') as file_w:
-            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    try:
-        default_personalization = {
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
-        }
-        personalization_file = merge_jsons(default_personalization, personalization_path)
-        with open(personalization_path, 'w', encoding='utf-8') as file_w:
-            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    return global_json_file, personalization_file
-
-
-global_json, personalization_json = get_config()
-update_url = global_json['update_url']
-api_url = global_json['api_url']
-announcement_url = global_json['announcement_url']
 
 
 def export_system_info(msg_box):
@@ -201,6 +135,80 @@ def dupe_crash_report(error_message=None):
 
     # 主事件循环
     root.mainloop()
+
+
+def merge_jsons(default_json, file_path):
+    """
+    合并两个 JSON 对象，优先使用文件中的数据。
+    :param default_json: 默认的 JSON 字典
+    :param file_path: 文件路径
+    :return: 合并后的 JSON 字典
+    """
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_json = json.load(file)
+            # 使用文件中的数据覆盖默认值
+            return {**default_json, **loaded_json}
+    except FileNotFoundError:
+        # 如果文件不存在，直接返回默认值
+        return default_json
+    except Exception as e:
+        # 如果发生其他错误，打印错误信息并返回默认值
+        print(f"Error loading JSON from {file_path}: {e}")
+        return default_json
+
+
+def get_config():
+    try:
+        default_global_config = {
+            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+            "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
+            "debug": "False"
+        }
+        global_json_file = merge_jsons(default_global_config, global_config_path)
+        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
+    try:
+        default_personalization = {
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
+        }
+        personalization_file = merge_jsons(default_personalization, personalization_path)
+        with open(personalization_path, 'w', encoding='utf-8') as file_w:
+            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
+    except:
+        dupe_crash_report(str(Exception))
+        exit(1)
+    return global_json_file, personalization_file
+
+
+global_json, personalization_json = get_config()
+update_url = global_json['update_url']
+api_url = global_json['api_url']
+announcement_url = global_json['announcement_url']
+
+
+def is_admin():
+    try:
+        return ctypes.windll.shell32.IsUserAnAdmin()
+    except:
+        return False
+
+
+if not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+    try:
+        if not bool(global_json['debug']):
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
+        print("非管理员模式运行")
+    except:
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
 
 def get_language():
@@ -871,6 +879,7 @@ def start_download_in_new_window(download_link):
 
     # 创建一个新的顶级窗口作为下载进度窗口
     download_window = tk.Toplevel()
+    download_window.geometry("205x177")  # 设置下载提示窗口大小
     download_window.title(get_text("download_window"))
 
     # 创建并配置进度条
@@ -1028,15 +1037,20 @@ def compare_client_versions(version1, version2):
 
 def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result = compare_client_versions(current_version_inner, latest_version)
-
-    if comparison_result == 1:
-        # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
-        return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 浅蓝
-    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
+    if current_version_inner == '0.0.0.0':
+        # 当前版本号为“0.0.0.0”即未发现本地客户端版本，提示用户需要下载客户端
+        print("未发现客户端")
+        return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
     else:
-        return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
+        comparison_result = compare_client_versions(current_version_inner, latest_version)
+
+        if comparison_result == 1:
+            # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
+            return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 浅蓝
+        elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
+            return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
+        else:
+            return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
 
 
 def check_for_updates_with_confirmation(current_version_inner, window):
@@ -1315,6 +1329,71 @@ def Update_Updater():
             print("没有找到新版本的信息或返回消息异常。")
 
 
+def rgb_to_hex(rgb_string):
+    # 移除逗号并分割成三个部分
+    r, g, b = rgb_string.split(',')
+
+    # 将每个部分转换为整数
+    r = int(r)
+    g = int(g)
+    b = int(b)
+
+    # 转换为十六进制格式
+    hex_color = f"#{r:02X}{g:02X}{b:02X}"
+
+    return hex_color
+
+
+def get_important_notice():
+    important_notice_url = global_json["important_notice_url"]
+    try:
+        # 发送GET请求
+        response = requests.get(important_notice_url)
+
+        # 检查请求是否成功
+        if response.status_code == 200:
+            # 解析JSON响应
+            data = response.json()
+
+            # 打印JSON内容
+            print("获取到以下内容", data)
+        else:
+            print(f"Failed to retrieve data: {response.status_code}")
+            messagebox.showerror("错误", get_text("unable_to_get_IN"))
+            return
+    except:
+        print("无法获取重要公告:" + str(Exception))
+        messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
+        return
+
+    root = tk.Tk()
+    root.title(get_text("important_notice"))
+
+    # 创建一个顶部色带Frame
+    top_bar = tk.Frame(root, bg=rgb_to_hex(data['top_bar_color']), height=160)
+    top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
+
+    # 在顶部色带中添加标题
+    title_label = tk.Label(top_bar,font = (data["text_font_name"], int(str(2 * int(data["text_font_size"]))), "bold"),
+                           text=data["title"], fg="white", bg=top_bar.cget('bg'))
+    title_label.pack(side=tk.LEFT, padx=10, pady=10)
+
+    # 创建公告栏
+    announcement_box = scrolledtext.ScrolledText(root, width=40, height=10, state='disabled')
+    announcement_box.pack(padx=10, pady=10)
+    # 启用编辑
+    announcement_box['state'] = 'normal'
+    # 插入文本
+    announcement_box.insert(tk.END, data["text"])
+    # 禁止编辑
+    announcement_box['state'] = 'disabled'
+    # 设置字体
+    font = (data["text_font_name"], int(data["text_font_size"]), "normal")
+    announcement_box.configure(font=font, fg=rgb_to_hex(data['text_font_color']))
+
+    root.mainloop()
+
+
 def Version_Check_for_Updater(online_version):
     # 版本文件所在目录
     try:
@@ -1455,8 +1534,8 @@ def create_gui():
         download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
         # 资源获取方式选项
-        way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
-        way_selected_source = tk.StringVar(value=get_text("downloader_direct"))  # 初始化下载源选项
+        way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
+        way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
 
         # 创建Combobox选择框，指定宽度
         source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
@@ -1561,6 +1640,11 @@ def create_gui():
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         try:
+            get_important_notice_thread = threading.Thread(target=get_important_notice, daemon=True)
+            get_important_notice_thread.start()
+        except:
+            print(f"公告拉取失败，错误代码：{Exception}")
+        try:
             start_select_thread(selected_source, source_combobox)
         except:
             print("下载源列表拉取失败，错误代码：{e}")
@@ -1575,8 +1659,8 @@ def create_gui():
         # 启动线程
         update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
         client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                                args=client_update_thread_args)
-        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                args=client_update_thread_args, daemon=True)
+        pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
                                                          args=pull_suya_announcement_args)
         try:
             update_thread.start()
@@ -1616,13 +1700,15 @@ if __name__ == "__main__":
     initialize_languages(None)
     try:
         def Check_Update_for_Updater():
-            if Version_Check_for_Updater(fetch_update_info()[0]):
-                # 如果有新版本，启动新线程执行更新操作
-                print("启动更新线程...")
-                update_thread = threading.Thread(target=Update_Updater)
-                update_thread.start()
-            else:
-                print("无需更新。")
+            if not bool(global_json['debug']):
+                if Version_Check_for_Updater(fetch_update_info()[0]):
+                    # 如果有新版本，启动新线程执行更新操作
+                    print("启动更新线程...")
+                    update_thread = threading.Thread(target=Update_Updater)
+                    update_thread.start()
+                else:
+                    print("无需更新。")
+            print("跳过更新检查")
 
 
         check_thread = threading.Thread(target=Check_Update_for_Updater)

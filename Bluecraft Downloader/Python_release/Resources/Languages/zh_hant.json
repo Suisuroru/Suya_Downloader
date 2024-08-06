@@ -19,7 +19,7 @@
   "OneDrive_pan": "OneDrive網盤",
   "url_direct": "網頁直鏈",
   "url_origin": "網頁非直鏈",
-  "downloader_direct": "用戶端直接拉取",
+  "downloader_direct": "用戶端拉取(不穩定)",
   "pull_resources": "資源獲取方式：",
   "download_source": "下載源：",
   "source_wait1": "正在獲取下載源信息",
@@ -42,6 +42,7 @@
   "update_unable_msg": "與上次下載版本一致，重新下載？最新正式版：",
   "update_dev": "您的版本處於預覽版",
   "update_dev_msg": "希望使用正式版？最新正式版：",
+  "no_client": "未發現本地客戶端，請立即下載客戶端",
   "dev_client": "您當前運行的用戶端版本可能是測試版，即將更新，當前版本號：",
   "old_client": "您當前運行的用戶端版本可能為遺留的旧版本，請及時更新，當前版本號：",
   "release_client": "您當前運行的是最新正式版本的用戶端，可直接進入服務器，當前版本號：",
@@ -70,5 +71,7 @@
   "close": "關閉",
   "export_information_success": "匯出資訊成功，已匯出數據至：",
   "export_information_error": "匯出資訊失敗，錯誤原因：",
-  "lost_key": "文本已丟失，丟失的文本的鍵值為"
+  "lost_key": "文本已丟失，丟失的文本的鍵值為",
+  "important_notice": "重要通知",
+  "unable_to_get_IN": "無法獲取重要通知"
 }
