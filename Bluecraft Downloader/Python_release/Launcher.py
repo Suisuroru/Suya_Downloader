@@ -1468,8 +1468,8 @@ def create_gui():
         download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
         # 资源获取方式选项
-        way_sources = [get_text("downloader_direct"), get_text("url_direct"), get_text("url_origin")]
-        way_selected_source = tk.StringVar(value=get_text("downloader_direct"))  # 初始化下载源选项
+        way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
+        way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
 
         # 创建Combobox选择框，指定宽度
         source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,

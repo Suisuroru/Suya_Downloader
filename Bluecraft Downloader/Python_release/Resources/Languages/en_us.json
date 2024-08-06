@@ -19,7 +19,7 @@
   "OneDrive_pan": "OneDrive Pan",
   "url_direct": "Direct Web Link",
   "url_origin": "Indirect Web Link",
-  "downloader_direct": "Client Direct Pull",
+  "downloader_direct": "Client Pull(Instability)",
   "pull_resources": "Resource Acquisition Method: ",
   "download_source": "Download Source: ",
   "source_wait1": "Fetching download source information",

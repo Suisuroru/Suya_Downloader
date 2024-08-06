@@ -19,7 +19,7 @@
   "OneDrive_pan": "OneDrive网盘",
   "url_direct": "网页直链",
   "url_origin": "网页非直链",
-  "downloader_direct": "客户端直接拉取",
+  "downloader_direct": "客户端拉取(不稳定)",
   "pull_resources": "资源获取方式：",
   "download_source": "下载源：",
   "source_wait1": "正在获取下载源信息",

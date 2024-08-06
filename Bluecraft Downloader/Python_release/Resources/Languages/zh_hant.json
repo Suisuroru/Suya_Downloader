@@ -19,7 +19,7 @@
   "OneDrive_pan": "OneDrive網盤",
   "url_direct": "網頁直鏈",
   "url_origin": "網頁非直鏈",
-  "downloader_direct": "用戶端直接拉取",
+  "downloader_direct": "用戶端拉取(不穩定)",
   "pull_resources": "資源獲取方式：",
   "download_source": "下載源：",
   "source_wait1": "正在獲取下載源信息",
