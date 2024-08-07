@@ -1607,7 +1607,7 @@ def create_gui():
 
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
-                                 font=("Microsoft YaHei", 30),
+                                 font=("Microsoft YaHei", 30, "bold"),
                                  fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
