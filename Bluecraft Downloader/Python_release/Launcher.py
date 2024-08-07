@@ -171,8 +171,8 @@ def get_config():
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
     except:
-        dupe_crash_report(str(Exception))
-        exit(1)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit(1)
     try:
         default_personalization = {
             "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
@@ -181,19 +181,15 @@ def get_config():
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
     except:
-        dupe_crash_report(str(Exception))
-        exit(1)
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit(1)
     return global_json_file, personalization_file
 
 
-try:
-    global_json, personalization_json = get_config()
-    update_url = global_json['update_url']
-    api_url = global_json['api_url']
-    announcement_url = global_json['announcement_url']
-except:
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+global_json, personalization_json = get_config()
+update_url = global_json['update_url']
+api_url = global_json['api_url']
+announcement_url = global_json['announcement_url']
 
 
 def is_admin():
