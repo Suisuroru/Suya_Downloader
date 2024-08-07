@@ -30,9 +30,15 @@ setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
 personalization_path = os.path.join("./Settings", "Personalization.json")
 
-# 确保设置的文件夹存在
-if not os.path.exists(settings_path):
-    os.makedirs(settings_path)
+try:
+    # 确保设置的文件夹存在
+    if not os.path.exists(settings_path):
+        os.makedirs(settings_path)
+except:
+    # 此处操作失败则说明此文件夹受保护，需要管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
+
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -171,8 +177,8 @@ def get_config():
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
     except:
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit(1)
+        dupe_crash_report(str(Exception))
+        exit(1)
     try:
         default_personalization = {
             "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
@@ -181,8 +187,8 @@ def get_config():
         with open(personalization_path, 'w', encoding='utf-8') as file_w:
             json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
     except:
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit(1)
+        dupe_crash_report(str(Exception))
+        exit(1)
     return global_json_file, personalization_file
 
 
