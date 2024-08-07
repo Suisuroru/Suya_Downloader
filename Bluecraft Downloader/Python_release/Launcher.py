@@ -186,10 +186,14 @@ def get_config():
     return global_json_file, personalization_file
 
 
-global_json, personalization_json = get_config()
-update_url = global_json['update_url']
-api_url = global_json['api_url']
-announcement_url = global_json['announcement_url']
+try:
+    global_json, personalization_json = get_config()
+    update_url = global_json['update_url']
+    api_url = global_json['api_url']
+    announcement_url = global_json['announcement_url']
+except:
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def is_admin():
@@ -1374,7 +1378,7 @@ def get_important_notice():
     top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在顶部色带中添加标题
-    title_label = tk.Label(top_bar,font = (data["text_font_name"], int(str(2 * int(data["text_font_size"]))), "bold"),
+    title_label = tk.Label(top_bar, font=(data["text_font_name"], int(str(2 * int(data["text_font_size"]))), "bold"),
                            text=data["title"], fg="white", bg=top_bar.cget('bg'))
     title_label.pack(side=tk.LEFT, padx=10, pady=10)
 
