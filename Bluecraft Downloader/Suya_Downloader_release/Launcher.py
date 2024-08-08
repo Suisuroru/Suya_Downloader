@@ -212,11 +212,17 @@ def get_config():
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
             "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader",
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\BC_Downloader",
             "debug": "False"
         }
         try:
             default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+            try:
+                default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                            fr"{default_global_config["initialize_path_suffix"]}")
+            except:
+                print("出现异常：" + str(Exception))
+            print("最终initialize_path：", default_global_config["initialize_path"])
         except:
             default_global_config = default_global_config_file
             with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
@@ -500,14 +506,6 @@ def ensure_directory_exists(directory_path):
             raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
 
 
-def get_local_appdata_path(filename="client_version.txt"):
-    """获取本地应用数据路径下的指定文件路径。"""
-    username = os.getlogin()  # 获取当前用户名
-    directory = f"C:\\Users\\{username}\\AppData\\Local\\BC_Downloader"
-    ensure_directory_exists(directory)
-    return os.path.join(directory, filename)
-
-
 def update_version_info(new_version):
     """
     更新本地存储的版本信息。
@@ -515,7 +513,7 @@ def update_version_info(new_version):
     :param new_version: 最新的版本号
     """
     try:
-        with open(get_local_appdata_path(), "w") as file:
+        with open(os.path.join(global_json["initialize_path"], "client_version.txt"), "w") as file:
             file.write(new_version)
         print(f"版本信息已更新至{new_version}")
     except IOError as e:
@@ -524,7 +522,7 @@ def update_version_info(new_version):
 
 def read_client_version_from_file():
     """从本地文件读取客户端版本号，如文件不存在则创建并写入默认版本号。"""
-    file_path = get_local_appdata_path()
+    file_path = os.path.join(global_json["initialize_path"], "client_version.txt")
 
     try:
         with open(file_path, 'r') as file:
