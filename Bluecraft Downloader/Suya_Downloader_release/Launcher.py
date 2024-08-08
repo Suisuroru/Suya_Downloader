@@ -226,8 +226,12 @@ def get_config():
             print("最终initialize_path：", default_global_config["initialize_path"])
         except:
             default_global_config = default_global_config_file
-            with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
-                json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+            try:
+                with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
+                    json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+            except:
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                sys.exit()
         try:
             global_json_file = merge_jsons(default_global_config, global_config_path)
         except Exception as e:
