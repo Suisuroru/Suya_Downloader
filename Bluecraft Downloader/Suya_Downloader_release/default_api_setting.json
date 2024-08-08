@@ -1,0 +1,8 @@
+{
+    "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+    "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+    "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+    "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
+    "initialize_path_suffix": "BC_Downloader",
+    "debug": "False"
+}

@@ -28,7 +28,7 @@ current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
-personalization_path = os.path.join("./Settings", "Personalization.json")
+default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 try:
     # 确保设置的文件夹存在
@@ -39,9 +39,15 @@ except:
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
 
-
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
+
+
+def generate_current_time():
+    from datetime import datetime
+    # 使用strftime方法将当前时间格式化为指定的格式
+    formatted_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    return formatted_time
 
 
 def export_system_info(msg_box):
@@ -110,7 +116,7 @@ def export_system_info(msg_box):
 
 
 # 将文本框内容写入文件的函数
-def write_to_file(text_box):
+def write_to_file(text_box, file_name):
     # 获取文本框内容
     info_text = text_box.get('1.0', tk.END)
 
@@ -132,7 +138,7 @@ def write_to_file(text_box):
         download_folder = os.path.expanduser("~/Downloads")
 
     # 写入文件
-    file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
+    file_path = os.path.join(download_folder, file_name + ".txt")
     with open(file_path, 'w') as file:
         file.write(info_text)
     return file_path
@@ -178,7 +184,8 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_path = write_to_file(msg_box)
+    file_name = generate_current_time() + "_CrashReport"
+    file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
     # 主事件循环
@@ -192,49 +199,58 @@ def merge_jsons(default_json, file_path):
     :param file_path: 文件路径
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
+    with open(file_path, 'r', encoding='utf-8') as file:
+        loaded_json = json.load(file)
+        # 使用文件中的数据覆盖默认值
+        return {**default_json, **loaded_json}
 
 
 def get_config():
-    try:
-        default_global_config = {
+    times = 0
+    while times <= 1:
+        default_global_config_file = {
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
             "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\BC_Downloader",
             "debug": "False"
         }
-        global_json_file = merge_jsons(default_global_config, global_config_path)
-        with open(global_config_path, 'w', encoding='utf-8') as file_w:
-            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    try:
-        default_personalization = {
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
-        }
-        personalization_file = merge_jsons(default_personalization, personalization_path)
-        with open(personalization_path, 'w', encoding='utf-8') as file_w:
-            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    return global_json_file, personalization_file
+        try:
+            default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+            try:
+                default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                            fr"{default_global_config["initialize_path_suffix"]}")
+            except:
+                print("出现异常：" + str(Exception))
+            print("最终initialize_path：", default_global_config["initialize_path"])
+        except:
+            default_global_config = default_global_config_file
+            with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
+                json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+        try:
+            global_json_file = merge_jsons(default_global_config, global_config_path)
+        except Exception as e:
+            # 如果发生其他错误，打印错误信息并返回默认值
+            try:
+                with open(default_api_setting_path, 'r', encoding='utf-8') as file_r:
+                    default_api_setting = json.load(file_r)
+                global_json_file = default_api_setting
+            except:
+                global_json_file = default_global_config
+            print(f"Error loading JSON from {global_config_path}: {e}")
+        try:
+            with open(global_config_path, 'w', encoding='utf-8') as file_w:
+                json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+        except:
+            # 该目录受保护，申请管理员权限
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
+        times += 1
+    return global_json_file
 
 
-global_json, personalization_json = get_config()
+global_json = get_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
@@ -418,7 +434,8 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_path = write_to_file(system_info_box)  # 返回文件的完整路径
+                file_name = generate_current_time() + "_InfoExport"
+                file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 messagebox.showinfo(get_text("export_information"),
                                     get_text("export_information_success") + f"{file_path}")
                 # 打开文件所在目录
@@ -465,14 +482,13 @@ def export_info(event):
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
 
-
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
     thread.start()
 
 
 def initialize_settings():
-    path_from_file = personalization_json["initialize_path"]
+    path_from_file = global_json["initialize_path"]
     ensure_directory_exists(path_from_file)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
@@ -500,14 +516,6 @@ def ensure_directory_exists(directory_path):
             raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
 
 
-def get_local_appdata_path(filename="client_version.txt"):
-    """获取本地应用数据路径下的指定文件路径。"""
-    username = os.getlogin()  # 获取当前用户名
-    directory = f"C:\\Users\\{username}\\AppData\\Local\\BC_Downloader"
-    ensure_directory_exists(directory)
-    return os.path.join(directory, filename)
-
-
 def update_version_info(new_version):
     """
     更新本地存储的版本信息。
@@ -515,7 +523,7 @@ def update_version_info(new_version):
     :param new_version: 最新的版本号
     """
     try:
-        with open(get_local_appdata_path(), "w") as file:
+        with open(os.path.join(global_json["initialize_path"], "client_version.txt"), "w") as file:
             file.write(new_version)
         print(f"版本信息已更新至{new_version}")
     except IOError as e:
@@ -524,7 +532,7 @@ def update_version_info(new_version):
 
 def read_client_version_from_file():
     """从本地文件读取客户端版本号，如文件不存在则创建并写入默认版本号。"""
-    file_path = get_local_appdata_path()
+    file_path = os.path.join(global_json["initialize_path"], "client_version.txt")
 
     try:
         with open(file_path, 'r') as file:
@@ -691,7 +699,7 @@ def create_setting_window(event):
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path_user = personalization_json["initialize_path"]
+                path_user = global_json["initialize_path"]
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path_user)  # 插入默认路径
             else:
