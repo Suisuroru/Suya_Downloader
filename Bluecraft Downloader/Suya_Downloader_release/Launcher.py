@@ -220,6 +220,7 @@ def get_config():
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
             "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
+            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader",
             "debug": "False"
         }
         global_json_file = merge_jsons(default_global_config, global_config_path)
@@ -228,20 +229,10 @@ def get_config():
     except:
         dupe_crash_report(str(Exception))
         exit(1)
-    try:
-        default_personalization = {
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader"
-        }
-        personalization_file = merge_jsons(default_personalization, personalization_path)
-        with open(personalization_path, 'w', encoding='utf-8') as file_w:
-            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        dupe_crash_report(str(Exception))
-        exit(1)
-    return global_json_file, personalization_file
+    return global_json_file
 
 
-global_json, personalization_json = get_config()
+global_json= get_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
@@ -479,7 +470,7 @@ def export_info(event):
 
 
 def initialize_settings():
-    path_from_file = personalization_json["initialize_path"]
+    path_from_file = global_json["initialize_path"]
     ensure_directory_exists(path_from_file)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
@@ -698,7 +689,7 @@ def create_setting_window(event):
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path_user = personalization_json["initialize_path"]
+                path_user = global_json["initialize_path"]
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path_user)  # 插入默认路径
             else:
