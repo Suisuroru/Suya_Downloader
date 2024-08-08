@@ -109,6 +109,46 @@ def export_system_info(msg_box):
                 msg_box.insert(tk.END, f"\n")
 
 
+# 将文本框内容写入文件的函数
+def write_to_file(text_box):
+    # 获取文本框内容
+    info_text = text_box.get('1.0', tk.END)
+
+    # 确定下载文件夹路径
+    if os.name == 'nt':  # Windows
+        def get_download_folder():
+            try:
+                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
+                                     r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                print("从注册表获取到下载文件夹路径成功")
+                return winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')[0]
+            except FileNotFoundError:
+                # 如果上述方法失败，回退到默认路径
+                return os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+
+        download_folder = get_download_folder()
+        print("获取到下载文件夹路径：" + download_folder)
+    else:  # Unix or Linux
+        download_folder = os.path.expanduser("~/Downloads")
+
+    # 写入文件
+    file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
+    with open(file_path, 'w') as file:
+        file.write(info_text)
+    return file_path
+
+
+def open_directory(path):
+    import subprocess
+    """在操作系统默认的文件管理器中打开指定路径的目录"""
+    if os.name == 'nt':  # Windows
+        os.startfile(os.path.dirname(path))
+    elif os.name == 'posix':  # Unix/Linux/MacOS
+        subprocess.run(['xdg-open', os.path.dirname(path)])
+    else:
+        print("Unsupported operating system")
+
+
 def get_traceback_info():
     """获取当前线程的堆栈跟踪信息"""
     return traceback.format_exc()
@@ -136,8 +176,10 @@ def dupe_crash_report(error_message=None):
     traceback_info = get_traceback_info()
     msg_box.insert(tk.END, f"Traceback Info:\n{traceback_info}\n\n")
 
-    # 输出系统信息
+    # 输出系统信息并写入文件
     export_system_info(msg_box)
+    file_path = write_to_file(msg_box)
+    open_directory(file_path)
 
     # 主事件循环
     root.mainloop()
@@ -374,16 +416,6 @@ def export_info(event):
     def show_ui():
         # 导出按钮点击事件处理函数
 
-        def open_directory(path):
-            import subprocess
-            """在操作系统默认的文件管理器中打开指定路径的目录"""
-            if os.name == 'nt':  # Windows
-                os.startfile(os.path.dirname(path))
-            elif os.name == 'posix':  # Unix/Linux/MacOS
-                subprocess.run(['xdg-open', os.path.dirname(path)])
-            else:
-                print("Unsupported operating system")
-
         def on_export_button_click():
             try:
                 file_path = write_to_file(system_info_box)  # 返回文件的完整路径
@@ -433,33 +465,6 @@ def export_info(event):
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
 
-        # 将文本框内容写入文件的函数
-        def write_to_file(text_box):
-            # 获取文本框内容
-            info_text = text_box.get('1.0', tk.END)
-
-            # 确定下载文件夹路径
-            if os.name == 'nt':  # Windows
-                def get_download_folder():
-                    try:
-                        key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                                             r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
-                        print("从注册表获取到下载文件夹路径成功")
-                        return winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')[0]
-                    except FileNotFoundError:
-                        # 如果上述方法失败，回退到默认路径
-                        return os.path.join(os.getenv('USERPROFILE'), 'Downloads')
-
-                download_folder = get_download_folder()
-                print("获取到下载文件夹路径：" + download_folder)
-            else:  # Unix or Linux
-                download_folder = os.path.expanduser("~/Downloads")
-
-            # 写入文件
-            file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
-            with open(file_path, 'w') as file:
-                file.write(info_text)
-            return file_path
 
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
