@@ -28,7 +28,7 @@ current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
-personalization_path = os.path.join("./Settings", "Personalization.json")
+default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 try:
     # 确保设置的文件夹存在
@@ -199,23 +199,15 @@ def merge_jsons(default_json, file_path):
     :param file_path: 文件路径
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
+    with open(file_path, 'r', encoding='utf-8') as file:
+        loaded_json = json.load(file)
+        # 使用文件中的数据覆盖默认值
+        return {**default_json, **loaded_json}
 
 
 def get_config():
     try:
-        default_global_config = {
+        default_global_config_file = {
             "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
             "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
@@ -223,7 +215,17 @@ def get_config():
             "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\BC_Downloader",
             "debug": "False"
         }
-        global_json_file = merge_jsons(default_global_config, global_config_path)
+        try:
+            default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+        except:
+            default_global_config = default_global_config_file
+            with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
+                json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+        try:
+            global_json_file = merge_jsons(default_global_config, global_config_path)
+        except Exception as e:
+            # 如果发生其他错误，打印错误信息并返回默认值
+            print(f"Error loading JSON from {global_config_path}: {e}")
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
     except:
@@ -232,7 +234,7 @@ def get_config():
     return global_json_file
 
 
-global_json= get_config()
+global_json = get_config()
 update_url = global_json['update_url']
 api_url = global_json['api_url']
 announcement_url = global_json['announcement_url']
