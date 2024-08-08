@@ -39,9 +39,15 @@ except:
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
 
-
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
+
+
+def generate_current_time():
+    from datetime import datetime
+    # 使用strftime方法将当前时间格式化为指定的格式
+    formatted_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    return formatted_time
 
 
 def export_system_info(msg_box):
@@ -110,7 +116,7 @@ def export_system_info(msg_box):
 
 
 # 将文本框内容写入文件的函数
-def write_to_file(text_box):
+def write_to_file(text_box, file_name):
     # 获取文本框内容
     info_text = text_box.get('1.0', tk.END)
 
@@ -132,7 +138,7 @@ def write_to_file(text_box):
         download_folder = os.path.expanduser("~/Downloads")
 
     # 写入文件
-    file_path = os.path.join(download_folder, "Suya_Downloader_info_export.txt")
+    file_path = os.path.join(download_folder, file_name + ".txt")
     with open(file_path, 'w') as file:
         file.write(info_text)
     return file_path
@@ -178,7 +184,8 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_path = write_to_file(msg_box)
+    file_name = generate_current_time() + "_CrashReport"
+    file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
     # 主事件循环
@@ -418,7 +425,8 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_path = write_to_file(system_info_box)  # 返回文件的完整路径
+                file_name = generate_current_time() + "_InfoExport"
+                file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 messagebox.showinfo(get_text("export_information"),
                                     get_text("export_information_success") + f"{file_path}")
                 # 打开文件所在目录
@@ -464,7 +472,6 @@ def export_info(event):
         export_system_info(system_info_box)
         # 禁止编辑文本框
         system_info_box.configure(state=tk.DISABLED)
-
 
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
