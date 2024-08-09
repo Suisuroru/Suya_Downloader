@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.2.1"
+Suya_Updater_Version = "1.0.2.5"
 
 
 def is_admin():
