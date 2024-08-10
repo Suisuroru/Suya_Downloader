@@ -992,7 +992,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
-            if compare_client_versions(latest_version, current_version_inner) > 0:
+            if compare_client_versions(latest_version, current_version_inner) == 1:
                 # 如果有新版本，提示用户并提供下载链接
                 user_response = messagebox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
                                                     latest_version + get_text("update_available_msg2"))
@@ -1042,20 +1042,23 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
 
 
 def compare_client_versions(version1, version2):
-    """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
-    v1_parts = list(map(int, version1.split('.')))
-    v2_parts = list(map(int, version2.split('.')))
+    try:
+        """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
+        v1_parts = list(map(int, version1.split('.')))
+        v2_parts = list(map(int, version2.split('.')))
 
-    for i in range(max(len(v1_parts), len(v2_parts))):
-        part1 = v1_parts[i] if i < len(v1_parts) else 0
-        part2 = v2_parts[i] if i < len(v2_parts) else 0
+        for i in range(max(len(v1_parts), len(v2_parts))):
+            part1 = v1_parts[i] if i < len(v1_parts) else 0
+            part2 = v2_parts[i] if i < len(v2_parts) else 0
 
-        if part1 > part2:
-            return 1
-        elif part1 < part2:
-            return -1
+            if part1 > part2:
+                return 1
+            elif part1 < part2:
+                return -1
 
-    return 0
+        return 0
+    except:
+        return 100
 
 
 def get_client_status(current_version_inner, latest_version):
@@ -1152,15 +1155,37 @@ def check_client_update():
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info['version_123'][1:]
             latest_version_onedrive = update_info['version_onedrive'][1:]
+            latest_version_alist = update_info['version_alist'][1:]
             if compare_client_versions(latest_version_123, latest_version_onedrive) == 1:
-                latest_version = latest_version_123
-                tag_client_check = "123"
+                if compare_client_versions(latest_version_123, latest_version_alist) == 1:
+                    latest_version = latest_version_123
+                    tag_client_check = "123"
+                elif compare_client_versions(latest_version_123, latest_version_alist) == -1:
+                    latest_version = latest_version_alist
+                    tag_client_check = "alist"
+                else:
+                    latest_version = latest_version_123
+                    tag_client_check = "both_123_alist"
             elif compare_client_versions(latest_version_123, latest_version_onedrive) == -1:
-                latest_version = latest_version_onedrive
-                tag_client_check = "onedrive"
+                if compare_client_versions(latest_version_onedrive, latest_version_alist) == 1:
+                    latest_version = latest_version_onedrive
+                    tag_client_check = "onedrive"
+                elif compare_client_versions(latest_version_onedrive, latest_version_alist) == -1:
+                    latest_version = latest_version_alist
+                    tag_client_check = "alist"
+                else:
+                    latest_version = latest_version_123
+                    tag_client_check = "both_onedrive_alist"
             else:
-                latest_version = latest_version_123
-                tag_client_check = "both"
+                if compare_client_versions(latest_version_123, latest_version_alist) == 1:
+                    latest_version = latest_version_123
+                    tag_client_check = "both_123_onedrive"
+                elif compare_client_versions(latest_version_123, latest_version_alist) == -1:
+                    latest_version = latest_version_alist
+                    tag_client_check = "alist"
+                else:
+                    latest_version = latest_version_123
+                    tag_client_check = "both"
             try:
                 debug_url = update_info["debug_url"]
                 print("Unzip_Debug已启用")
@@ -1458,14 +1483,26 @@ def select_download_source(selected_source, source_combobox_select):
     date_update = check_client_update()
     tag_client_check = date_update[1]
     if tag_client_check == "both":
-        download_sources = [get_text("OneDrive_pan"), get_text("123_pan")]
+        download_sources = [get_text("OneDrive_pan"), get_text("123_pan"), get_text("alist_pan")]
         default_selected_source = get_text("OneDrive_pan")  # 默认选择
+    elif tag_client_check == "both_123_onedrive":
+        download_sources = [get_text("OneDrive_pan"), get_text("123_pan")]
+        default_selected_source = get_text("OneDrive_pan")
+    elif tag_client_check == "both_123_alist":
+        download_sources = [get_text("123_pan"), get_text("alist_pan")]
+        default_selected_source = get_text("123_pan")
+    elif tag_client_check == "both_onedrive_alist":
+        download_sources = [get_text("OneDrive_pan"), get_text("alist_pan")]
+        default_selected_source = get_text("OneDrive_pan")
     elif tag_client_check == "123":
         download_sources = [get_text("123_pan")]
         default_selected_source = get_text("123_pan")
     elif tag_client_check == "onedrive":
         download_sources = [get_text("OneDrive_pan")]
         default_selected_source = get_text("OneDrive_pan")
+    elif tag_client_check == "alist":
+        download_sources = [get_text("alist_pan")]
+        default_selected_source = get_text("alist_pan")
     else:
         download_sources = [get_text("source_fault")]
         default_selected_source = get_text("source_fault")
