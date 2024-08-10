@@ -11,7 +11,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.2.1"
+Suya_Updater_Version = "1.0.2.5"
 
 
 def is_admin():
@@ -47,7 +47,6 @@ current_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
-personalization_path = os.path.join("./Settings", "personalization.json")
 
 # 确保设置的文件夹存在
 if not os.path.exists(settings_path):
@@ -85,18 +84,10 @@ def get_config():
             json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
     except:
         exit(1)
-    try:
-        default_personalization = {
-        }
-        personalization_file = merge_jsons(default_personalization, personalization_path)
-        with open(personalization_path, 'w', encoding='utf-8') as file_w:
-            json.dump(personalization_file, file_w, ensure_ascii=False, indent=4)
-    except:
-        exit(1)
-    return global_json_file, personalization_file
+    return global_json_file
 
 
-global_json, personalization_json = get_config()
+global_json = get_config()
 api_url = global_json['api_url']
 
 # 创建或覆盖版本文件

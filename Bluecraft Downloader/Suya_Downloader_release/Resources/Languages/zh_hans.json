@@ -17,6 +17,7 @@
   "path_tip2": "点击取消将自动打开设置，此窗口在第一次确认后将不再弹出",
   "123_pan": "123网盘",
   "OneDrive_pan": "OneDrive网盘",
+  "alist_pan": "Alist网盘(TPOD自建)",
   "url_direct": "网页直链",
   "url_origin": "网页非直链",
   "downloader_direct": "客户端拉取(不稳定)",
