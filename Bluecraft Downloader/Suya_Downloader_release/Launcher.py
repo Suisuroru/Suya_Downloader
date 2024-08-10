@@ -965,6 +965,9 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_origin']
                     latest_version = update_info["version_onedrive"][1:]
+                elif chosen_value == get_text("alist_pan"):
+                    download_link = update_info['url_alist_origin']
+                    latest_version = update_info["version_alist"][1:]
             elif way_chosen_value == get_text("url_direct"):
                 tag_download = "web"
                 if chosen_value == get_text("123_pan"):
@@ -976,6 +979,9 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
+                elif chosen_value == get_text("alist_pan"):
+                    download_link = update_info['url_alist_direct']
+                    latest_version = update_info["version_alist"][1:]
             elif way_chosen_value == get_text("downloader_direct"):
                 tag_download = "direct"
                 if chosen_value == get_text("123_pan"):
@@ -987,6 +993,9 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("OneDrive_pan"):
                     download_link = update_info['url_onedrive_direct']
                     latest_version = update_info["version_onedrive"][1:]
+                elif chosen_value == get_text("alist_pan"):
+                    download_link = update_info['url_alist_direct']
+                    latest_version = update_info["version_alist"][1:]
                 elif chosen_value == "Debug":
                     download_link = update_info['debug_url']
                     latest_version = update_info["version_123"][1:]
