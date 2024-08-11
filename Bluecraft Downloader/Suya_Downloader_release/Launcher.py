@@ -214,6 +214,7 @@ def get_config():
             "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
             "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
             "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\BC_Downloader",
+            "Server_Name": "Bluecraft",
             "debug": "False"
         }
         try:
@@ -1649,15 +1650,16 @@ def create_gui():
         image_label.pack(side=tk.LEFT, padx=10)  # 设置水平填充以增加间距
 
         # 在蓝色色带上添加文字
-        welcome_label = tk.Label(blue_strip, text=get_text("welcome"),
-                                 font=("Microsoft YaHei", 30, "bold"),
-                                 fg="white", bg="#0060C0")
+        welcome_label = tk.Label(blue_strip,
+                                 text=get_text("welcome1") + global_json["Server_Name"] + get_text("welcome2"),
+                                 font=("Microsoft YaHei", 30, "bold"), fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
         # 第二行文字
-        second_line_label = tk.Label(blue_strip, text=get_text("description"),
-                                     font=("Microsoft YaHei", 15),
-                                     fg="white", bg="#0060C0")
+        second_line_label = tk.Label(blue_strip,
+                                     text=get_text("description1") + global_json["Server_Name"] + get_text(
+                                         "description2"),
+                                     font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")
         second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
 
         # 版本检查并创建初始灰色色带(下载器)
