@@ -56,6 +56,10 @@ def export_system_info(msg_box):
     # 输出系统信息到文本框
     msg_box.insert(tk.END, f"Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
+    try:
+        msg_box.insert(tk.END, f"Selected language: {language}\n")
+    expect:
+        msg_box.insert(tk.END, "Selected language: No choose or not init\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
