@@ -2,6 +2,12 @@
 
 This is a repository of API interfaces for the Bluecraft Client Downloader and its calls.
 
+The main branch is the branch used for API calls, and the following is the purpose of each branch
+
+EPL branch --> branch for Easy Programming Language version maintenance
+
+Suya branch --> for the maintenance of the Suya downloader
+
 ## Languages
 
 [简体中文](https://bluecraft-server.github.io/API/multi-languages/zh_hans)

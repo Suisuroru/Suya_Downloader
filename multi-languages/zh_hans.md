@@ -2,6 +2,12 @@
 
 这是为 Bluecraft 客户端下载器及其调用的 API 接口的存储库。
 
+主分支为API调用所使用的分支，以下下为其他各分支的用途
+
+EPL分支 --> 用于易语言版本维护的分支
+
+Suya分支 --> 用于Suya下载器的维护
+
 ## Languages
 
 [简体中文](https://bluecraft-server.github.io/API/multi-languages/zh_hans)

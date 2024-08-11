@@ -2,6 +2,12 @@
 
 這是為 Bluecraft 用戶端下載器及其調用的 API 介面的儲存庫。
 
+主分支為API調用所使用的分支，以下下為其他各分支的用途
+
+EPL分支 --> 用於易語言版本維護的分支
+
+Suya分支 --> 用於Suya下載器的維護
+
 ## Languages
 
 [简体中文](https://bluecraft-server.github.io/API/multi-languages/zh_hans)
