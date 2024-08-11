@@ -6,7 +6,7 @@ The main branch is the branch used for API calls, and the following is the purpo
 
 EPL branch --> branch for Easy Programming Language version maintenance
 
-Suya branch --> for the maintenance of the Suya downloader
+Suya branch --> branch for the maintenance of the Suya downloader
 
 ## Languages
 

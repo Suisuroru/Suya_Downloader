@@ -6,7 +6,7 @@
 
 EPL分支 --> 用於易語言版本維護的分支
 
-Suya分支 --> 用於Suya下載器的維護
+Suya分支 --> 用於Suya下載器的維護的分支
 
 ## Languages
 
