@@ -221,7 +221,7 @@ def get_config():
             default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
             try:
                 default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                            fr"{default_global_config["initialize_path_suffix"]}")
+                                                            fr"{default_global_config["Server_Name"]}")
             except:
                 print("出现异常：" + str(Exception))
             print("最终initialize_path：", default_global_config["initialize_path"])
