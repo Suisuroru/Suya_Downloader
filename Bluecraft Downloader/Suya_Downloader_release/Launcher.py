@@ -754,7 +754,7 @@ def create_setting_window(event):
     lang_combobox.pack(side=tk.LEFT, pady=(0, 5), fill=tk.X)  # 增加上下pad以保持间距，fill=tk.X填充水平空间
 
     def reload_with_confirm():
-        lang_old = language_unformatted()
+        lang_old = language
         lang_new = language_formated(lang_selected.get())
         initialize_languages(lang_new)
         if lang_new != language:
