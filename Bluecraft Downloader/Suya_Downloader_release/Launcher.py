@@ -282,9 +282,9 @@ if not is_admin():
 def get_language():
     global language
 
-    def set_lang(setting_json):
+    def set_lang(setting_json_inner):
         choose_language()
-        setting_json['language'] = global_selected_lang
+        setting_json_inner['language'] = global_selected_lang
         final_language = global_selected_lang
         if final_language is not None:
             return final_language
@@ -297,7 +297,7 @@ def get_language():
             try:
                 language = setting_json['language']
             except:
-                language = set_lang()
+                language = set_lang(setting_json)
                 setting_json['language'] = language
                 with open(setting_path, 'w', encoding='utf-8') as file_w:
                     json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
@@ -325,8 +325,8 @@ def Open_Updater(window):
             sys.exit(0)  # 退出Python进程
         else:
             print("Updater.exe 未找到。")
-    except Exception as e:
-        messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{e}")
+    except:
+        messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{Exception}")
 
 
 def Pull_Resources(window):
@@ -343,10 +343,6 @@ def Pull_Resources(window):
     with open(setting_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
     Open_Updater(window)
-
-
-# 全局变量用于存储选择的语言
-global_selected_lang = None
 
 
 def choose_language():
@@ -444,8 +440,9 @@ def export_info(event):
                                     get_text("export_information_success") + f"{file_path}")
                 # 打开文件所在目录
                 open_directory(file_path)
-            except Exception as e:
-                messagebox.showerror(get_text("export_information"), get_text("export_information_error") + f"{e}")
+            except:
+                messagebox.showerror(get_text("export_information"),
+                                     get_text("export_information_error") + f"{Exception}")
 
         # 创建一个新的顶级窗口
         export_info_window = tk.Toplevel()
@@ -653,7 +650,7 @@ def toggle_music(icon_label):
     """切换音乐播放状态并更新图标，同时处理音乐循环"""
     global music_playing
     if not music_playing:
-        pygame.mixer.music.play(loops=-1)  # 设置为不循环播放，因为我们将在结束时手动处理循环
+        pygame.mixer.music.play(loops=-1)  # 设置为循环播放
         music_playing = True
         icon_label.config(image=play_icon_image)
     else:
@@ -667,7 +664,7 @@ def handle_events():
     for event in pygame.event.get():  # 获取所有pygame事件
         if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
             if music_playing:  # 只有当音乐应该是播放状态时才重新开始
-                pygame.mixer.music.play(loops=-1)  # 重新播放音乐
+                pygame.mixer.music.play(loops=-1)  # 循环播放音乐
 
 
 def language_unformatted():
@@ -690,7 +687,7 @@ def language_formated(selected):
 
 def create_setting_window(event):
     """
-    在新窗口中创建设置界面，包含一个按钮用于选择自动拉取的文件夹路径。
+    在新窗口中创建设置界面。
     """
 
     def on_choose_path():
@@ -1031,8 +1028,8 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     update_version_info(latest_version)
         else:
             print(f"请求更新信息失败，状态码：{response.status_code}")
-    except Exception as e:
-        print(f"检查更新时发生错误: {e}")
+    except:
+        print(f"检查更新时发生错误: {Exception}")
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
@@ -1142,8 +1139,8 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
         else:
             messagebox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
-    except Exception as e:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
+    except:
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def compare_versions(version1, version2):
@@ -1162,8 +1159,8 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
         update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
-    except Exception as e:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
+    except:
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def check_client_update():
@@ -1308,11 +1305,11 @@ def fetch_update_info():
     try:
         json_str = requests.get(api_url).text.strip()
         data = json.loads(json_str)
-        update_url = data['url_updater']
+        updater_upgrade_url = data['url_updater']
         version = data['version_updater']
-        return version, update_url
-    except requests.RequestException as e:
-        print(f"请求错误: {e}")
+        return version, updater_upgrade_url
+    except requests.RequestException as exp:
+        print(f"请求错误: {exp}")
         return None, None
 
 
@@ -1358,8 +1355,8 @@ def download_and_install(update_url, version):
             with open(setting_path, 'w', encoding='utf-8') as file:
                 json.dump(setting_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
-    except Exception as e:
-        print(f"下载或解压错误: {e}")
+    except:
+        print(f"下载或解压错误: {Exception}")
 
 
 def Update_Updater():
@@ -1405,7 +1402,7 @@ def get_important_notice():
             messagebox.showerror("错误", get_text("unable_to_get_IN"))
             return
     except:
-        print("无法获取重要公告:" + str(Exception))
+        print(f"无法获取重要公告:{Exception}")
         messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
         return
 
@@ -1699,11 +1696,11 @@ def create_gui():
         try:
             start_select_thread(selected_source, source_combobox)
         except:
-            print("下载源列表拉取失败，错误代码：{e}")
+            print(f"下载源列表拉取失败，错误代码：{Exception}")
         try:
             start_fetch_notice(notice_text_area)
         except:
-            print("公告拉取失败，错误代码：{e}")
+            print(f"公告拉取失败，错误代码：{Exception}")
 
         update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
         client_update_thread_args = (strip_client, label_client, client_version)
