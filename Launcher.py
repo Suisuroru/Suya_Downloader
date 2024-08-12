@@ -46,15 +46,16 @@ print("运行目录:", current_working_dir)
 def generate_current_time():
     from datetime import datetime
     # 使用strftime方法将当前时间格式化为指定的格式
-    formatted_time = datetime.now().strftime('%Y-%m-%d|%H:%M:%S')
-    return formatted_time
+    formatted_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    export_time = datetime.now().strftime('%Y/%m/%d|%H:%M:%S')
+    return formatted_time, export_time
 
 
 def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"System Time: {generate_current_time()}\n")
+    msg_box.insert(tk.END, f"System Time: {generate_current_time()[1]}\n")
     msg_box.insert(tk.END, f"Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
@@ -189,7 +190,7 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_name = generate_current_time() + "_CrashReport"
+    file_name = generate_current_time()[0] + "_CrashReport"
     file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
@@ -440,7 +441,7 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_name = generate_current_time() + "_InfoExport"
+                file_name = generate_current_time()[0] + "_InfoExport"
                 file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 messagebox.showinfo(get_text("export_information"),
                                     get_text("export_information_success") + f"{file_path}")
