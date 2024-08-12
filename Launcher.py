@@ -58,8 +58,8 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, f"Selected language: {language}\n")
-    expect:
-        msg_box.insert(tk.END, "Selected language: No choose or not init\n")
+    except:
+        msg_box.insert(tk.END, "Selected language: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
