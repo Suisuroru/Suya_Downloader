@@ -21,10 +21,11 @@ def is_admin():
         return False
 
 
-if not is_admin():
-    # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+if os.name == 'nt':
+    if not is_admin():
+        # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
 
 def show_message(partner, partner_en):

@@ -35,9 +35,10 @@ try:
     if not os.path.exists(settings_path):
         os.makedirs(settings_path)
 except:
-    # 此处操作失败则说明此文件夹受保护，需要管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+    if os.name == 'nt':
+        # 此处操作失败则说明此文件夹受保护，需要管理员权限
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -237,8 +238,9 @@ def get_config():
                 with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
                     json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
             except:
-                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-                sys.exit()
+                if os.name == 'nt':
+                    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                    sys.exit()
         try:
             global_json_file = merge_jsons(default_global_config, global_config_path)
         except Exception as e:
@@ -254,9 +256,10 @@ def get_config():
             with open(global_config_path, 'w', encoding='utf-8') as file_w:
                 json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
         except:
-            # 该目录受保护，申请管理员权限
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
+            if os.name == 'nt':
+                # 该目录受保护，申请管理员权限
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                sys.exit()
         times += 1
     return global_json_file
 
@@ -274,16 +277,17 @@ def is_admin():
         return False
 
 
-if not is_admin():
-    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-    try:
-        if not bool(global_json['debug']):
+if os.name == 'nt':
+    if not is_admin():
+        # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+        try:
+            if not bool(global_json['debug']):
+                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                sys.exit()
+            print("非管理员模式运行")
+        except:
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
             sys.exit()
-        print("非管理员模式运行")
-    except:
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
 
 
 def get_language():
