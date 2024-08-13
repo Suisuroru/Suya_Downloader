@@ -21,7 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.6"
+Suya_Downloader_Version = "1.0.2.7"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
