@@ -3,7 +3,7 @@ name: PyInstaller Build & Release
 on:
   push:
     branches:
-      - '*'
+      - 'Suya-*'
 
 jobs:
   clear-old-pre-release:
