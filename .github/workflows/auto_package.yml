@@ -1,0 +1,340 @@
+name: PyInstaller Build & Release
+
+on:
+  push:
+    branches:
+      - '*'
+
+jobs:
+  clear-old-pre-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Delete Release with Tag 'newest-build'
+        run: |
+          GITHUB_REPOSITORY="${{ github.repository }}"
+          OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
+          REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+
+          # 删除预发布版本
+          LATEST_RELEASE_WITH_TAG=$(curl -s -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/$OWNER/$REPO/releases/tags/newest-build)
+          if [ ! -z "$LATEST_RELEASE_WITH_TAG" ]; then
+            RELEASE_ID=$(echo $LATEST_RELEASE_WITH_TAG | jq -r '.id')
+            curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" https://api.github.com/repos/$OWNER/$REPO/releases/$RELEASE_ID
+            echo "Deleted the release with tag 'newest-build'"
+          fi
+
+          # 删除标签
+          TAG_DELETE_URL="https://api.github.com/repos/$OWNER/$REPO/git/refs/tags/newest-build"
+          curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" $TAG_DELETE_URL
+          echo "Deleted the tag 'newest-build'"
+
+      - name: Set Release Version
+        id: set_version
+        run: echo ::set-output name=VERSION::newest-build
+
+      - name: Create Pre-Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        with:
+          tag_name: newest-build
+          release_name: 最新开发构建版本(自动创建的版本)
+          body: "此预发布版本由Github Action自动构建。"
+          draft: false
+          prerelease: true
+
+  build-and-release-on-linux:
+    needs: clear-old-pre-release
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller psutil
+
+      - name: Build Launcher with PyInstaller
+        id: build-launcher
+        run: |
+          pyinstaller --onefile --distpath=./dist Launcher.py
+
+      - name: Build Updater with PyInstaller
+        id: build-updater
+        run: |
+          pyinstaller --onefile --distpath=./dist Updater.py
+
+      - name: Copy Resources folder and default_api_setting.json to dist
+        run: |
+          cp -r Resources ./dist/
+          cp default_api_setting.json ./dist/
+
+      - name: Compress dist folder into app.zip
+        run: |
+          cd dist
+          zip -r ../app.zip .
+          cd ..
+
+      - name: Upload assets to pre-release
+        id: upload-assets-to-pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          # Extract the version number from Launcher.py
+          LAUNCHER_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Launcher.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          # Extract the version number from Updater.py
+          UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          # Extract the first 8 characters of the commit SHA
+          COMMIT_SHA_SHORT=$(echo ${{ github.sha }} | cut -c1-8)
+          # Build the file names
+          LAUNCHER_FILE_NAME=Launcher-linux-${LAUNCHER_VERSION}-${COMMIT_SHA_SHORT}
+          UPDATER_FILE_NAME=Updater-linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
+          FULL_FILE_NAME=Suya-Downloader-linux-${LAUNCHER_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
+          
+          # Rename the files
+          mv ./dist/Launcher ./dist/${LAUNCHER_FILE_NAME}
+          mv ./dist/Updater ./dist/${UPDATER_FILE_NAME}
+          mv ./app.zip ./${FULL_FILE_NAME}.zip
+          
+          # Upload the files
+          gh release upload newest-build ./dist/${LAUNCHER_FILE_NAME}
+          gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
+          gh release upload newest-build ./${FULL_FILE_NAME}.zip
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: pyinstaller-build
+          path: ./dist/*
+
+  build-and-release-on-windows:
+    needs: clear-old-pre-release
+    runs-on: windows-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v2
+      with:
+        python-version: '3.12'
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install pyinstaller psutil
+
+    - name: Build Launcher with PyInstaller
+      id: build-launcher
+      run: |
+        # Build the executable
+        pyinstaller -F -w -i ./Resources/Pictures/Server.ico --distpath=./dist Launcher.py
+
+    - name: Build Updater with PyInstaller
+      id: build-updater
+      run: |
+        # Build the executable
+        pyinstaller -F -w --distpath=./dist Updater.py
+
+    - name: Move Resources folder and default_api_setting.json to dist
+      run: |
+        # Move the Resources folder to the dist folder
+        move ./Resources ./dist/Resources
+        
+        # Move the default_api_setting.json file to the dist folder
+        move ./default_api_setting.json ./dist/default_api_setting.json
+      shell: cmd
+
+
+    - name: Zip the dist directory
+      run: |
+        # Navigate to the dist directory
+        cd ./dist
+        
+        # Use 7z to create a zip archive of all files in the current directory
+        7z a -tzip ../app.zip *
+        
+        # Return to the root directory
+        cd ..
+      shell: cmd
+
+
+    - name: Set short commit SHA as environment variable
+      run: |
+        $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,7)
+        echo "SHA_SHORT=$Env:SHA_SHORT" >> $env:GITHUB_ENV
+      shell: powershell
+
+    - name: Extract Launcher version
+      id: extract_launcher_version
+      run: |
+        $content = Get-Content .\Launcher.py
+        foreach ($line in $content) {
+            if ($line.StartsWith("Suya_Downloader_Version")) {
+                $version = $line.Split('=')[1].Trim().Trim('"')
+                Write-Host "Launcher version: $version"
+                echo "LAUNCHER_VERSION=$version" >> $env:GITHUB_ENV
+                break
+            }
+        }
+      shell: powershell
+
+    - name: Extract Updater version
+      id: extract_updater_version
+      run: |
+        $content = Get-Content .\Updater.py
+        foreach ($line in $content) {
+            if ($line.StartsWith("Suya_Updater_Version")) {
+                $version = $line.Split('=')[1].Trim().Trim('"')
+                Write-Host "Updater version: $version"
+                echo "UPDATER_VERSION=$version" >> $env:GITHUB_ENV
+                break
+            }
+        }
+      shell: powershell
+
+    - name: Rename Launcher and Updater Executables
+      run: |
+        set LAUNCHER_FILE_NAME=Launcher-windows-%LAUNCHER_VERSION%-%SHA_SHORT%.exe
+        set UPDATER_FILE_NAME=Updater-windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
+        set FULL_FILE_NAME=Suya-Downloader-windows-%LAUNCHER_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+        cd dist
+        ren Launcher.exe %LAUNCHER_FILE_NAME%
+        ren Updater.exe %UPDATER_FILE_NAME%
+        cd ..
+        ren app.zip %FULL_FILE_NAME%
+      shell: cmd
+
+
+    - name: Upload assets to latest pre-release
+      id: upload-assets-to-pre-release
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      run: |
+        # Build the file names
+        $LAUNCHER_FILE_NAME="Launcher-windows-${env:LAUNCHER_VERSION}-${env:SHA_SHORT}.exe"
+        $UPDATER_FILE_NAME="Updater-windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe"
+        $FULL_FILE_NAME="Suya-Downloader-windows-${env:LAUNCHER_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
+        # Upload the files
+        gh release upload newest-build ./dist/${LAUNCHER_FILE_NAME}
+        gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
+        gh release upload newest-build ./${FULL_FILE_NAME}.zip
+
+  build-and-release-on-macos:
+    needs: clear-old-pre-release
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pyinstaller psutil
+
+      - name: Build Launcher with PyInstaller
+        id: build-launcher
+        run: |
+          # Build the macOS app bundle
+          pyinstaller --onefile --windowed --distpath=./dist Launcher.py
+
+      - name: Build Updater with PyInstaller
+        id: build-updater
+        run: |
+          # Build the macOS app bundle
+          pyinstaller --onefile --windowed --distpath=./dist Updater.py
+
+      - name: Move Resources folder and default_api_setting.json to dist
+        run: |
+          # Move the Resources folder to the dist folder
+          mv ./Resources ./dist/Resources
+          
+          # Move the default_api_setting.json file to the dist folder
+          mv ./default_api_setting.json ./dist/default_api_setting.json
+
+      - name: Package dist files into a zip archive
+        run: |
+          # Navigate to the dist directory
+          cd dist
+          
+          # Create a zip archive of the contents in the dist directory
+          zip -r ../app.zip .
+
+
+      - name: Package Launcher.app into a zip archive
+        id: package-launcher
+        run: |          # Navigate to the dist directory
+          cd ./dist
+          
+          # Create a zip archive for Launcher.app
+          zip -r ../Launcher.zip Launcher.app
+
+      - name: Package Updater.app into a zip archive
+        id: package-updater
+        run: |          # Navigate to the dist directory
+          cd ./dist
+          
+          # Create a zip archive for Updater.app
+          zip -r ../Updater.zip Updater.app
+
+      - name: Extract Launcher version
+        id: extract_launcher_version
+        run: |
+          VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Launcher.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          echo "LAUNCHER_VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
+
+      - name: Extract Updater version
+        id: extract_updater_version
+        run: |
+          VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          echo "UPDATER_VERSION=$VERSION" >> $GITHUB_ENV
+        shell: bash
+
+
+      - name: Set short commit SHA as environment variable
+        run: |
+          SHORT_SHA="${GITHUB_SHA::8}"
+          echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+
+      - name: Upload assets to pre-release
+        id: upload-assets-to-pre-release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
+        run: |
+          # Build the file names
+          LAUNCHER_FILE_NAME=Launcher-macos-${LAUNCHER_VERSION}-${SHORT_SHA}
+          UPDATER_FILE_NAME=Updater-macos-${UPDATER_VERSION}-${SHORT_SHA}
+          FULL_FILE_NAME=Suya-Downloader-macos-${LAUNCHER_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
+          
+          # Rename the files
+          mv "./Launcher.zip" "./${LAUNCHER_FILE_NAME}.zip"
+          mv "./Updater.zip" "./${UPDATER_FILE_NAME}.zip"
+          mv "./app.zip" "./${FULL_FILE_NAME}"
+          
+          # Upload the files
+          gh release upload newest-build "./${LAUNCHER_FILE_NAME}.zip"
+          gh release upload newest-build "./${UPDATER_FILE_NAME}.zip"
+          gh release upload newest-build "./${FULL_FILE_NAME}"
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: pyinstaller-build
+          path: ./dist/*
