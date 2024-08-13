@@ -168,7 +168,7 @@ def fetch_update_info():
 
 
 def download_and_install(downloader_update_url, update_partner_2):
-    """下载ZIP文件并覆盖安装，完成后运行Launcher.exe"""
+    """下载ZIP文件并覆盖安装，完成后运行Launcher"""
     try:
         response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
@@ -213,13 +213,16 @@ def download_and_install(downloader_update_url, update_partner_2):
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
-        launcher_path = os.path.join(current_dir, 'Launcher.exe')
+        if os.name == 'nt':
+            launcher_path = os.path.join(current_dir, 'Launcher.exe')
+        else:
+            launcher_path = os.path.join(current_dir, 'Launcher')
         if os.path.isfile(launcher_path):
             import subprocess
             subprocess.Popen([launcher_path])
-            print("Launcher.exe 已启动。")
+            print("Launcher已启动。")
         else:
-            print("Launcher.exe 未找到。")
+            print("Launcher未找到。")
     except Exception as e:
         print(f"下载或解压错误: {e}")
 

@@ -319,11 +319,14 @@ def get_language():
 
 def Open_Updater(window):
     try:
-        launcher_path = os.path.join(current_working_dir, 'Updater.exe')
+        if os.name == 'nt':
+            launcher_path = os.path.join(current_working_dir, 'Updater.exe')
+        if os.name == 'posix':
+            launcher_path = os.path.join(current_working_dir, 'Updater')
         if os.path.isfile(launcher_path):
             import subprocess
             subprocess.Popen([launcher_path])
-            print("Updater.exe 已启动。")
+            print("Updater已启动。")
             if window is not None:
                 try:
                     window.destroy()  # 关闭Tkinter窗口
@@ -331,7 +334,7 @@ def Open_Updater(window):
                     print("Tkinter窗口可能未开启或关闭失败。")
             sys.exit(0)  # 退出Python进程
         else:
-            print("Updater.exe 未找到。")
+            print("Updater未找到。")
     except:
         messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{Exception}")
 
@@ -1444,9 +1447,9 @@ def get_important_notice():
 def Version_Check_for_Updater(online_version):
     # 版本文件所在目录
     try:
-        print("Updater.exe在线最新版：" + online_version)
+        print("Updater在线最新版：" + online_version)
     except:
-        print("无法检查Updater.exe更新")
+        print("无法检查Updater更新")
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
