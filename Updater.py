@@ -169,7 +169,7 @@ def fetch_update_info():
             return None, None, None
 
 
-def download_and_install(downloader_update_url, update_partner_2):
+def download_and_install(downloader_update_url, update_partner_inner):
     """下载ZIP文件并覆盖安装，完成后运行Launcher"""
     try:
         response = requests.get(downloader_update_url, stream=True)
@@ -181,7 +181,7 @@ def download_and_install(downloader_update_url, update_partner_2):
         with open(temp_zip_file, 'wb') as f:
             shutil.copyfileobj(response.raw, f)
         del_Resources()
-        if update_partner_2 == "Resources":
+        if update_partner_inner == "Resources":
             # 构建完整的目录路径，基于当前工作目录
             pull_dir = os.path.join(current_dir, "Resources")
             # 确保"Resource"目录存在，如果不存在则创建
