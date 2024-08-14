@@ -213,54 +213,60 @@ def merge_jsons(default_json, file_path):
 
 
 def get_config():
-    times = 0
-    while times <= 1:
-        default_global_config_file = {
-            "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
-            "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
-            "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
-            "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\BC_Downloader",
-            "Server_Name": "Bluecraft",
-            "debug": "False"
-        }
-        try:
-            default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+    default_global_config_file = {
+        "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
+        "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+        "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
+        "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
+        "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\Bluecraft",
+        "initialize_path_posix": "./Bluecraft",
+        "Server_Name": "Bluecraft",
+        "debug": "False"
+    }
+    if os.name == 'nt':
+        times = 0
+        while times <= 1:
             try:
-                default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                            fr"{default_global_config["Server_Name"]}")
+                default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+                try:
+                    default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                                fr"{default_global_config["Server_Name"]}")
+                except:
+                    print("出现异常：" + str(Exception))
+                print("最终initialize_path：", default_global_config["initialize_path"])
             except:
-                print("出现异常：" + str(Exception))
-            print("最终initialize_path：", default_global_config["initialize_path"])
-        except:
-            default_global_config = default_global_config_file
+                default_global_config = default_global_config_file
+                try:
+                    with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
+                        json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+                except:
+                        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+                        sys.exit()
             try:
-                with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
-                    json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
+                global_json_file = merge_jsons(default_global_config, global_config_path)
+            except Exception as e:
+                # 如果发生其他错误，打印错误信息并返回默认值
+                try:
+                    with open(default_api_setting_path, 'r', encoding='utf-8') as file_r:
+                        default_api_setting = json.load(file_r)
+                    global_json_file = default_api_setting
+                except:
+                    global_json_file = default_global_config
+                print(f"Error loading JSON from {global_config_path}: {e}")
+            try:
+                with open(global_config_path, 'w', encoding='utf-8') as file_w:
+                    json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
             except:
-                if os.name == 'nt':
+                    # 该目录受保护，申请管理员权限
                     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
                     sys.exit()
+            times += 1
+    elif os.name == 'posix':
         try:
-            global_json_file = merge_jsons(default_global_config, global_config_path)
-        except Exception as e:
-            # 如果发生其他错误，打印错误信息并返回默认值
-            try:
-                with open(default_api_setting_path, 'r', encoding='utf-8') as file_r:
-                    default_api_setting = json.load(file_r)
-                global_json_file = default_api_setting
-            except:
-                global_json_file = default_global_config
-            print(f"Error loading JSON from {global_config_path}: {e}")
-        try:
-            with open(global_config_path, 'w', encoding='utf-8') as file_w:
-                json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+            default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
+            default_global_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_global_config["Server_Name"]}"
         except:
-            if os.name == 'nt':
-                # 该目录受保护，申请管理员权限
-                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-                sys.exit()
-        times += 1
+            print("异常错误")
     return global_json_file
 
 
