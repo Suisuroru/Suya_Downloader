@@ -117,55 +117,56 @@ def del_Resources():
 
 
 def fetch_update_info():
-    """从API获取版本信息和下载链接"""
-    try:
+    if os.name == 'nt':
+        """从API获取版本信息和下载链接"""
         try:
-            with open(setting_path, 'r', encoding='utf-8') as f:
-                setting_json_inner = json.load(f)
-                try:
-                    Update_Partner = setting_json_inner['Update_Partner']
-                except:
-                    setting_json_inner['Updater_Partner'] = "Full"
-                    with open(setting_path, 'w', encoding='utf-8') as f:
-                        json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
-                    Update_Partner = "Full"
-        except:
-            setting_json_inner = {'Updater_Partner': "Full"}
-            with open(setting_path, 'w', encoding='utf-8') as f:
-                json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
-            Update_Partner = "Full"
-        try:
-            Count = setting_json_inner['Pull_Resources_Count']
-            print("尝试拉取次数：" + str(Count))
-        except:
-            Count = 1
-        if Count >= 3:
-            Update_Partner = "Full"
-        json_str = requests.get(api_url).text.strip()
-        data = json.loads(json_str)
-        if Update_Partner == "Full":
-            downloader_update_url = data['url_downloader']
-            version = data['version_downloader']
-            partner = "完整更新模式"
-            partner_en = "FULL UPDATE MODE"
-            message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
-            # 启动线程
-            message_thread.start()
-            return version, downloader_update_url, Update_Partner
-        elif Update_Partner == "Resources":
-            downloader_update_url = data['url_resource']
-            partner = "重新拉取资源文件模式"
-            partner_en = "RESOURCES PULL MODE"
-            message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
-            # 启动线程
-            message_thread.start()
-            return None, downloader_update_url, Update_Partner
-        else:
-            print("传入参数错误")
+            try:
+                with open(setting_path, 'r', encoding='utf-8') as f:
+                    setting_json_inner = json.load(f)
+                    try:
+                        Update_Partner = setting_json_inner['Update_Partner']
+                    except:
+                        setting_json_inner['Updater_Partner'] = "Full"
+                        with open(setting_path, 'w', encoding='utf-8') as f:
+                            json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
+                        Update_Partner = "Full"
+            except:
+                setting_json_inner = {'Updater_Partner': "Full"}
+                with open(setting_path, 'w', encoding='utf-8') as f:
+                    json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
+                Update_Partner = "Full"
+            try:
+                Count = setting_json_inner['Pull_Resources_Count']
+                print("尝试拉取次数：" + str(Count))
+            except:
+                Count = 1
+            if Count >= 3:
+                Update_Partner = "Full"
+            json_str = requests.get(api_url).text.strip()
+            data = json.loads(json_str)
+            if Update_Partner == "Full":
+                downloader_update_url = data['url_downloader']
+                version = data['version_downloader']
+                partner = "完整更新模式"
+                partner_en = "FULL UPDATE MODE"
+                message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
+                # 启动线程
+                message_thread.start()
+                return version, downloader_update_url, Update_Partner
+            elif Update_Partner == "Resources":
+                downloader_update_url = data['url_resource']
+                partner = "重新拉取资源文件模式"
+                partner_en = "RESOURCES PULL MODE"
+                message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
+                # 启动线程
+                message_thread.start()
+                return None, downloader_update_url, Update_Partner
+            else:
+                print("传入参数错误")
+                return None, None, None
+        except requests.RequestException as e:
+            print(f"请求错误: {e}")
             return None, None, None
-    except requests.RequestException as e:
-        print(f"请求错误: {e}")
-        return None, None, None
 
 
 def download_and_install(downloader_update_url, update_partner_2):
