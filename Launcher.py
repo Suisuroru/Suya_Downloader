@@ -1095,8 +1095,8 @@ def compare_client_versions(version1, version2):
                 return 1
             elif part1 < part2:
                 return -1
-
-        return 0
+            else:
+                return 0
     except:
         return 100
 
@@ -1115,8 +1115,10 @@ def get_client_status(current_version_inner, latest_version):
         return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 蓝色
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
         return "旧版本", "#FFCC00", get_text("old_client") + current_version_inner  # 黄色
-    else:
+    elif comparison_result == 0:
         return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
+    else:
+        return "未知状态", "#808080", get_text("unknown_client")
 
 
 def check_for_updates_with_confirmation(current_version_inner, window):

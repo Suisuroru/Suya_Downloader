@@ -77,5 +77,6 @@
     "export_information_error": "匯出資訊失敗，錯誤原因：",
     "lost_key": "文本已丟失，丟失的文本的鍵值為",
     "important_notice": "重要通知",
-    "unable_to_get_IN": "無法獲取重要通知"
+    "unable_to_get_IN": "無法獲取重要通知",
+    "unknown_client": "未知用戶端版本消息"
 }

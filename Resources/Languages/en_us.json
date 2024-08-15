@@ -77,5 +77,6 @@
     "export_information_error": "Failed to export information, error reason:",
     "lost_key": "Text is missing, the missing text has a key value of ",
     "important_notice": "Important Notice",
-    "unable_to_get_IN": "Unable to get important notice"
+    "unable_to_get_IN": "Unable to get important notice",
+    "unknown_client": "Unknown client version message"
 }
