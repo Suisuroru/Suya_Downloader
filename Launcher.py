@@ -63,6 +63,10 @@ def export_system_info(msg_box):
         msg_box.insert(tk.END, f"Selected language: {language}\n")
     except:
         msg_box.insert(tk.END, "Selected language: Not initialized\n")
+    try:
+        msg_box.insert(tk.END, f"API Information: {global_json}\n")
+    except:
+        msg_box.insert(tk.END, "API Information: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
