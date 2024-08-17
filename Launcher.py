@@ -64,7 +64,7 @@ def export_system_info(msg_box):
     except:
         msg_box.insert(tk.END, "Selected language: Not initialized\n")
     try:
-        msg_box.insert(tk.END, f"API Information: {global_json}\n")
+        msg_box.insert(tk.END, f"Setting Information: \n{global_json}\n----------------------------------\n")
     except:
         msg_box.insert(tk.END, "API Information: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
