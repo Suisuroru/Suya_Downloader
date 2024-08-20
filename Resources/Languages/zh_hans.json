@@ -13,6 +13,7 @@
     "choose_folders": "选择文件夹",
     "close": "关闭",
     "close_tip": "您现在可以安全地关闭这个窗口了",
+    "config_fault": "尝试在线获取数据失败，已使用本地缓存进行加载",
     "confirm": "确认",
     "description1": "快速、方便地下载或更新 ",
     "description2": " 客户端",
@@ -76,6 +77,7 @@
     "update_unable_msg": "与上次下载版本一致，重新下载？最新正式版：",
     "url_direct": "网页直链",
     "url_origin": "网页非直链",
+    "warn": "警告",
     "wait_message": "等待Suya下载器公告数据回传中",
     "welcome1": "欢迎使用 ",
     "welcome2": " 客户端Suya下载器！"

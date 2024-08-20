@@ -13,6 +13,7 @@
     "choose_folders": "選擇資料夾",
     "close": "關閉",
     "close_tip": "您現在可以安全地關閉這個視窗了",
+    "config_fault": "嘗試在線獲取數據失敗，已使用本地緩存進行加載",
     "confirm": "確認",
     "description1": "快速、方便地下載或更新 ",
     "description2": " 用戶端",
@@ -77,6 +78,7 @@
     "url_direct": "網頁直鏈",
     "url_origin": "網頁非直鏈",
     "wait_message": "等待Suya下載器公告數據回傳中",
+    "warn": "警告",
     "welcome1": "歡迎使用 ",
     "welcome2": " 用戶端Suya下載器！"
 }
