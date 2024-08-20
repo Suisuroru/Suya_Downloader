@@ -78,7 +78,7 @@ def merge_jsons(default_json, file_path):
 def get_config():
     try:
         default_global_config = {
-            "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+            "api_url": "https://api.suya.blue-millennium.fun/Check_Version.json",
         }
         global_json_file = merge_jsons(default_global_config, global_config_path)
         with open(global_config_path, 'w', encoding='utf-8') as file_w:

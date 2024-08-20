@@ -221,7 +221,7 @@ def merge_jsons(default_json, file_path):
 def get_config():
     default_global_config_file = {
         "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-        "api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json",
+        "api_url": "https://api.suya.blue-millennium.fun/Check_Version.json",
         "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
         "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
         "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\Bluecraft",
