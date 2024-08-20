@@ -255,10 +255,14 @@ def get_config(Initialize_Tag):
     else:
         api_content = requests.get(default_global_config["server_api_url"]).json()
     try:
-        merge_jsons(default_global_config, api_content)
+        default_global_config = merge_jsons(default_global_config, api_content)
     except:
         print("出现异常：" + str(Exception))
         dupe_crash_report()
+    ### 此处代码将于1.0.3.0删除
+    if default_global_config[api_url] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
+        default_global_config[api_url] = "https://api.suya.blue-millennium.fun/Check_Version.json"
+    ### 此处代码将于1.0.3.0删除
     final_global_config = merge_jsons(default_global_config, global_config_path)
     with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(final_global_config, file, indent=4)

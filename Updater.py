@@ -48,6 +48,7 @@ current_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
+default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 # 确保设置的文件夹存在
 if not os.path.exists(settings_path):
@@ -76,16 +77,36 @@ def merge_jsons(default_json, file_path):
 
 
 def get_config():
+    default_api_config = {
+        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json"
+    }
     try:
-        default_global_config = {
-            "api_url": "https://api.suya.blue-millennium.fun/Check_Version.json",
-        }
-        global_json_file = merge_jsons(default_global_config, global_config_path)
-        with open(global_config_path, 'w', encoding='utf-8') as file_w:
-            json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
+        default_global_config = merge_jsons(default_api_config, default_api_setting_path)
     except:
-        exit(1)
-    return global_json_file
+        try:
+            default_global_config = default_api_config
+            with open(default_api_setting_path, 'w', encoding='utf-8') as file:
+                json.dump(default_api_config, file, indent=4)
+                print("成功写入初始API参数")
+        except:
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
+    try:
+        api_content = requests.get(default_global_config["server_api_url"]).json()
+    except:
+        api_content = default_api_config
+    try:
+        default_global_config = merge_jsons(default_global_config, api_content)
+    except:
+        print("出现异常：" + str(Exception))
+    ### 此处代码将于1.0.3.0删除
+    if default_global_config[api_url] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
+        default_global_config[api_url] = "https://api.suya.blue-millennium.fun/Check_Version.json"
+    ### 此处代码将于1.0.3.0删除
+    final_global_config = merge_jsons(default_global_config, global_config_path)
+    with open(global_config_path, 'w', encoding='utf-8') as file:
+        json.dump(final_global_config, file, indent=4)
+    return final_global_config
 
 
 global_json = get_config()
