@@ -259,6 +259,9 @@ def get_config():
                 except:
                     global_json_file = default_global_config
                 print(f"Error loading JSON from {global_config_path}: {e}")
+            # 替换旧API
+            if global_json[api_url] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
+                global_json[api_url] = "https://api.suya.blue-millennium.fun/Check_Version.json"
             try:
                 with open(global_config_path, 'w', encoding='utf-8') as file_w:
                     json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
