@@ -214,7 +214,7 @@ def merge_jsons(default_json, file_2):
     """
     try:
         with open(file_2, 'r', encoding='utf-8') as file:
-                loaded_json = json.load(file)
+            loaded_json = json.load(file)
     except:
         loaded_json = file_2
     # 使用文件中的数据覆盖默认值
@@ -254,19 +254,34 @@ def get_config(Initialize_Tag):
         api_content = default_api_config
     else:
         api_content = requests.get(default_global_config["server_api_url"]).json()
+        print("获取到API信息: ", api_content)
     try:
         default_global_config = merge_jsons(default_global_config, api_content)
+        print("合并全局配置：", default_global_config)
     except:
         print("出现异常：" + str(Exception))
         dupe_crash_report()
+    try:
+        final_global_config = merge_jsons(default_global_config, global_config_path)
+    except:
+        final_global_config = default_global_config
+        print("出现异常：" + str(Exception))
     ### 此处代码将于1.0.3.0删除
-    if default_global_config[api_url] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
-        default_global_config[api_url] = "https://api.suya.blue-millennium.fun/Check_Version.json"
+    if not Initialize_Tag:
+        if final_global_config[
+            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
+            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Check_Version.json"
+            print("检测到旧API地址，已自动更新为最新API地址")
+        elif final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
+            print("检测到新版API地址，无需更新")
+        else:
+            print("检测到其他API地址，跳过")
     ### 此处代码将于1.0.3.0删除
-    final_global_config = merge_jsons(default_global_config, global_config_path)
+    print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
+
 
 global_json = get_config(True)
 update_url = global_json['update_url']
@@ -497,7 +512,8 @@ def export_info(event):
         close_button.pack(side="right", padx=5)
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
-        system_info_box.insert(tk.END, "Exported Information\nThis is not a crash report.\n\n----------Exported Information--------\n")
+        system_info_box.insert(tk.END,
+                               "Exported Information\nThis is not a crash report.\n\n----------Exported Information--------\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
@@ -1531,7 +1547,7 @@ def start_select_thread(selected_source, source_combobox_select):
     thread.start()
 
 
-def initialize_api(selected_source, source_combobox, notice_text_area,strip_downloader, label_downloader, strip_client,
+def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
                    label_client, strip_suya_announcement, label_suya_announcement):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
@@ -1762,7 +1778,7 @@ def create_gui():
         center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
-        initialize_args = (selected_source, source_combobox, notice_text_area,strip_downloader, label_downloader,
+        initialize_args = (selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader,
                            strip_client, label_client, strip_suya_announcement, label_suya_announcement)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
