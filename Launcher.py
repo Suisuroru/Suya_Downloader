@@ -20,6 +20,7 @@ from tkinter import messagebox, scrolledtext, ttk, filedialog
 import pygame
 import requests
 from PIL import Image, ImageTk
+from pygame.examples.midi import NullKey
 
 Suya_Downloader_Version = "1.0.2.7"
 
@@ -205,79 +206,61 @@ def dupe_crash_report(error_message=None):
     root.mainloop()
 
 
-def merge_jsons(default_json, file_path):
+def merge_jsons(default_json, file_2):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
     :param default_json: 默认的 JSON 字典
-    :param file_path: 文件路径
+    :param file_2: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
-    with open(file_path, 'r', encoding='utf-8') as file:
-        loaded_json = json.load(file)
-        # 使用文件中的数据覆盖默认值
-        return {**default_json, **loaded_json}
+    try:
+        with open(file_2, 'r', encoding='utf-8') as file:
+                loaded_json = json.load(file)
+    except:
+        loaded_json = file_2
+    # 使用文件中的数据覆盖默认值
+    return {**default_json, **loaded_json}
 
 
 def get_config():
-    default_global_config_file = {
-        "update_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Package_Latest.json",
-        "api_url": "https://api.suya.blue-millennium.fun/Check_Version.json",
-        "announcement_url": "https://Bluecraft-Server.github.io/API/Launcher/GetAnnouncement",
-        "important_notice_url": "https://Bluecraft-Server.github.io/API/Launcher/Get_Important_Notice.json",
-        "initialize_path": fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\Bluecraft",
-        "initialize_path_posix": "./Bluecraft",
+    default_api_config = {
+        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
         "Server_Name": "Bluecraft",
         "debug": "False"
     }
+    try:
+        default_global_config = merge_jsons(default_api_config, default_api_setting_path)
+    except:
+        try:
+            default_global_config = default_api_config
+            with open(default_api_setting_path, 'w', encoding='utf-8') as file:
+                json.dump(default_api_config, file, indent=4)
+                print("成功写入初始API参数")
+        except:
+            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+            sys.exit()
     if os.name == 'nt':
-        times = 0
-        while times <= 1:
-            try:
-                default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
-                try:
-                    default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                                fr"{default_global_config["Server_Name"]}")
-                except:
-                    print("出现异常：" + str(Exception))
-                print("最终initialize_path：", default_global_config["initialize_path"])
-            except:
-                default_global_config = default_global_config_file
-                try:
-                    with open(default_api_setting_path, 'w', encoding='utf-8') as file_w:
-                        json.dump(default_global_config, file_w, ensure_ascii=False, indent=4)
-                except:
-                        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-                        sys.exit()
-            try:
-                global_json_file = merge_jsons(default_global_config, global_config_path)
-            except Exception as e:
-                # 如果发生其他错误，打印错误信息并返回默认值
-                try:
-                    with open(default_api_setting_path, 'r', encoding='utf-8') as file_r:
-                        default_api_setting = json.load(file_r)
-                    global_json_file = default_api_setting
-                except:
-                    global_json_file = default_global_config
-                print(f"Error loading JSON from {global_config_path}: {e}")
-            # 替换旧API
-            if global_json[api_url] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
-                global_json[api_url] = "https://api.suya.blue-millennium.fun/Check_Version.json"
-            try:
-                with open(global_config_path, 'w', encoding='utf-8') as file_w:
-                    json.dump(global_json_file, file_w, ensure_ascii=False, indent=4)
-            except:
-                    # 该目录受保护，申请管理员权限
-                    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-                    sys.exit()
-            times += 1
+        try:
+            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                        fr"{default_global_config["Server_Name"]}")
+        except:
+            print("出现异常：" + str(Exception))
+        print("最终initialize_path：", default_global_config["initialize_path"])
     elif os.name == 'posix':
         try:
-            default_global_config = merge_jsons(default_global_config_file, default_api_setting_path)
             default_global_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_global_config["Server_Name"]}"
         except:
             print("异常错误")
-    return global_json_file
-
+    api_content = requests.get(default_global_config["server_api_url"]).json()
+    try:
+        merge_jsons(default_global_config, api_content)
+    except:
+        print("出现异常：" + str(Exception))
+        dupe_crash_report()
+    final_global_config = merge_jsons(default_global_config, global_config_path)
+    with open(global_config_path, 'w', encoding='utf-8') as file:
+        json.dump(final_global_config, file, indent=4)
+    return final_global_config
 
 global_json = get_config()
 update_url = global_json['update_url']
