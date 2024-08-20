@@ -185,6 +185,8 @@ def dupe_crash_report(error_message=None):
 
     scrollbar.config(command=msg_box.yview)
 
+    msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed.\n\n--------Crash Report--------\n")
+
     # 如果有错误消息，先输出错误消息
     if error_message:
         msg_box.insert(tk.END, f"Error:\n{error_message}\n\n")
@@ -503,6 +505,7 @@ def export_info(event):
         close_button.pack(side="right", padx=5)
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
+        system_info_box.insert(tk.END, "Exported Information\nThis is not a crash report.\n\n----------Exported Information--------\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
