@@ -32,10 +32,9 @@ def show_message(partner, partner_en):
     定义一个显示消息框的函数
     """
     messagebox.showinfo("提示 / Tip",
-                        "更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{}。\n"
+                        f"更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{partner}。\n"
                         "The update has been started, after the update is finished, Suya Downloader will open "
-                        "automatically, please wait for the automatic reboot, the type of this update is {}".format(
-                            partner, partner_en))
+                        f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
 # 当前工作目录
