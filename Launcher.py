@@ -272,10 +272,8 @@ def get_config(Initialize_Tag):
             "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
             final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Check_Version.json"
             print("检测到旧API地址，已自动更新为最新API地址")
-        elif final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
-            print("检测到新版API地址，无需更新")
-        else:
-            print("检测到其他API地址，跳过")
+        if final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
+            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
     ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
@@ -1234,8 +1232,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    json_str = requests.get(global_json["api_url"]).text.strip()
-    data = json.loads(json_str)
+    data = requests.get(global_json["api_url"]).json()
 
     def try_to_get_suya_announcement(key):
         try:
