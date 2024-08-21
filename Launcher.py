@@ -280,6 +280,7 @@ def get_config(Initialize_Tag):
         json.dump(final_global_config, file, indent=4)
     return final_global_config
 
+
 try:
     global_json = get_config(True)
 except:
@@ -289,9 +290,10 @@ except:
 
 def is_admin():
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin() !=0
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
     except:
         return False
+
 
 try:
     if global_json['debug'] == "True":
