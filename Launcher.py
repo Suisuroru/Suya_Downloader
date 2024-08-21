@@ -523,7 +523,7 @@ def export_info(event):
 
 
 def initialize_settings():
-    path_from_file = global_json["initialize_path"]
+    path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
     ensure_directory_exists(path_from_file)
     try:
         with open(setting_path, 'r', encoding='utf-8') as file:
