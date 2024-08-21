@@ -283,28 +283,34 @@ def get_config(Initialize_Tag):
         json.dump(final_global_config, file, indent=4)
     return final_global_config
 
-
-global_json = get_config(True)
+try:
+    global_json = get_config(True)
+except:
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def is_admin():
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin()
+        return ctypes.windll.shell32.IsUserAnAdmin() !=0
     except:
         return False
 
-
-if os.name == 'nt':
-    if not is_admin():
+try:
+    if global_json['debug'] == "True":
+        print("非管理员模式运行")
+    elif global_json['debug'] == "False" and os.name == 'nt' and not is_admin():
         # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-        try:
-            if global_json['debug'] == "False":
-                ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-                sys.exit()
-            print("非管理员模式运行")
-        except:
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
+    elif os.name == 'nt' and not is_admin():
+        print("未知提供参数，已视为False运行")
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
+except Exception:
+    print(f"发生错误: {Exception}")
+    # 可以记录错误或采取其他措施，但避免再次请求管理员权限
+    dupe_crash_report(Exception)
 
 
 def get_language():
@@ -1563,8 +1569,8 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
                     update_thread.start()
                 else:
                     print("无需更新。")
-            print("跳过更新检查")
-
+            else:
+                print("跳过更新检查")
 
         check_thread = threading.Thread(target=Check_Update_for_Updater)
         check_thread.start()
