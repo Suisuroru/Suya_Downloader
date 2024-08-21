@@ -21,8 +21,6 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-from Updater import api_url
-
 Suya_Downloader_Version = "1.0.2.7"
 
 # 获取运行目录
@@ -36,6 +34,7 @@ try:
     # 确保设置的文件夹存在
     if not os.path.exists(settings_path):
         os.makedirs(settings_path)
+        print("已创建文件夹:", settings_path)
 except:
     if os.name == 'nt':
         # 此处操作失败则说明此文件夹受保护，需要管理员权限
@@ -1138,7 +1137,7 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        json_str = requests.get(api_url).text.strip()
+        json_str = requests.get(global_json["api_url"]).text.strip()
         data = json.loads(json_str)
         update_url = data['url_downloader']
         latest_version = data['version_downloader']
@@ -1190,7 +1189,7 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        json_str = requests.get(api_url).text.strip()
+        json_str = requests.get(global_json["api_url"]).text.strip()
         data = json.loads(json_str)
         latest_version = data['version_downloader']
 
@@ -1230,7 +1229,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    json_str = requests.get(api_url).text.strip()
+    json_str = requests.get(global_json["api_url"]).text.strip()
     data = json.loads(json_str)
 
     def try_to_get_suya_announcement(key):
@@ -1340,7 +1339,7 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        json_str = requests.get(api_url).text.strip()
+        json_str = requests.get(global_json["api_url"]).text.strip()
         data = json.loads(json_str)
         updater_upgrade_url = data['url_updater']
         version = data['version_updater']
