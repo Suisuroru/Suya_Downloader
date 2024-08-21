@@ -323,22 +323,12 @@ def get_language():
             exit(1)
 
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file_r:
-            setting_json = json.load(file_r)
-            try:
-                language = setting_json['language']
-            except:
-                language = set_lang(setting_json)
-                setting_json['language'] = language
-                with open(global_config_path, 'w', encoding='utf-8') as file_w:
-                    json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
+        language = global_json['language']
     except:
-        setting_json = {
-        }
-        language = set_lang(setting_json)
-        setting_json['language'] = language
+        language = set_lang(global_json)
+        global_json['language'] = language
         with open(global_config_path, 'w', encoding='utf-8') as file_w:
-            json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
+            json.dump(global_json, file_w, ensure_ascii=False, indent=4)
 
 
 def Open_Updater(window):
@@ -365,18 +355,13 @@ def Open_Updater(window):
 
 def Pull_Resources(window):
     if os.name == 'nt':
+        global_json['Update_Partner'] = "Resources"
         try:
-            with open(global_config_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['Update_Partner'] = "Resources"
+            global_json['Pull_Resources_Count'] += 1
         except:
-            setting_json = {'Updater_Partner': "Resources"}
-        try:
-            setting_json['Pull_Resources_Count'] += 1
-        except:
-            setting_json['Pull_Resources_Count'] = 1
+            global_json['Pull_Resources_Count'] = 1
         with open(global_config_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         Open_Updater(window)
 
 
@@ -423,16 +408,9 @@ def initialize_languages(tag):
         lang_path = os.path.join("./Resources/Languages", "en_us.json")
     else:
         lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
-        try:
-            with open(global_config_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['language'] = "zh_hans"
-            with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'language': "zh_hans"}
-            with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['language'] = "zh_hans"
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_config_path, file, ensure_ascii=False, indent=4)
     try:
         with open(lang_path, 'r', encoding='utf-8') as file:
             lang_json = json.load(file)
@@ -529,18 +507,11 @@ def initialize_settings():
     path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
     ensure_directory_exists(path_from_file)
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                path_from_file = setting_json['Client_dir']
-            except:
-                setting_json['Client_dir'] = path_from_file
-                with open(global_config_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        path_from_file = global_json['Client_dir']
     except:
-        setting_json = {'Client_dir': path_from_file}
+        global_json['Client_dir'] = path_from_file
         with open(global_config_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
     print("处理前的路径：" + path_from_file)
     return path_from_file
 
@@ -742,16 +713,9 @@ def create_setting_window(event):
                 entry.insert(0, path_user)  # 插入默认路径
             else:
                 path_user = entry.get()
-        try:
-            with open(global_config_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-            setting_json['Client_dir'] = path_user
-            with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'Client_dir': path_user}
-            with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Client_dir'] = path_user
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         ensure_directory_exists(path_user)
 
     # 创建新窗口作为设置界面
@@ -797,16 +761,9 @@ def create_setting_window(event):
         if lang_new != language:
             answer = messagebox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
-                try:
-                    with open(global_config_path, 'r', encoding='utf-8') as file:
-                        setting_json = json.load(file)
-                        setting_json['language'] = lang_new
-                    with open(global_config_path, 'w', encoding='utf-8') as file:
-                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
-                except:
-                    setting_json = {'language': lang_new}
-                    with open(global_config_path, 'w', encoding='utf-8') as file:
-                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                global_json['language'] = lang_new
+                with open(global_config_path, 'w', encoding='utf-8') as file:
+                    json.dump(global_json, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
             else:
                 initialize_languages(lang_old)
@@ -948,27 +905,19 @@ def start_download_in_new_window(download_link):
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                Confirm_tag = setting_json['Confirm_tag']
-            except:
-                Confirm_tag = "No"
-                setting_json['Confirm_tag'] = Confirm_tag
-                with open(global_config_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        Confirm_tag = global_json['Confirm_tag']
     except:
         Confirm_tag = "No"
-        setting_json = {'Confirm_tag': Confirm_tag}
+        global_json['Confirm_tag'] = Confirm_tag
         with open(global_config_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
         if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                                 get_text("path_tip2")):
             Confirm_tag = "Yes"
-            setting_json['Confirm_tag'] = Confirm_tag
+            global_json['Confirm_tag'] = Confirm_tag
             with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                json.dump(global_json, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
             pass
@@ -1147,14 +1096,9 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
         def Update(answer, window):
             if answer:  # 用户选择是
-                try:
-                    with open(global_config_path, 'r', encoding='utf-8') as file:
-                        setting_json = json.load(file)
-                        setting_json['Update_Partner'] = "Full"
-                except:
-                    setting_json = {'Updater_Partner': "Full"}
+                global_json['Update_Partner'] = "Full"
                 with open(global_config_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                    json.dump(global_json, file, ensure_ascii=False, indent=4)
                 Open_Updater(window)
 
         if current_version_inner == "url":
@@ -1382,16 +1326,9 @@ def download_and_install(update_url, version):
         os.remove(temp_zip_file)
 
         # 更新设置文件
-        try:
-            with open(global_config_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['Updater_Version'] = version
-                with open(global_config_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'Updater_Version': version}
-            with open(global_config_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Updater_Version'] = version
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except:
         print(f"下载或解压错误: {Exception}")
@@ -1480,12 +1417,10 @@ def Version_Check_for_Updater(online_version):
         print("无法检查Updater更新")
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     try:
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                updater_version = setting_json['Updater_Version']
-            except:
-                updater_version = "0.0.0.0"
+        try:
+            updater_version = global_json['Updater_Version']
+        except:
+            updater_version = "0.0.0.0"
     except:
         updater_version = "0.0.0.0"
 
