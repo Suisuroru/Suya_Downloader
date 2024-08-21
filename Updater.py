@@ -116,17 +116,9 @@ global_json = get_config()
 api_url = global_json['api_url']
 
 # 创建或覆盖版本文件
-try:
-    with open(global_config_path, 'r', encoding='utf-8') as file:
-        setting_json = json.load(file)
-    setting_json['Updater_Version'] = Suya_Updater_Version
-    with open(global_config_path, 'w', encoding='utf-8') as file:
-        json.dump(setting_json, file, ensure_ascii=False, indent=4)
-except:
-    setting_json = {'Updater_Version': Suya_Updater_Version}
-    with open(global_config_path, 'w', encoding='utf-8') as file:
-        json.dump(setting_json, file, ensure_ascii=False, indent=4)
-    print(f"版本文件已创建于: {global_config_path}")
+global_json['Updater_Version'] = Suya_Updater_Version
+with open(global_config_path, 'w', encoding='utf-8') as file:
+    json.dump(global_json, file, ensure_ascii=False, indent=4)
 
 
 def del_Resources():
@@ -145,22 +137,14 @@ def fetch_update_info():
         """从API获取版本信息和下载链接"""
         try:
             try:
-                with open(global_config_path, 'r', encoding='utf-8') as f:
-                    setting_json_inner = json.load(f)
-                    try:
-                        Update_Partner = setting_json_inner['Update_Partner']
-                    except:
-                        setting_json_inner['Updater_Partner'] = "Full"
-                        with open(global_config_path, 'w', encoding='utf-8') as f:
-                            json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
-                        Update_Partner = "Full"
+                Update_Partner = global_json['Update_Partner']
             except:
-                setting_json_inner = {'Updater_Partner': "Full"}
+                global_json['Updater_Partner'] = "Full"
                 with open(global_config_path, 'w', encoding='utf-8') as f:
-                    json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
+                    json.dump(global_json, f, ensure_ascii=False, indent=4)
                 Update_Partner = "Full"
             try:
-                Count = setting_json_inner['Pull_Resources_Count']
+                Count = global_json['Pull_Resources_Count']
                 print("尝试拉取次数：" + str(Count))
             except:
                 Count = 1
@@ -231,11 +215,9 @@ def download_and_install(downloader_update_url, update_partner_inner):
         # 清理临时ZIP文件
         os.remove(temp_zip_file)
 
-        with open(global_config_path, 'r', encoding='utf-8') as file:
-            count_json = json.load(file)
-        count_json['Pull_Resources_Count'] = 0
+        global_json['Pull_Resources_Count'] = 0
         with open(global_config_path, 'w', encoding='utf-8') as file:
-            json.dump(count_json, file, ensure_ascii=False, indent=4)
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
