@@ -21,6 +21,8 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
+from Updater import api_url
+
 Suya_Downloader_Version = "1.0.2.7"
 
 # 获取运行目录
@@ -284,9 +286,6 @@ def get_config(Initialize_Tag):
 
 
 global_json = get_config(True)
-update_url = global_json['update_url']
-api_url = global_json['api_url']
-announcement_url = global_json['announcement_url']
 
 
 def is_admin():
@@ -980,10 +979,10 @@ def direct_download_client(download_link):
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
         # 发送GET请求获取更新信息
-        response = requests.get(update_url)
+        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
         if response.status_code == 200:
-            info_json_str = requests.get(update_url).text.strip()
+            info_json_str = requests.get(global_json["update_url"]).text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -1204,10 +1203,10 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 def check_client_update():
     try:
         # 发送GET请求获取更新信息
-        response = requests.get(update_url)
+        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
         if response.status_code == 200:
-            info_json_str = requests.get(update_url).text.strip()
+            info_json_str = requests.get(global_json["update_url"]).text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info['version_123'][1:]
@@ -1309,7 +1308,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(announcement_url)
+        response = requests.get(global_json["announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1556,6 +1555,23 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
     try:
+        def Check_Update_for_Updater():
+            if not bool(global_json['debug']):
+                if Version_Check_for_Updater(fetch_update_info()[0]):
+                    # 如果有新版本，启动新线程执行更新操作
+                    print("启动更新线程...")
+                    update_thread = threading.Thread(target=Update_Updater)
+                    update_thread.start()
+                else:
+                    print("无需更新。")
+            print("跳过更新检查")
+
+
+        check_thread = threading.Thread(target=Check_Update_for_Updater)
+        check_thread.start()
+    except requests.RequestException as e:
+        print("更新拉取失败，错误代码：{e}")
+    try:
         get_important_notice_thread = threading.Thread(target=get_important_notice, daemon=True)
         get_important_notice_thread.start()
     except:
@@ -1801,23 +1817,6 @@ def on_closing():
 
 if __name__ == "__main__":
     initialize_languages(None)
-    try:
-        def Check_Update_for_Updater():
-            if not bool(global_json['debug']):
-                if Version_Check_for_Updater(fetch_update_info()[0]):
-                    # 如果有新版本，启动新线程执行更新操作
-                    print("启动更新线程...")
-                    update_thread = threading.Thread(target=Update_Updater)
-                    update_thread.start()
-                else:
-                    print("无需更新。")
-            print("跳过更新检查")
-
-
-        check_thread = threading.Thread(target=Check_Update_for_Updater)
-        check_thread.start()
-    except requests.RequestException as e:
-        print("更新拉取失败，错误代码：{e}")
     try:
         splash = TkTransparentSplashScreen()
         # 主循环，等待启动画面关闭
