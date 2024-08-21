@@ -46,7 +46,6 @@ current_dir = os.getcwd()
 
 # 指定路径
 settings_path = os.path.join("./Settings")
-setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
@@ -120,16 +119,16 @@ api_url = global_json['api_url']
 
 # 创建或覆盖版本文件
 try:
-    with open(setting_path, 'r', encoding='utf-8') as file:
+    with open(global_config_path, 'r', encoding='utf-8') as file:
         setting_json = json.load(file)
     setting_json['Updater_Version'] = Suya_Updater_Version
-    with open(setting_path, 'w', encoding='utf-8') as file:
+    with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
 except:
     setting_json = {'Updater_Version': Suya_Updater_Version}
-    with open(setting_path, 'w', encoding='utf-8') as file:
+    with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(setting_json, file, ensure_ascii=False, indent=4)
-    print(f"版本文件已创建于: {setting_path}")
+    print(f"版本文件已创建于: {global_config_path}")
 
 
 def del_Resources():
@@ -148,18 +147,18 @@ def fetch_update_info():
         """从API获取版本信息和下载链接"""
         try:
             try:
-                with open(setting_path, 'r', encoding='utf-8') as f:
+                with open(global_config_path, 'r', encoding='utf-8') as f:
                     setting_json_inner = json.load(f)
                     try:
                         Update_Partner = setting_json_inner['Update_Partner']
                     except:
                         setting_json_inner['Updater_Partner'] = "Full"
-                        with open(setting_path, 'w', encoding='utf-8') as f:
+                        with open(global_config_path, 'w', encoding='utf-8') as f:
                             json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
                         Update_Partner = "Full"
             except:
                 setting_json_inner = {'Updater_Partner': "Full"}
-                with open(setting_path, 'w', encoding='utf-8') as f:
+                with open(global_config_path, 'w', encoding='utf-8') as f:
                     json.dump(setting_json_inner, f, ensure_ascii=False, indent=4)
                 Update_Partner = "Full"
             try:
@@ -234,10 +233,10 @@ def download_and_install(downloader_update_url, update_partner_inner):
         # 清理临时ZIP文件
         os.remove(temp_zip_file)
 
-        with open(setting_path, 'r', encoding='utf-8') as file:
+        with open(global_config_path, 'r', encoding='utf-8') as file:
             count_json = json.load(file)
         count_json['Pull_Resources_Count'] = 0
-        with open(setting_path, 'w', encoding='utf-8') as file:
+        with open(global_config_path, 'w', encoding='utf-8') as file:
             json.dump(count_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
