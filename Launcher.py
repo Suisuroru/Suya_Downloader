@@ -298,7 +298,7 @@ if os.name == 'nt':
     if not is_admin():
         # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
         try:
-            if not bool(global_json['debug']):
+            if global_json['debug'] == "False":
                 ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
                 sys.exit()
             print("非管理员模式运行")
@@ -1555,7 +1555,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
     try:
         def Check_Update_for_Updater():
-            if not bool(global_json['debug']):
+            if global_json['debug'] == "False":
                 if Version_Check_for_Updater(fetch_update_info()[0]):
                     # 如果有新版本，启动新线程执行更新操作
                     print("启动更新线程...")
