@@ -10,7 +10,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.2.8"
+Suya_Updater_Version = "1.0.2.9"
 
 
 def is_admin():
