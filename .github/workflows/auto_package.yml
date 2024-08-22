@@ -179,7 +179,7 @@ jobs:
 
     - name: Set short commit SHA as environment variable
       run: |
-        $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,7)
+        $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,8)
         echo "SHA_SHORT=$Env:SHA_SHORT" >> $env:GITHUB_ENV
       shell: powershell
 
