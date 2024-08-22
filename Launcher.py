@@ -60,10 +60,10 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, f"\n\n---------------Setting Information---------------\n"
+        msg_box.insert(tk.END, f"\n\n---------------Settings Information---------------\n"
                                f"{global_json}\n-------------------------------------------------\n\n")
     except:
-        msg_box.insert(tk.END, "Setting Information: Not initialized\n")
+        msg_box.insert(tk.END, "Settings Information: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
@@ -203,18 +203,18 @@ def dupe_crash_report(error_message=None):
     root.mainloop()
 
 
-def merge_jsons(default_json, file_2):
+def merge_jsons(default_json, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
     :param default_json: 默认的 JSON 字典
-    :param file_2: 文件路径或优先使用的 JSON 字典
+    :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
     try:
-        with open(file_2, 'r', encoding='utf-8') as file:
+        with open(file_or_json, 'r', encoding='utf-8') as file:
             loaded_json = json.load(file)
     except:
-        loaded_json = file_2
+        loaded_json = file_or_json
     # 使用文件中的数据覆盖默认值
     return {**default_json, **loaded_json}
 
