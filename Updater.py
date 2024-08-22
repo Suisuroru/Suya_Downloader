@@ -187,7 +187,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         del_Resources()
         if update_partner_inner == "Resources":
             # 构建完整的目录路径，基于当前工作目录
-            pull_dir = os.path.join(current_dir, "Resources")
+            pull_dir = os.path.join(current_dir, "Resources-Downloader")
             # 确保"Resource"目录存在，如果不存在则创建
             if not os.path.exists(pull_dir):
                 print(f"Resources目录不存在，将进行重新创建")
