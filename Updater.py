@@ -118,7 +118,7 @@ with open(global_config_path, 'w', encoding='utf-8') as file:
 
 
 def del_Resources():
-    folder_path = './Resources'
+    folder_path = './Resources-Downloader'
     try:
         shutil.rmtree(folder_path)
         print(f"'{folder_path}' 文件夹已成功删除。")
