@@ -301,10 +301,9 @@ try:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
     elif os.name == 'nt' and not is_admin():
-        print("未知提供参数，已视为False运行")
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
-except Exception:
+except:
     print(f"发生错误: {Exception}")
     # 可以记录错误或采取其他措施，但避免再次请求管理员权限
     dupe_crash_report(Exception)
