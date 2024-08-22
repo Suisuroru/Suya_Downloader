@@ -400,20 +400,20 @@ def initialize_languages(tag):
     if tag is not None:
         lang = tag
     if lang == "zh_hans":
-        lang_path = os.path.join("Resources/Downloader/Languages", "zh_hans.json")
+        lang_path = os.path.join("./Resources/Downloader/Languages", "zh_hans.json")
     elif lang == "zh_hant":
-        lang_path = os.path.join("Resources/Downloader/Languages", "zh_hant.json")
+        lang_path = os.path.join("./Resources/Downloader/Languages", "zh_hant.json")
     elif lang == "en_us":
-        lang_path = os.path.join("Resources/Downloader/Languages", "en_us.json")
+        lang_path = os.path.join("./Resources/Downloader/Languages", "en_us.json")
     else:
-        lang_path = os.path.join("Resources/Downloader/Languages", "zh_hans.json")
+        lang_path = os.path.join("./Resources/Downloader/Languages", "zh_hans.json")
         global_json['language'] = "zh_hans"
         with open(global_config_path, 'w', encoding='utf-8') as file:
             json.dump(global_config_path, file, ensure_ascii=False, indent=4)
     try:
         with open(lang_path, 'r', encoding='utf-8') as file:
             lang_json = json.load(file)
-        with open(os.path.join("Resources/Downloader/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
+        with open(os.path.join("./Resources/Downloader/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
@@ -595,7 +595,7 @@ class TkTransparentSplashScreen:
         screen_height = self.root.winfo_screenheight()
 
         try:
-            img = Image.open("Resources/Server/Pictures/Server-icon.png")
+            img = Image.open("./Resources/Server/Pictures/Server-icon.png")
             pic_ratio = img.size[0] / img.size[1]
         except FileNotFoundError:
             # 如果图片不存在，则使用默认大小
@@ -1559,23 +1559,27 @@ def create_gui():
 
     # 设置窗口图标
     try:
-        window_main.iconbitmap("./Resources/Pictures/Server-icon.ico")
-
-        # 图标加载与初始化
-        play_icon = Image.open("Resources/Downloader/Pictures/Icons/outline_music_note_black_24dp.png")
-        stop_icon = Image.open("Resources/Downloader/Pictures/Icons/outline_music_off_black_24dp.png")
-        setting_icon = Image.open("Resources/Downloader/Pictures/Icons/outline_settings_black_24dp.png")
-        export_icon = Image.open("Resources/Downloader/Pictures/Icons/outline_info_black_24dp.png")
+        play_icon = Image.open("./Resources/Downloader/Pictures/Icons/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources/Downloader/Pictures/Icons/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources/Downloader/Pictures/Icons/outline_settings_black_24dp.png")
+        export_icon = Image.open("./Resources/Downloader/Pictures/Icons/outline_info_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
         setting_icon = setting_icon.resize(icons_size)
+        export_icon = export_icon.resize(icons_size)
         play_icon_image = ImageTk.PhotoImage(play_icon)
         stop_icon_image = ImageTk.PhotoImage(stop_icon)
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
         export_icon_image = ImageTk.PhotoImage(export_icon)
-    except:
-        Pull_Resources(window_main)
+    except Exception as e:
+        print(f"Error loading images: {e}")
+        # Handle the error and possibly load default images or placeholders
+        play_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='white'))
+        stop_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='black'))
+        setting_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='green'))
+        export_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='red'))
+
     try:
         # 创建一个容器Frame来对齐公告和检查更新按钮
         bottom_frame = tk.Frame(window_main)
@@ -1679,7 +1683,7 @@ def create_gui():
         blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
         # 加载图片并调整大小
-        image_path = "Resources/Server/Pictures/Server-icon.png"
+        image_path = "./Resources/Server/Pictures/Server-icon.png"
         image = Image.open(image_path)
         image = image.resize((100, 100))  # 调整图片大小以匹配蓝色色带的高度
         photo = ImageTk.PhotoImage(image)
@@ -1718,7 +1722,7 @@ def create_gui():
 
         try:
             # 加载音乐并设置为循环播放
-            pygame.mixer.music.load("Resources/Server/Sounds/BGM.mp3")
+            pygame.mixer.music.load("./Resources/Server/Sounds/BGM.mp3")
         except:
             Pull_Resources(window_main)
 
