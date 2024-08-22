@@ -21,12 +21,11 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.7"
+Suya_Downloader_Version = "1.0.2.8"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
-setting_path = os.path.join("./Settings", "Downloader_Settings.json")
 global_config_path = os.path.join("./Settings", "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
@@ -57,17 +56,14 @@ def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"System Time: {generate_current_time()[1]}\n")
-    msg_box.insert(tk.END, f"Downloader Version: {Suya_Downloader_Version}\n")
+    msg_box.insert(tk.END, f"Report Export Time: {generate_current_time()[1]}\n")
+    msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, f"Selected language: {language}\n")
+        msg_box.insert(tk.END, f"\n\n---------------Settings Information---------------\n"
+                               f"{global_json}\n-------------------------------------------------\n\n")
     except:
-        msg_box.insert(tk.END, "Selected language: Not initialized\n")
-    try:
-        msg_box.insert(tk.END, f"Setting Information: \n{global_json}\n----------------------------------\n")
-    except:
-        msg_box.insert(tk.END, "Setting Information: Not initialized\n")
+        msg_box.insert(tk.END, "Settings Information: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
@@ -186,7 +182,8 @@ def dupe_crash_report(error_message=None):
 
     scrollbar.config(command=msg_box.yview)
 
-    msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed.\n\n--------Crash Report--------\n")
+    msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed."
+                           "\n\n---------------Crash Report---------------\n")
 
     # 如果有错误消息，先输出错误消息
     if error_message:
@@ -206,18 +203,18 @@ def dupe_crash_report(error_message=None):
     root.mainloop()
 
 
-def merge_jsons(default_json, file_2):
+def merge_jsons(default_json, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
     :param default_json: 默认的 JSON 字典
-    :param file_2: 文件路径或优先使用的 JSON 字典
+    :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
     try:
-        with open(file_2, 'r', encoding='utf-8') as file:
+        with open(file_or_json, 'r', encoding='utf-8') as file:
             loaded_json = json.load(file)
     except:
-        loaded_json = file_2
+        loaded_json = file_or_json
     # 使用文件中的数据覆盖默认值
     return {**default_json, **loaded_json}
 
@@ -273,15 +270,14 @@ def get_config(Initialize_Tag):
             "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
             final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Check_Version.json"
             print("检测到旧API地址，已自动更新为最新API地址")
-        elif final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
-            print("检测到新版API地址，无需更新")
-        else:
-            print("检测到其他API地址，跳过")
+        if final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
+            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
     ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
+
 
 try:
     global_json = get_config(True)
@@ -292,9 +288,10 @@ except:
 
 def is_admin():
     try:
-        return ctypes.windll.shell32.IsUserAnAdmin() !=0
+        return ctypes.windll.shell32.IsUserAnAdmin() != 0
     except:
         return False
+
 
 try:
     if global_json['debug'] == "True":
@@ -304,10 +301,9 @@ try:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
     elif os.name == 'nt' and not is_admin():
-        print("未知提供参数，已视为False运行")
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
-except Exception:
+except:
     print(f"发生错误: {Exception}")
     # 可以记录错误或采取其他措施，但避免再次请求管理员权限
     dupe_crash_report(Exception)
@@ -326,22 +322,12 @@ def get_language():
             exit(1)
 
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file_r:
-            setting_json = json.load(file_r)
-            try:
-                language = setting_json['language']
-            except:
-                language = set_lang(setting_json)
-                setting_json['language'] = language
-                with open(setting_path, 'w', encoding='utf-8') as file_w:
-                    json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
+        language = global_json['language']
     except:
-        setting_json = {
-        }
-        language = set_lang(setting_json)
-        setting_json['language'] = language
-        with open(setting_path, 'w', encoding='utf-8') as file_w:
-            json.dump(setting_json, file_w, ensure_ascii=False, indent=4)
+        language = set_lang(global_json)
+        global_json['language'] = language
+        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+            json.dump(global_json, file_w, ensure_ascii=False, indent=4)
 
 
 def Open_Updater(window):
@@ -368,18 +354,13 @@ def Open_Updater(window):
 
 def Pull_Resources(window):
     if os.name == 'nt':
+        global_json['Update_Partner'] = "Resources"
         try:
-            with open(setting_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['Update_Partner'] = "Resources"
+            global_json['Pull_Resources_Count'] += 1
         except:
-            setting_json = {'Updater_Partner': "Resources"}
-        try:
-            setting_json['Pull_Resources_Count'] += 1
-        except:
-            setting_json['Pull_Resources_Count'] = 1
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            global_json['Pull_Resources_Count'] = 1
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         Open_Updater(window)
 
 
@@ -419,27 +400,20 @@ def initialize_languages(tag):
     if tag is not None:
         lang = tag
     if lang == "zh_hans":
-        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
+        lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hans.json")
     elif lang == "zh_hant":
-        lang_path = os.path.join("./Resources/Languages", "zh_hant.json")
+        lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hant.json")
     elif lang == "en_us":
-        lang_path = os.path.join("./Resources/Languages", "en_us.json")
+        lang_path = os.path.join("./Resources-Downloader/Languages", "en_us.json")
     else:
-        lang_path = os.path.join("./Resources/Languages", "zh_hans.json")
-        try:
-            with open(setting_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['language'] = "zh_hans"
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'language': "zh_hans"}
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hans.json")
+        global_json['language'] = "zh_hans"
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_config_path, file, ensure_ascii=False, indent=4)
     try:
         with open(lang_path, 'r', encoding='utf-8') as file:
             lang_json = json.load(file)
-        with open(os.path.join("./Resources/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
+        with open(os.path.join("./Resources-Downloader/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
@@ -517,7 +491,8 @@ def export_info(event):
         # 清空文本框内容
         system_info_box.delete('1.0', tk.END)
         system_info_box.insert(tk.END,
-                               "Exported Information\nThis is not a crash report.\n\n----------Exported Information--------\n")
+                               "Exported Information\nThis is not a crash report."
+                               "\n\n----------------Exported Information---------------\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
@@ -532,18 +507,11 @@ def initialize_settings():
     path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
     ensure_directory_exists(path_from_file)
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                path_from_file = setting_json['Client_dir']
-            except:
-                setting_json['Client_dir'] = path_from_file
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        path_from_file = global_json['Client_dir']
     except:
-        setting_json = {'Client_dir': path_from_file}
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Client_dir'] = path_from_file
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
     print("处理前的路径：" + path_from_file)
     return path_from_file
 
@@ -560,7 +528,6 @@ def ensure_directory_exists(directory_path):
 def update_version_info(new_version):
     """
     更新本地存储的版本信息。
-
     :param new_version: 最新的版本号
     """
     try:
@@ -628,7 +595,7 @@ class TkTransparentSplashScreen:
         screen_height = self.root.winfo_screenheight()
 
         try:
-            img = Image.open("./Resources/Pictures/Server.png")
+            img = Image.open("./Resources-Server/Pictures/Server-icon.png")
             pic_ratio = img.size[0] / img.size[1]
         except FileNotFoundError:
             # 如果图片不存在，则使用默认大小
@@ -745,16 +712,9 @@ def create_setting_window(event):
                 entry.insert(0, path_user)  # 插入默认路径
             else:
                 path_user = entry.get()
-        try:
-            with open(setting_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-            setting_json['Client_dir'] = path_user
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'Client_dir': path_user}
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Client_dir'] = path_user
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         ensure_directory_exists(path_user)
 
     # 创建新窗口作为设置界面
@@ -800,16 +760,9 @@ def create_setting_window(event):
         if lang_new != language:
             answer = messagebox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
-                try:
-                    with open(setting_path, 'r', encoding='utf-8') as file:
-                        setting_json = json.load(file)
-                        setting_json['language'] = lang_new
-                    with open(setting_path, 'w', encoding='utf-8') as file:
-                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
-                except:
-                    setting_json = {'language': lang_new}
-                    with open(setting_path, 'w', encoding='utf-8') as file:
-                        json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                global_json['language'] = lang_new
+                with open(global_config_path, 'w', encoding='utf-8') as file:
+                    json.dump(global_json, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
             else:
                 initialize_languages(lang_old)
@@ -951,27 +904,19 @@ def start_download_in_new_window(download_link):
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                Confirm_tag = setting_json['Confirm_tag']
-            except:
-                Confirm_tag = "No"
-                setting_json['Confirm_tag'] = Confirm_tag
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        Confirm_tag = global_json['Confirm_tag']
     except:
         Confirm_tag = "No"
-        setting_json = {'Confirm_tag': Confirm_tag}
-        with open(setting_path, 'w', encoding='utf-8') as file:
-            json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Confirm_tag'] = Confirm_tag
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
         if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                                 get_text("path_tip2")):
             Confirm_tag = "Yes"
-            setting_json['Confirm_tag'] = Confirm_tag
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+            global_json['Confirm_tag'] = Confirm_tag
+            with open(global_config_path, 'w', encoding='utf-8') as file:
+                json.dump(global_json, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
             pass
@@ -1150,14 +1095,9 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
         def Update(answer, window):
             if answer:  # 用户选择是
-                try:
-                    with open(setting_path, 'r', encoding='utf-8') as file:
-                        setting_json = json.load(file)
-                        setting_json['Update_Partner'] = "Full"
-                except:
-                    setting_json = {'Updater_Partner': "Full"}
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
+                global_json['Update_Partner'] = "Full"
+                with open(global_config_path, 'w', encoding='utf-8') as file:
+                    json.dump(global_json, file, ensure_ascii=False, indent=4)
                 Open_Updater(window)
 
         if current_version_inner == "url":
@@ -1235,8 +1175,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    json_str = requests.get(global_json["api_url"]).text.strip()
-    data = json.loads(json_str)
+    data = requests.get(global_json["api_url"]).json()
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1386,16 +1325,9 @@ def download_and_install(update_url, version):
         os.remove(temp_zip_file)
 
         # 更新设置文件
-        try:
-            with open(setting_path, 'r', encoding='utf-8') as file:
-                setting_json = json.load(file)
-                setting_json['Updater_Version'] = version
-                with open(setting_path, 'w', encoding='utf-8') as file:
-                    json.dump(setting_json, file, ensure_ascii=False, indent=4)
-        except:
-            setting_json = {'Updater_Version': version}
-            with open(setting_path, 'w', encoding='utf-8') as file:
-                json.dump(setting_json, file, ensure_ascii=False, indent=4)
+        global_json['Updater_Version'] = version
+        with open(global_config_path, 'w', encoding='utf-8') as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except:
         print(f"下载或解压错误: {Exception}")
@@ -1484,12 +1416,10 @@ def Version_Check_for_Updater(online_version):
         print("无法检查Updater更新")
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     try:
-        with open(setting_path, 'r', encoding='utf-8') as file:
-            setting_json = json.load(file)
-            try:
-                updater_version = setting_json['Updater_Version']
-            except:
-                updater_version = "0.0.0.0"
+        try:
+            updater_version = global_json['Updater_Version']
+        except:
+            updater_version = "0.0.0.0"
     except:
         updater_version = "0.0.0.0"
 
@@ -1629,23 +1559,27 @@ def create_gui():
 
     # 设置窗口图标
     try:
-        window_main.iconbitmap("./Resources/Pictures/Server.ico")
-
-        # 图标加载与初始化
-        play_icon = Image.open("./Resources/Pictures/Icons/outline_music_note_black_24dp.png")
-        stop_icon = Image.open("./Resources/Pictures/Icons/outline_music_off_black_24dp.png")
-        setting_icon = Image.open("./Resources/Pictures/Icons/outline_settings_black_24dp.png")
-        export_icon = Image.open("./Resources/Pictures/Icons/outline_info_black_24dp.png")
+        play_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_note_black_24dp.png")
+        stop_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_off_black_24dp.png")
+        setting_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_settings_black_24dp.png")
+        export_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_info_black_24dp.png")
         icons_size = (24, 24)
         play_icon = play_icon.resize(icons_size)
         stop_icon = stop_icon.resize(icons_size)
         setting_icon = setting_icon.resize(icons_size)
+        export_icon = export_icon.resize(icons_size)
         play_icon_image = ImageTk.PhotoImage(play_icon)
         stop_icon_image = ImageTk.PhotoImage(stop_icon)
         setting_icon_image = ImageTk.PhotoImage(setting_icon)
         export_icon_image = ImageTk.PhotoImage(export_icon)
-    except:
-        Pull_Resources(window_main)
+    except Exception as e:
+        print(f"Error loading images: {e}")
+        # Handle the error and possibly load default images or placeholders
+        play_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='white'))
+        stop_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='black'))
+        setting_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='green'))
+        export_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='red'))
+
     try:
         # 创建一个容器Frame来对齐公告和检查更新按钮
         bottom_frame = tk.Frame(window_main)
@@ -1749,7 +1683,7 @@ def create_gui():
         blue_strip.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
         # 加载图片并调整大小
-        image_path = "./Resources/Pictures/Server.png"
+        image_path = "./Resources-Server/Pictures/Server-icon.png"
         image = Image.open(image_path)
         image = image.resize((100, 100))  # 调整图片大小以匹配蓝色色带的高度
         photo = ImageTk.PhotoImage(image)
@@ -1788,7 +1722,7 @@ def create_gui():
 
         try:
             # 加载音乐并设置为循环播放
-            pygame.mixer.music.load("./Resources/Sounds/music.mp3")
+            pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
         except:
             Pull_Resources(window_main)
 

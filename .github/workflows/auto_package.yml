@@ -75,7 +75,8 @@ jobs:
 
       - name: Copy Resources folder and default_api_setting.json to dist
         run: |
-          cp -r Resources ./dist/
+          cp -r Resources-Downloader ./dist/
+          cp -r Resources-Server ./dist/
           cp default_api_setting.json ./dist/
 
       - name: Compress dist folder into app.zip
@@ -138,7 +139,7 @@ jobs:
       id: build-launcher
       run: |
         # Build the executable
-        pyinstaller -F -w -i ./Resources/Pictures/Server.ico --distpath=./dist Launcher.py
+        pyinstaller -F -w -i ./Resources-Server/Pictures/Server-icon.ico --distpath=./dist Launcher.py
 
     - name: Build Updater with PyInstaller
       id: build-updater
@@ -149,7 +150,8 @@ jobs:
     - name: Move Resources folder and default_api_setting.json to dist
       run: |
         # Move the Resources folder to the dist folder
-        move ./Resources ./dist/Resources
+        move ./Resources-Downloader ./dist/Resources-Downloader
+        move ./Resources-Server ./dist/Resources-Server
         
         # Move the default_api_setting.json file to the dist folder
         move ./default_api_setting.json ./dist/default_api_setting.json
@@ -263,7 +265,8 @@ jobs:
       - name: Move Resources folder and default_api_setting.json to dist
         run: |
           # Move the Resources folder to the dist folder
-          mv ./Resources ./dist/Resources
+          mv ./Resources-Downloader ./dist/Resources-Downloader
+          mv ./Resources-Server ./dist/Resources-Server
           
           # Move the default_api_setting.json file to the dist folder
           mv ./default_api_setting.json ./dist/default_api_setting.json
