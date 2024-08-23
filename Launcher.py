@@ -1255,7 +1255,7 @@ def get_version_status(current_version_inner, latest_version):
     elif comparison_result == 0:
         return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
     else:
-        return "未知", "#FF0000", get_text("unknown_downloader") + current_version_inner  # 红色
+        return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
 
 
 def update_notice_from_queue(queue, notice_text_area):
