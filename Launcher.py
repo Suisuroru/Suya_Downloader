@@ -170,14 +170,20 @@ def get_traceback_info():
 
 def dupe_crash_report(error_message=None):
     # 创建主窗口
-    root = tk.Tk()
-    root.title("Crash Report")
+    crash_window = tk.Tk()
+    crash_window.title("Crash Report")
+
+    # 设置窗口图标
+    try:
+        window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
+    except:
+        print("丢失窗口图标")
 
     # 创建一个滚动条和文本框
-    scrollbar = tk.Scrollbar(root)
+    scrollbar = tk.Scrollbar(crash_window)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-    msg_box = tk.Text(root, yscrollcommand=scrollbar.set)
+    msg_box = tk.Text(crash_window, yscrollcommand=scrollbar.set)
     msg_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
     scrollbar.config(command=msg_box.yview)
@@ -200,7 +206,7 @@ def dupe_crash_report(error_message=None):
     open_directory(file_path)
 
     # 主事件循环
-    root.mainloop()
+    crash_window.mainloop()
 
 
 def merge_jsons(default_json, file_or_json):
@@ -364,6 +370,8 @@ def choose_language():
     language_choose_window = tk.Tk()
     language_choose_window.title("Choose Your Language")
     language_choose_window.geometry("300x150")
+    # 设置窗口图标
+    language_choose_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     center_window(language_choose_window)
 
     # 定义一个变量来存储所选语言，并设置默认值为简体中文
@@ -454,6 +462,9 @@ def export_info(event):
         # 创建一个新的顶级窗口
         export_info_window = tk.Toplevel()
         export_info_window.title(get_text("export_information"))
+
+        # 设置窗口图标
+        export_info_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
         # 创建一个框架来容纳文本框和滚动条
         text_scroll_frame = tk.Frame(export_info_window)
@@ -716,6 +727,9 @@ def create_setting_window(event):
     setting_win = tk.Toplevel()
     setting_win.title(get_text("settings"))
 
+    # 设置窗口图标
+    setting_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
+
     # 添加说明标签
     instruction_label = tk.Label(setting_win, text=get_text("direct_pull_path"), anchor='w')
     instruction_label.pack(pady=(10, 0))  # 上方预留一些间距
@@ -889,6 +903,9 @@ def start_download_in_new_window(download_link):
     download_window = tk.Toplevel()
     download_window.geometry("205x177")  # 设置下载提示窗口大小
     download_window.title(get_text("download_window"))
+
+    # 设置窗口图标
+    download_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 创建并配置进度条
     progress_bar = ttk.Progressbar(download_window, orient="horizontal", length=200, mode="determinate")
@@ -1375,11 +1392,14 @@ def get_important_notice():
         messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
         return
 
-    root = tk.Tk()
-    root.title(get_text("important_notice"))
+    important_announce_win = tk.Tk()
+    important_announce_win.title(get_text("important_notice"))
+
+    # 设置窗口图标
+    important_announce_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 创建一个顶部色带Frame
-    top_bar = tk.Frame(root, bg=rgb_to_hex(data['top_bar_color']), height=160)
+    top_bar = tk.Frame(important_announce_win, bg=rgb_to_hex(data['top_bar_color']), height=160)
     top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在顶部色带中添加标题
@@ -1388,7 +1408,7 @@ def get_important_notice():
     title_label.pack(side=tk.LEFT, padx=10, pady=10)
 
     # 创建公告栏
-    announcement_box = scrolledtext.ScrolledText(root, width=40, height=10, state='disabled')
+    announcement_box = scrolledtext.ScrolledText(important_announce_win, width=40, height=10, state='disabled')
     announcement_box.pack(padx=10, pady=10)
     # 启用编辑
     announcement_box['state'] = 'normal'
@@ -1400,7 +1420,7 @@ def get_important_notice():
     font = (data["text_font_name"], int(data["text_font_size"]), "normal")
     announcement_box.configure(font=font, fg=rgb_to_hex(data['text_font_color']))
 
-    root.mainloop()
+    important_announce_win.mainloop()
 
 
 def Version_Check_for_Updater(online_version):
@@ -1556,6 +1576,9 @@ def create_gui():
     window_main = tk.Tk()
     window_main.title(get_text("main_title") + global_json["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
+
+    # 设置窗口图标
+    window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 初始化图标
     try:
