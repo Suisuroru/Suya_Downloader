@@ -1491,6 +1491,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
                     # 如果有新版本，启动新线程执行更新操作
                     print("启动更新线程...")
                     update_thread = threading.Thread(target=Update_Updater)
+                    update_thread.daemon = True
                     update_thread.start()
                 else:
                     print("无需更新。")
@@ -1502,7 +1503,8 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     except requests.RequestException as e:
         print("更新拉取失败，错误代码：{e}")
     try:
-        get_important_notice_thread = threading.Thread(target=get_important_notice, daemon=True)
+        get_important_notice_thread = threading.Thread(target=get_important_notice)
+        get_important_notice_thread.daemon = True
         get_important_notice_thread.start()
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
@@ -1525,18 +1527,21 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
                                                      args=pull_suya_announcement_args)
     try:
+        update_thread.daemon = True
         update_thread.start()
     except:
         print("下载器更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
                              get_text("check_error1"))
     try:
+        client_update_thread.daemon = True
         client_update_thread.start()
     except:
         print("客户端更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
                              get_text("check_error2"))
     try:
+        pull_suya_announcement_thread.daemon = True
         pull_suya_announcement_thread.start()
     except:
         print("Suya公告拉取失败，错误代码：{e}")
@@ -1552,7 +1557,7 @@ def create_gui():
     window_main.title(get_text("main_title") + global_json["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
-    # 设置窗口图标
+    # 初始化图标
     try:
         play_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_off_black_24dp.png")
@@ -1732,6 +1737,7 @@ def create_gui():
                            strip_client, label_client, strip_suya_announcement, label_suya_announcement)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
+        initialize_thread.daemon = True
         initialize_thread.start()
         window_main.mainloop()
     except:
