@@ -9,7 +9,6 @@ import tempfile
 import threading
 import time
 import tkinter as tk
-import traceback
 import webbrowser
 import winreg
 import zipfile
@@ -165,6 +164,7 @@ def open_directory(path):
 
 def get_traceback_info():
     """获取当前线程的堆栈跟踪信息"""
+    import traceback
     return traceback.format_exc()
 
 
