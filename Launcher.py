@@ -293,19 +293,15 @@ def is_admin():
         return False
 
 
-try:
-    if global_json['debug'] == "True":
-        print("非管理员模式运行")
-    elif global_json['debug'] == "False" and os.name == 'nt' and not is_admin():
-        # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
-    elif os.name == 'nt' and not is_admin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
-except:
-    print(f"发生错误: {Exception}")
-    # 可以记录错误或采取其他措施，但避免再次请求管理员权限
+if global_json['debug'] == "True":
+    print("非管理员模式运行")
+elif global_json['debug'] == "False" and os.name == 'nt' and not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
+elif os.name == 'nt' and not is_admin():
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def get_language():
