@@ -506,6 +506,7 @@ def export_info(event):
 
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
+    thread.daemon = True
     thread.start()
 
 
@@ -1039,6 +1040,7 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
 
     try:
         thread = threading.Thread(target=target)
+        thread.daemon = True
         thread.start()
     except:
         print("检查客户端更新失败")
