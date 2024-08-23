@@ -306,7 +306,6 @@ try:
 except:
     print(f"发生错误: {Exception}")
     # 可以记录错误或采取其他措施，但避免再次请求管理员权限
-    dupe_crash_report(Exception)
 
 
 def get_language():
