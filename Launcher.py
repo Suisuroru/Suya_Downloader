@@ -965,8 +965,11 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("alist_pan"):
                     download_link = update_info['url_alist_origin']
                     latest_version = update_info["version_alist"][1:]
-            elif way_chosen_value == get_text("url_direct"):
-                tag_download = "web"
+            elif way_chosen_value == get_text("url_direct") or way_chosen_value == get_text("downloader_direct"):
+                if way_chosen_value == get_text("url_direct"):
+                    tag_download = "web"
+                elif way_chosen_value == get_text("downloader_direct"):
+                    tag_download = "direct"
                 if chosen_value == get_text("123_pan"):
                     link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                     json_str = requests.get(link).text.strip()
@@ -979,23 +982,6 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("alist_pan"):
                     download_link = update_info['url_alist_direct']
                     latest_version = update_info["version_alist"][1:]
-            elif way_chosen_value == get_text("downloader_direct"):
-                tag_download = "direct"
-                if chosen_value == get_text("123_pan"):
-                    link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
-                    json_str = requests.get(link).text.strip()
-                    data = json.loads(json_str)
-                    download_link = data['info']
-                    latest_version = update_info["version_123"][1:]
-                elif chosen_value == get_text("OneDrive_pan"):
-                    download_link = update_info['url_onedrive_direct']
-                    latest_version = update_info["version_onedrive"][1:]
-                elif chosen_value == get_text("alist_pan"):
-                    download_link = update_info['url_alist_direct']
-                    latest_version = update_info["version_alist"][1:]
-                elif chosen_value == "Debug":
-                    download_link = update_info['debug_url']
-                    latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version_inner) == 1:
@@ -1036,12 +1022,10 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
     """
     在一个独立的线程中检查客户端更新。
     """
-
-    def target():
-        check_for_client_updates(current_version_inner, selected_source, way_selected_source)
+    check_arg = (current_version_inner, selected_source, way_selected_source)
 
     try:
-        thread = threading.Thread(target=target)
+        thread = threading.Thread(target=check_for_client_updates, args=check_arg)
         thread.daemon = True
         thread.start()
     except:
