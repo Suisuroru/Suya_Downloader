@@ -55,6 +55,7 @@
     "tip": "Tip",
     "unable_to_get_IN": "Unable to get important notice",
     "unknown_client": "Unknown client version message",
+    "unknown_downloader": "Unknown downloader version message",
     "unknown_error": "Unknown error: ",
     "unzip_finished": "Decompression Completed",
     "unzip_finished_tip": "Client download and decompression completed. Please go to the installation path you set to check",

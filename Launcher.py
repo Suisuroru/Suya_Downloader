@@ -1117,16 +1117,16 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result1, comparison_result2 = compare_versions(latest_version, current_version_inner)
+        comparison_result= compare_versions(latest_version, current_version_inner)
 
-        if comparison_result1 > 0:  # 当前版本低于在线版本
+        if comparison_result == 1:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
                                get_text("update_question_available2") + current_version_inner +
                                get_text("update_question_available3"))
             answer = messagebox.askyesno("更新可用", update_question)
             Update(answer, window)
 
-        elif comparison_result2 > 0:
+        elif comparison_result == -1:
             update_question = (get_text("update_question_dev1") + latest_version +
                                get_text("update_question_dev2") + current_version_inner +
                                get_text("update_question_dev3"))
@@ -1141,9 +1141,12 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')], [int(v) for v in
-                                                                                           version1.split('.')] < [
-               int(v) for v in version2.split('.')]
+    if [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]:
+        return 1
+    elif [int(v) for v in version1.split('.')] < [int(v) for v in version2.split('.')]:
+        return -1
+    else:
+        return 0
 
 
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
@@ -1184,8 +1187,8 @@ def check_client_update():
             except:
                 print("Unzip_Debug已禁用")
                 return latest_version, name_list, "NoDebug"
-    except Exception as e:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
+    except:
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
@@ -1242,15 +1245,17 @@ def update_version_strip(version_strip_frame, version_label, current_version_inn
 
 def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result1, comparison_result2 = compare_versions(current_version_inner, latest_version)
+    comparison_result= compare_versions(current_version_inner, latest_version)
 
-    if comparison_result1 == 1:
+    if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
-    elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
+    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
         return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
-    else:
+    elif comparison_result == 0:
         return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
+    else:
+        return "未知", "#FF0000", get_text("unknown_downloader") + current_version_inner  # 红色
 
 
 def update_notice_from_queue(queue, notice_text_area):

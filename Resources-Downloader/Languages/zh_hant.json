@@ -55,6 +55,7 @@
     "tip": "提示",
     "unable_to_get_IN": "無法獲取重要通知",
     "unknown_client": "未知用戶端版本消息",
+    "unknown_downloader": "未知下載器版本消息",
     "unknown_error": "未知錯誤：",
     "unzip_finished": "解壓縮已完成",
     "unzip_finished_tip": "用戶端下載及解壓完成，請前往您設定的安裝路徑查看",
