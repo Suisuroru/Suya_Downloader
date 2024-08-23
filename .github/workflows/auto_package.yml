@@ -145,7 +145,7 @@ jobs:
       id: build-launcher
       run: |
         # Build the executable
-        pyinstaller -F -w -i ./Resources-Server/Pictures/Server-icon.ico --distpath=./dist Launcher.py
+        pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Launcher.py
 
     - name: Build Updater with PyInstaller
       id: build-updater

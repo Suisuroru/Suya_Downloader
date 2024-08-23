@@ -595,7 +595,7 @@ class TkTransparentSplashScreen:
         screen_height = self.root.winfo_screenheight()
 
         try:
-            img = Image.open("./Resources-Server/Pictures/Server-icon.png")
+            img = Image.open("./Resources-Downloader/Pictures/Suya.png")
             pic_ratio = img.size[0] / img.size[1]
         except FileNotFoundError:
             # 如果图片不存在，则使用默认大小
