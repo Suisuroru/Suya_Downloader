@@ -48,7 +48,7 @@ def generate_current_time(tag):
     # 使用strftime方法将当前时间格式化为指定的格式
     if tag == 0:
         export_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    elif tag == 1:
+    else:
         export_time = datetime.now().strftime('%Y/%m/%d|%H:%M:%S')
     return export_time
 
@@ -154,11 +154,11 @@ def write_to_file(text_box, file_name):
 
 
 def open_directory(path):
-    import subprocess
     """在操作系统默认的文件管理器中打开指定路径的目录"""
     if os.name == 'nt':  # Windows
         os.startfile(os.path.dirname(path))
     elif os.name == 'posix':  # Unix/Linux/MacOS
+        import subprocess
         subprocess.run(['xdg-open', os.path.dirname(path)])
     else:
         print("Unsupported operating system")
@@ -274,12 +274,11 @@ def get_config(Initialize_Tag):
         print("出现异常：" + str(Exception))
     ### 此处代码将于1.0.3.0删除
     if not Initialize_Tag:
-        if final_global_config[
-            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
-            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Check_Version.json"
-            print("检测到旧API地址，已自动更新为最新API地址")
-        if final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
+        if (final_global_config[
+            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
+                final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
             final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
+            print("检测到旧API地址，已自动更新为最新API地址")
     ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
