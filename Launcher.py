@@ -302,11 +302,8 @@ def is_admin():
 
 if global_json['debug'] == "True":
     print("非管理员模式运行")
-elif global_json['debug'] == "False" and os.name == 'nt' and not is_admin():
-    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
 elif os.name == 'nt' and not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
 
