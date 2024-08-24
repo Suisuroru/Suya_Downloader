@@ -274,11 +274,15 @@ def get_config(Initialize_Tag):
         print("出现异常：" + str(Exception))
     ### 此处代码将于1.0.3.0删除
     if not Initialize_Tag:
-        if (final_global_config[
-            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
-                final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
+        try:
+            if (final_global_config[
+                "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
+                    final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
+                final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
+                print("检测到旧API地址，已自动更新为最新API地址")
+        except:
+            print("出现异常，已使用默认api地址替换")
             final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-            print("检测到旧API地址，已自动更新为最新API地址")
     ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
