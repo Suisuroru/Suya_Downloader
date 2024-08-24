@@ -80,6 +80,7 @@
     "url_origin": "Indirect Web Link",
     "wait_message": "Waiting for Suya Downloader announcement data to be sent back",
     "warn": "Warning",
+    "way_wait": "Fetching download method information",
     "welcome1": "Welcome to use the ",
     "welcome2": " Client Suya Downloader!"
 }

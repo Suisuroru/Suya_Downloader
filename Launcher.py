@@ -1473,7 +1473,6 @@ def select_download_source(selected_source, source_combobox_select):
         default_selected_source = get_text("source_fault")
     if date_update[2] != "NoDebug":
         download_sources.append("Debug")
-    # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
     # 更新Combobox选择框内容
     source_combobox_select['values'] = download_sources
     selected_source.set(default_selected_source)
@@ -1485,8 +1484,39 @@ def start_select_thread(selected_source, source_combobox_select):
     thread.start()
 
 
+def select_download_way_source(way_selected_source, source_combobox2):
+    # 下载方式选项
+    response = requests.get(global_json["update_url"])
+    # 检查请求是否成功
+    try:
+        if response.status_code == 200:
+            info_json_str = requests.get(global_json["update_url"]).text.strip()
+            update_info = json.loads(info_json_str)
+            if update_info["self_unzip_able"] == "False":
+                way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
+                default_way_selected_source = value=get_text("url_direct")
+            else:
+                way_sources = [get_text("url_direct"), get_text("url_origin")]
+                default_way_selected_source = get_text("url_direct")
+        else:
+            way_sources = [get_text("url_direct"), get_text("url_origin")]
+            default_way_selected_source = get_text("url_direct")
+    except:
+        way_sources = [get_text("url_direct"), get_text("url_origin")]
+        default_way_selected_source = get_text("url_direct")
+    # 更新Combobox选择框内容
+    source_combobox2['values'] = way_sources
+    way_selected_source.set(default_way_selected_source)
+
+
+def start_select_way_thread(way_selected_source, source_combobox2):
+    thread = threading.Thread(target=select_download_way_source, args=(way_selected_source, source_combobox2))
+    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.start()
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
-                   label_client, strip_suya_announcement, label_suya_announcement):
+                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source, source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         global global_json
@@ -1517,6 +1547,10 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         get_important_notice_thread.start()
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
+    try:
+        start_select_way_thread(way_selected_source, source_combobox2)
+    except:
+        print(f"下载方式列表拉取失败，错误代码：{Exception}")
     try:
         start_select_thread(selected_source, source_combobox)
     except:
@@ -1639,8 +1673,8 @@ def create_gui():
         download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
         # 资源获取方式选项
-        way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
-        way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
+        way_sources = [get_text("way_wait"), get_text("source_wait2")]
+        way_selected_source = tk.StringVar(value=get_text("way_wait"))  # 初始化方式选项
 
         # 创建Combobox选择框，指定宽度
         source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
@@ -1746,7 +1780,8 @@ def create_gui():
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         initialize_args = (selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader,
-                           strip_client, label_client, strip_suya_announcement, label_suya_announcement)
+                           strip_client, label_client, strip_suya_announcement, label_suya_announcement,
+                           way_selected_source, source_combobox2)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
         initialize_thread.daemon = True

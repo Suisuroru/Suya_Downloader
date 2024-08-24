@@ -80,6 +80,7 @@
     "url_origin": "網頁非直鏈",
     "wait_message": "等待Suya下載器公告數據回傳中",
     "warn": "警告",
+    "way_wait": "正在獲取下載方式資訊",
     "welcome1": "歡迎使用 ",
     "welcome2": " 用戶端Suya下載器！"
 }
