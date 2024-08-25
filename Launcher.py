@@ -1080,8 +1080,7 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         update_url = data['url_downloader']
         latest_version = data['version_downloader']
 
@@ -1130,8 +1129,7 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         latest_version = data['version_downloader']
 
         update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
@@ -1168,7 +1166,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    data = requests.get(global_json["api_url"]).json()
+    data = json.loads(api_json_str)
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1280,8 +1278,7 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         updater_upgrade_url = data['url_updater']
         version = data['version_updater']
         return version, updater_upgrade_url
@@ -1527,6 +1524,22 @@ def initialize_client_api():
             time.sleep(1)
 
 
+def initialize_api_str():
+    global api_json_str
+    count_num = 0
+    while count_num < 3:
+        try:
+            api_json_str = requests.get(global_json["api_url"]).text.strip()
+            count_num += 1
+            if response_client.status_code == 200:
+                break
+            else:
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
                    label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
                    source_combobox2):
@@ -1537,6 +1550,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
     initialize_client_api()
+    initialize_api_str()
     try:
         def Check_Update_for_Updater():
             if global_json['debug'] == "False":
