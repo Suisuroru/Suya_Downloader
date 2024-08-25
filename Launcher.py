@@ -1509,10 +1509,10 @@ def initialize_client_api():
     while count_num < 3:
         try:
             response_client = requests.get(global_json["update_url"])
-            count_num += 1
             if response_client.status_code == 200:
-                break
+                return
             else:
+                count_num += 1
                 time.sleep(1)
         except:
             count_num += 1
@@ -1526,10 +1526,10 @@ def initialize_api_str():
     while count_num < 3:
         try:
             api_json_str = requests.get(global_json["api_url"]).text.strip()
-            count_num += 1
             if response_client.status_code == 200:
-                break
+                return
             else:
+                count_num += 1
                 time.sleep(1)
         except:
             count_num += 1
