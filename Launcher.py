@@ -699,9 +699,7 @@ def language_formated(selected):
 
 
 def create_setting_window(event):
-    """
-    在新窗口中创建设置界面。
-    """
+    """在新窗口中创建设置界面。"""
 
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
@@ -1016,9 +1014,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
-    """
-    在一个独立的线程中检查客户端更新。
-    """
+    """在一个独立的线程中检查客户端更新。"""
     check_arg = (current_version_inner, selected_source, way_selected_source)
 
     try:
@@ -1063,9 +1059,7 @@ def compare_client_versions(version1, version2):
 
 
 def get_client_status(current_version_inner, latest_version):
-    """
-    根据版本比较结果返回状态、颜色和消息
-    """
+    """根据版本比较结果返回状态、颜色和消息"""
     comparison_result = compare_client_versions(current_version_inner, latest_version)
     if current_version_inner == '0.0.0.0':
         # 当前版本号为“0.0.0.0”即未发现本地客户端版本，提示用户需要下载客户端
@@ -1207,9 +1201,7 @@ def create_version_strip(color_code, message, window):
 
 
 def update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, type):
-    """
-    更新色带的背景颜色和内部标签的文本。
-    """
+    """更新色带的背景颜色和内部标签的文本。"""
     if type == 0:
         status, color_code, message = get_version_status(current_version_inner, latest_version)
     elif type == 1:
@@ -1511,9 +1503,7 @@ def start_select_way_thread(way_selected_source, source_combobox2):
 
 
 def initialize_client_api():
-    """
-    初始化客户端地址API
-    """
+    """初始化客户端地址API"""
     global response_client
     count_num = 0
     while count_num < 3:
@@ -1530,9 +1520,7 @@ def initialize_client_api():
 
 
 def initialize_api_str():
-    """
-    初始化Suya API
-    """
+    """初始化Suya API"""
     global api_json_str
     count_num = 0
     while count_num < 3:
