@@ -205,6 +205,7 @@ def dupe_crash_report(error_message=None):
     # 输出堆栈跟踪信息
     traceback_info = get_traceback_info()
     msg_box.insert(tk.END, f"Traceback Info:\n{traceback_info}\n\n")
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
