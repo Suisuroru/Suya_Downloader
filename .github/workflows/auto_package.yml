@@ -151,7 +151,7 @@ jobs:
       id: build-updater
       run: |
         # Build the executable
-        pyinstaller -F -w --distpath=./dist Updater.py
+        pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
     - name: Move Resources folder and default_api_setting.json to dist
       run: |
