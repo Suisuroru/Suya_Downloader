@@ -365,10 +365,21 @@ def choose_language():
     # 初始化Tkinter窗口
     language_choose_window = tk.Tk()
     language_choose_window.title("Choose Your Language")
-    language_choose_window.geometry("300x150")
+    language_choose_window.geometry("300x250")
     # 设置窗口图标
     language_choose_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     center_window(language_choose_window)
+    # 加载图标并显示在窗口内
+    try:
+        try:
+            top_icon = Image.open("./Resources-Server/Pictures/Server-icon.png")
+        except:
+            top_icon = Image.open("./Resources-Downloader/Pictures/Suya.png")
+    except:
+        top_icon = ImageTk.PhotoImage(Image.new('RGB', (100, 100), color='red'))
+    top_icon = top_icon.resize((100, 100))
+    top_icon_image = ImageTk.PhotoImage(top_icon)
+    tk.Label(language_choose_window, image=top_icon_image).pack(side=tk.TOP)  # 显示图标在顶部
 
     # 定义一个变量来存储所选语言，并设置默认值为简体中文
     selected_lang = tk.StringVar(value="zh_hans")
