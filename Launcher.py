@@ -13,7 +13,6 @@ import webbrowser
 import winreg
 import zipfile
 from getpass import getuser
-from http.client import responses
 from queue import Queue
 from tkinter import messagebox, scrolledtext, ttk, filedialog
 
@@ -934,11 +933,11 @@ def direct_download_client(download_link):
         thread.start()
 
 
-def check_for_client_updates(current_version_inner, selected_source, way_selected_source, response):
+def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -1004,9 +1003,11 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
         else:
-            print(f"请求更新信息失败，状态码：{response.status_code}")
+            print(f"无法获取下载源信息: {response_client.status_code}")
+            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
-        print(f"检查更新时发生错误: {Exception}")
+        print("无法获取下载源信息")
+        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
@@ -1139,11 +1140,11 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
-def check_client_update(response):
+def check_client_update():
     try:
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info['version_123'][1:]
@@ -1188,7 +1189,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label,
                                                       current_version_inner):
     """检查更新并创建版本状态色带"""
-    latest_version = check_client_update(response_client)[0]
+    latest_version = check_client_update()[0]
     update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
 
 
@@ -1442,16 +1443,7 @@ def update_downloader(window):
 
 def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
-    try:
-        date_update = check_client_update(response_client)
-        if response_client.status_code != 200:
-            print(f"无法获取下载源信息: {response_client.status_code}")
-            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
-            return
-    except:
-        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
-        print("无法获取下载源信息:", Exception)
-        return
+    date_update = check_client_update()
     namelist = date_update[1]
     download_sources = []
     Tag_123 = Tag_OneDrive = Tag_Alist = False
@@ -1487,11 +1479,11 @@ def start_select_thread(selected_source, source_combobox_select):
     thread.start()
 
 
-def select_download_way_source(way_selected_source, source_combobox2, response):
+def select_download_way_source(way_selected_source, source_combobox2):
     # 检查请求是否成功
     try:
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             if update_info["self_unzip_able"] == "False":
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
