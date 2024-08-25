@@ -1525,6 +1525,9 @@ def initialize_client_api():
 
 
 def initialize_api_str():
+    """
+    初始化Suya API
+    """
     global api_json_str
     count_num = 0
     while count_num < 3:
@@ -1549,75 +1552,91 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         global_json = get_config(False)
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
-    initialize_client_api()
-    initialize_api_str()
-    try:
-        def Check_Update_for_Updater():
-            if global_json['debug'] == "False":
-                if Version_Check_for_Updater(fetch_update_info()[0]):
-                    # 如果有新版本，启动新线程执行更新操作
-                    print("启动更新线程...")
-                    update_thread = threading.Thread(target=Update_Updater)
-                    update_thread.daemon = True
-                    update_thread.start()
-                else:
-                    print("无需更新。")
-            else:
-                print("跳过更新检查")
 
-        check_thread = threading.Thread(target=Check_Update_for_Updater)
-        check_thread.start()
-    except requests.RequestException as e:
-        print("更新拉取失败，错误代码：{e}")
+    def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
+                            way_selected_source, source_combobox2):
+        initialize_client_api()
+        try:
+            start_select_way_thread(way_selected_source, source_combobox2)
+        except:
+            print(f"下载方式列表拉取失败，错误代码：{Exception}")
+        try:
+            start_select_thread(selected_source, source_combobox)
+        except:
+            print(f"下载源列表拉取失败，错误代码：{Exception}")
+        try:
+            client_update_thread_args = (strip_client, label_client, client_version)
+            client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
+                                                    args=client_update_thread_args)
+            client_update_thread.daemon = True
+            client_update_thread.start()
+        except:
+            print("客户端更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error2"))
+
+    client_api_thread_args = (strip_client, label_client, client_version, selected_source, source_combobox,
+                              way_selected_source, source_combobox2)
+    client_api_thread = threading.Thread(target=client_api_function, args=client_api_thread_args)
+    client_api_thread.daemon = True
+    client_api_thread.start()
+
+    def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                     label_suya_announcement):
+        initialize_api_str()
+        try:
+            def Check_Update_for_Updater():
+                if global_json['debug'] == "False":
+                    if Version_Check_for_Updater(fetch_update_info()[0]):
+                        # 如果有新版本，启动新线程执行更新操作
+                        print("启动更新线程...")
+                        update_thread = threading.Thread(target=Update_Updater)
+                        update_thread.daemon = True
+                        update_thread.start()
+                    else:
+                        print("无需更新。")
+                else:
+                    print("跳过更新检查")
+
+            check_thread = threading.Thread(target=Check_Update_for_Updater)
+            check_thread.start()
+        except requests.RequestException as e:
+            print("更新拉取失败，错误代码：{e}")
+        try:
+            update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
+            update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
+            update_thread.daemon = True
+            update_thread.start()
+        except:
+            print("下载器更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error1"))
+        try:
+            pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
+            pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                             args=pull_suya_announcement_args)
+            pull_suya_announcement_thread.daemon = True
+            pull_suya_announcement_thread.start()
+        except:
+            print("Suya公告拉取失败，错误代码：{e}")
+            update_version_strip(strip_suya_announcement, label_suya_announcement,
+                                 "失败", "A00000", "check_error3")
+
+    api_function_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                                label_suya_announcement)
+    api_function_thread = threading.Thread(target=api_function, args=api_function_thread_args)
+    api_function_thread.daemon = True
+    api_function_thread.start()
     try:
         get_important_notice_thread = threading.Thread(target=get_important_notice)
         get_important_notice_thread.daemon = True
         get_important_notice_thread.start()
     except:
-        print(f"公告拉取失败，错误代码：{Exception}")
-    try:
-        start_select_way_thread(way_selected_source, source_combobox2)
-    except:
-        print(f"下载方式列表拉取失败，错误代码：{Exception}")
-    try:
-        start_select_thread(selected_source, source_combobox)
-    except:
-        print(f"下载源列表拉取失败，错误代码：{Exception}")
+        print(f"IN公告拉取失败，错误代码：{Exception}")
     try:
         start_fetch_notice(notice_text_area)
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
-
-    update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
-    client_update_thread_args = (strip_client, label_client, client_version)
-    pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
-    # 启动线程
-    update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
-    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                            args=client_update_thread_args, daemon=True)
-    pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
-                                                     args=pull_suya_announcement_args)
-    try:
-        update_thread.daemon = True
-        update_thread.start()
-    except:
-        print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error1"))
-    try:
-        client_update_thread.daemon = True
-        client_update_thread.start()
-    except:
-        print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error2"))
-    try:
-        pull_suya_announcement_thread.daemon = True
-        pull_suya_announcement_thread.start()
-    except:
-        print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement,
-                             "失败", "A00000", "check_error3")
 
 
 def create_gui():
