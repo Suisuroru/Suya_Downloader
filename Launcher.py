@@ -73,6 +73,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # CPU Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"CPU Information:\n")
     msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
     msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
@@ -82,6 +83,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # Memory Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Memory Information:\n")
     mem = psutil.virtual_memory()
     msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
@@ -91,6 +93,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # Disk Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Disk Information:\n")
 
     try:
@@ -113,8 +116,10 @@ def export_system_info(msg_box):
         msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
 
     # Network Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Network Information:\n")
     for interface, addrs in psutil.net_if_addrs().items():
+        msg_box.insert(tk.END, "\n|||||||||||||||||||||||||||||||||||||||||||||||||\n\n")
         for addr in addrs:
             if addr.family == socket.AF_INET:
                 msg_box.insert(tk.END, f"Interface: {interface}\n")
@@ -1501,7 +1506,7 @@ def select_download_way_source(way_selected_source, source_combobox2):
 
 def start_select_way_thread(way_selected_source, source_combobox2):
     thread = threading.Thread(target=select_download_way_source, args=(way_selected_source, source_combobox2))
-    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.daemon = True  # 设置为守护线程
     thread.start()
 
 
