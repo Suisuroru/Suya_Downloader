@@ -73,6 +73,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # CPU Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"CPU Information:\n")
     msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
     msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
@@ -82,6 +83,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # Memory Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Memory Information:\n")
     mem = psutil.virtual_memory()
     msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
@@ -91,6 +93,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"\n")
 
     # Disk Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Disk Information:\n")
 
     try:
@@ -113,8 +116,10 @@ def export_system_info(msg_box):
         msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
 
     # Network Information
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     msg_box.insert(tk.END, f"Network Information:\n")
     for interface, addrs in psutil.net_if_addrs().items():
+        msg_box.insert(tk.END, "\n|||||||||||||||||||||||||||||||||||||||||||||||||\n\n")
         for addr in addrs:
             if addr.family == socket.AF_INET:
                 msg_box.insert(tk.END, f"Interface: {interface}\n")
@@ -935,11 +940,9 @@ def direct_download_client(download_link):
 
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -1005,9 +1008,11 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
         else:
-            print(f"请求更新信息失败，状态码：{response.status_code}")
+            print(f"无法获取下载源信息: {response_client.status_code}")
+            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
-        print(f"检查更新时发生错误: {Exception}")
+        print("无法获取下载源信息")
+        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
@@ -1080,8 +1085,7 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         update_url = data['url_downloader']
         latest_version = data['version_downloader']
 
@@ -1095,7 +1099,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result= compare_versions(latest_version, current_version_inner)
+        comparison_result = compare_versions(latest_version, current_version_inner)
 
         if comparison_result == 1:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
@@ -1130,8 +1134,7 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         latest_version = data['version_downloader']
 
         update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
@@ -1142,11 +1145,9 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info['version_123'][1:]
@@ -1170,7 +1171,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    data = requests.get(global_json["api_url"]).json()
+    data = json.loads(api_json_str)
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1188,7 +1189,8 @@ def pull_suya_announcement(version_strip_frame, version_label):
                          get_text("suya_announcement") + suya_announcement)
 
 
-def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
+def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label,
+                                                      current_version_inner):
     """检查更新并创建版本状态色带"""
     latest_version = check_client_update()[0]
     update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
@@ -1223,7 +1225,7 @@ def update_version_strip(version_strip_frame, version_label, current_version_inn
 
 def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result= compare_versions(current_version_inner, latest_version)
+    comparison_result = compare_versions(current_version_inner, latest_version)
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
@@ -1281,8 +1283,7 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
+        data = json.loads(api_json_str)
         updater_upgrade_url = data['url_updater']
         version = data['version_updater']
         return version, updater_upgrade_url
@@ -1481,16 +1482,14 @@ def start_select_thread(selected_source, source_combobox_select):
 
 
 def select_download_way_source(way_selected_source, source_combobox2):
-    # 下载方式选项
-    response = requests.get(global_json["update_url"])
     # 检查请求是否成功
     try:
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             if update_info["self_unzip_able"] == "False":
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
-                default_way_selected_source = value=get_text("url_direct")
+                default_way_selected_source = value = get_text("url_direct")
             else:
                 way_sources = [get_text("url_direct"), get_text("url_origin")]
                 default_way_selected_source = get_text("url_direct")
@@ -1507,85 +1506,142 @@ def select_download_way_source(way_selected_source, source_combobox2):
 
 def start_select_way_thread(way_selected_source, source_combobox2):
     thread = threading.Thread(target=select_download_way_source, args=(way_selected_source, source_combobox2))
-    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.daemon = True  # 设置为守护线程
     thread.start()
 
 
+def initialize_client_api():
+    """
+    初始化客户端地址API
+    """
+    global response_client
+    count_num = 0
+    while count_num < 3:
+        try:
+            response_client = requests.get(global_json["update_url"])
+            count_num += 1
+            if response_client.status_code == 200:
+                break
+            else:
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
+def initialize_api_str():
+    """
+    初始化Suya API
+    """
+    global api_json_str
+    count_num = 0
+    while count_num < 3:
+        try:
+            api_json_str = requests.get(global_json["api_url"]).text.strip()
+            count_num += 1
+            if response_client.status_code == 200:
+                break
+            else:
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
-                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source, source_combobox2):
+                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
+                   source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         global global_json
         global_json = get_config(False)
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
-    try:
-        def Check_Update_for_Updater():
-            if global_json['debug'] == "False":
-                if Version_Check_for_Updater(fetch_update_info()[0]):
-                    # 如果有新版本，启动新线程执行更新操作
-                    print("启动更新线程...")
-                    update_thread = threading.Thread(target=Update_Updater)
-                    update_thread.daemon = True
-                    update_thread.start()
-                else:
-                    print("无需更新。")
-            else:
-                print("跳过更新检查")
 
-        check_thread = threading.Thread(target=Check_Update_for_Updater)
-        check_thread.start()
-    except requests.RequestException as e:
-        print("更新拉取失败，错误代码：{e}")
+    def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
+                            way_selected_source, source_combobox2):
+        initialize_client_api()
+        try:
+            start_select_way_thread(way_selected_source, source_combobox2)
+        except:
+            print(f"下载方式列表拉取失败，错误代码：{Exception}")
+        try:
+            start_select_thread(selected_source, source_combobox)
+        except:
+            print(f"下载源列表拉取失败，错误代码：{Exception}")
+        try:
+            client_update_thread_args = (strip_client, label_client, client_version)
+            client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
+                                                    args=client_update_thread_args)
+            client_update_thread.daemon = True
+            client_update_thread.start()
+        except:
+            print("客户端更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error2"))
+
+    client_api_thread_args = (strip_client, label_client, client_version, selected_source, source_combobox,
+                              way_selected_source, source_combobox2)
+    client_api_thread = threading.Thread(target=client_api_function, args=client_api_thread_args)
+    client_api_thread.daemon = True
+    client_api_thread.start()
+
+    def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                     label_suya_announcement):
+        initialize_api_str()
+        try:
+            def Check_Update_for_Updater():
+                if global_json['debug'] == "False":
+                    if Version_Check_for_Updater(fetch_update_info()[0]):
+                        # 如果有新版本，启动新线程执行更新操作
+                        print("启动更新线程...")
+                        update_thread = threading.Thread(target=Update_Updater)
+                        update_thread.daemon = True
+                        update_thread.start()
+                    else:
+                        print("无需更新。")
+                else:
+                    print("跳过更新检查")
+
+            check_thread = threading.Thread(target=Check_Update_for_Updater)
+            check_thread.start()
+        except requests.RequestException as e:
+            print("更新拉取失败，错误代码：{e}")
+        try:
+            update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
+            update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
+            update_thread.daemon = True
+            update_thread.start()
+        except:
+            print("下载器更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error1"))
+        try:
+            pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
+            pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                             args=pull_suya_announcement_args)
+            pull_suya_announcement_thread.daemon = True
+            pull_suya_announcement_thread.start()
+        except:
+            print("Suya公告拉取失败，错误代码：{e}")
+            update_version_strip(strip_suya_announcement, label_suya_announcement,
+                                 "失败", "A00000", "check_error3")
+
+    api_function_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                                label_suya_announcement)
+    api_function_thread = threading.Thread(target=api_function, args=api_function_thread_args)
+    api_function_thread.daemon = True
+    api_function_thread.start()
     try:
         get_important_notice_thread = threading.Thread(target=get_important_notice)
         get_important_notice_thread.daemon = True
         get_important_notice_thread.start()
     except:
-        print(f"公告拉取失败，错误代码：{Exception}")
-    try:
-        start_select_way_thread(way_selected_source, source_combobox2)
-    except:
-        print(f"下载方式列表拉取失败，错误代码：{Exception}")
-    try:
-        start_select_thread(selected_source, source_combobox)
-    except:
-        print(f"下载源列表拉取失败，错误代码：{Exception}")
+        print(f"IN公告拉取失败，错误代码：{Exception}")
     try:
         start_fetch_notice(notice_text_area)
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
-
-    update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
-    client_update_thread_args = (strip_client, label_client, client_version)
-    pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
-    # 启动线程
-    update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
-    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                            args=client_update_thread_args, daemon=True)
-    pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
-                                                     args=pull_suya_announcement_args)
-    try:
-        update_thread.daemon = True
-        update_thread.start()
-    except:
-        print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error1"))
-    try:
-        client_update_thread.daemon = True
-        client_update_thread.start()
-    except:
-        print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error2"))
-    try:
-        pull_suya_announcement_thread.daemon = True
-        pull_suya_announcement_thread.start()
-    except:
-        print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement,
-                             "失败", "A00000", "check_error3")
 
 
 def create_gui():
