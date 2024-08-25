@@ -62,6 +62,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller psutil
+          pip install pygame
+          pip install requests
+          pip install Pillow
 
       - name: Build Launcher with PyInstaller
         id: build-launcher
@@ -134,18 +137,21 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         pip install pyinstaller psutil
+        pip install pygame
+        pip install requests
+        pip install Pillow
 
     - name: Build Launcher with PyInstaller
       id: build-launcher
       run: |
         # Build the executable
-        pyinstaller -F -w -i ./Resources-Server/Pictures/Server-icon.ico --distpath=./dist Launcher.py
+        pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Launcher.py
 
     - name: Build Updater with PyInstaller
       id: build-updater
       run: |
         # Build the executable
-        pyinstaller -F -w --distpath=./dist Updater.py
+        pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
     - name: Move Resources folder and default_api_setting.json to dist
       run: |
@@ -173,7 +179,7 @@ jobs:
 
     - name: Set short commit SHA as environment variable
       run: |
-        $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,7)
+        $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,8)
         echo "SHA_SHORT=$Env:SHA_SHORT" >> $env:GITHUB_ENV
       shell: powershell
 
@@ -249,6 +255,9 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller psutil
+          pip install pygame
+          pip install requests
+          pip install Pillow
 
       - name: Build Launcher with PyInstaller
         id: build-launcher

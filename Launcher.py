@@ -9,7 +9,6 @@ import tempfile
 import threading
 import time
 import tkinter as tk
-import traceback
 import webbrowser
 import winreg
 import zipfile
@@ -21,7 +20,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.8"
+Suya_Downloader_Version = "1.0.2.9"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -44,19 +43,21 @@ except:
 print("运行目录:", current_working_dir)
 
 
-def generate_current_time():
+def generate_current_time(tag):
     from datetime import datetime
     # 使用strftime方法将当前时间格式化为指定的格式
-    formatted_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
-    export_time = datetime.now().strftime('%Y/%m/%d|%H:%M:%S')
-    return formatted_time, export_time
+    if tag == 0:
+        export_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+    else:
+        export_time = datetime.now().strftime('%Y/%m/%d|%H:%M:%S')
+    return export_time
 
 
 def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"Report Export Time: {generate_current_time()[1]}\n")
+    msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
@@ -153,11 +154,11 @@ def write_to_file(text_box, file_name):
 
 
 def open_directory(path):
-    import subprocess
     """在操作系统默认的文件管理器中打开指定路径的目录"""
     if os.name == 'nt':  # Windows
         os.startfile(os.path.dirname(path))
     elif os.name == 'posix':  # Unix/Linux/MacOS
+        import subprocess
         subprocess.run(['xdg-open', os.path.dirname(path)])
     else:
         print("Unsupported operating system")
@@ -165,19 +166,26 @@ def open_directory(path):
 
 def get_traceback_info():
     """获取当前线程的堆栈跟踪信息"""
+    import traceback
     return traceback.format_exc()
 
 
 def dupe_crash_report(error_message=None):
     # 创建主窗口
-    root = tk.Tk()
-    root.title("Crash Report")
+    crash_window = tk.Tk()
+    crash_window.title("Crash Report")
+
+    # 设置窗口图标
+    try:
+        window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
+    except:
+        print("丢失窗口图标")
 
     # 创建一个滚动条和文本框
-    scrollbar = tk.Scrollbar(root)
+    scrollbar = tk.Scrollbar(crash_window)
     scrollbar.pack(side=tk.RIGHT, fill=tk.Y)
 
-    msg_box = tk.Text(root, yscrollcommand=scrollbar.set)
+    msg_box = tk.Text(crash_window, yscrollcommand=scrollbar.set)
     msg_box.pack(side=tk.LEFT, fill=tk.BOTH, expand=True)
 
     scrollbar.config(command=msg_box.yview)
@@ -195,12 +203,12 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_name = generate_current_time()[0] + "_CrashReport"
+    file_name = generate_current_time(0) + "_CrashReport"
     file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
     # 主事件循环
-    root.mainloop()
+    crash_window.mainloop()
 
 
 def merge_jsons(default_json, file_or_json):
@@ -266,11 +274,14 @@ def get_config(Initialize_Tag):
         print("出现异常：" + str(Exception))
     ### 此处代码将于1.0.3.0删除
     if not Initialize_Tag:
-        if final_global_config[
-            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json":
-            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Check_Version.json"
-            print("检测到旧API地址，已自动更新为最新API地址")
-        if final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json":
+        try:
+            if (final_global_config[
+                "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
+                    final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
+                final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
+                print("检测到旧API地址，已自动更新为最新API地址")
+        except:
+            print("出现异常，已使用默认api地址替换")
             final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
     ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
@@ -293,20 +304,12 @@ def is_admin():
         return False
 
 
-try:
-    if global_json['debug'] == "True":
-        print("非管理员模式运行")
-    elif global_json['debug'] == "False" and os.name == 'nt' and not is_admin():
-        # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
-    elif os.name == 'nt' and not is_admin():
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
-except:
-    print(f"发生错误: {Exception}")
-    # 可以记录错误或采取其他措施，但避免再次请求管理员权限
-    dupe_crash_report(Exception)
+if global_json['debug'] == "True":
+    print("非管理员模式运行")
+elif os.name == 'nt' and not is_admin():
+    # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
 
 
 def get_language():
@@ -369,6 +372,8 @@ def choose_language():
     language_choose_window = tk.Tk()
     language_choose_window.title("Choose Your Language")
     language_choose_window.geometry("300x150")
+    # 设置窗口图标
+    language_choose_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     center_window(language_choose_window)
 
     # 定义一个变量来存储所选语言，并设置默认值为简体中文
@@ -446,7 +451,7 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_name = generate_current_time()[0] + "_InfoExport"
+                file_name = generate_current_time(0) + "_InfoExport"
                 file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 messagebox.showinfo(get_text("export_information"),
                                     get_text("export_information_success") + f"{file_path}")
@@ -459,6 +464,9 @@ def export_info(event):
         # 创建一个新的顶级窗口
         export_info_window = tk.Toplevel()
         export_info_window.title(get_text("export_information"))
+
+        # 设置窗口图标
+        export_info_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
         # 创建一个框架来容纳文本框和滚动条
         text_scroll_frame = tk.Frame(export_info_window)
@@ -500,6 +508,7 @@ def export_info(event):
 
     # 创建并启动新线程
     thread = threading.Thread(target=show_ui)
+    thread.daemon = True
     thread.start()
 
 
@@ -594,13 +603,17 @@ class TkTransparentSplashScreen:
         screen_width = self.root.winfo_screenwidth()
         screen_height = self.root.winfo_screenheight()
 
+        # 尝试加载服务器提供的图片，如果不存在则加载下载器提供的图片，如果仍然不存在则使用纯白
         try:
             img = Image.open("./Resources-Server/Pictures/Server-icon.png")
             pic_ratio = img.size[0] / img.size[1]
-        except FileNotFoundError:
-            # 如果图片不存在，则使用默认大小
-            img = Image.new('RGB', (200, 200), color='white')
-            pic_ratio = 1.0
+        except:
+            try:
+                img = Image.open("./Resources-Downloader/Pictures/Suya.png")
+                pic_ratio = img.size[0] / img.size[1]
+            except:
+                img = Image.new('RGB', (200, 200), color='white')
+                pic_ratio = 1.0
 
         window_width = min(int(screen_width * 0.8), int(screen_height * 0.6 * pic_ratio))
         window_height = int(window_width / pic_ratio)
@@ -720,6 +733,9 @@ def create_setting_window(event):
     # 创建新窗口作为设置界面
     setting_win = tk.Toplevel()
     setting_win.title(get_text("settings"))
+
+    # 设置窗口图标
+    setting_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 添加说明标签
     instruction_label = tk.Label(setting_win, text=get_text("direct_pull_path"), anchor='w')
@@ -895,6 +911,9 @@ def start_download_in_new_window(download_link):
     download_window.geometry("205x177")  # 设置下载提示窗口大小
     download_window.title(get_text("download_window"))
 
+    # 设置窗口图标
+    download_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
+
     # 创建并配置进度条
     progress_bar = ttk.Progressbar(download_window, orient="horizontal", length=200, mode="determinate")
     progress_bar.pack(pady=20)
@@ -950,8 +969,11 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("alist_pan"):
                     download_link = update_info['url_alist_origin']
                     latest_version = update_info["version_alist"][1:]
-            elif way_chosen_value == get_text("url_direct"):
-                tag_download = "web"
+            elif way_chosen_value == get_text("url_direct") or way_chosen_value == get_text("downloader_direct"):
+                if way_chosen_value == get_text("url_direct"):
+                    tag_download = "web"
+                elif way_chosen_value == get_text("downloader_direct"):
+                    tag_download = "direct"
                 if chosen_value == get_text("123_pan"):
                     link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
                     json_str = requests.get(link).text.strip()
@@ -964,23 +986,6 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif chosen_value == get_text("alist_pan"):
                     download_link = update_info['url_alist_direct']
                     latest_version = update_info["version_alist"][1:]
-            elif way_chosen_value == get_text("downloader_direct"):
-                tag_download = "direct"
-                if chosen_value == get_text("123_pan"):
-                    link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
-                    json_str = requests.get(link).text.strip()
-                    data = json.loads(json_str)
-                    download_link = data['info']
-                    latest_version = update_info["version_123"][1:]
-                elif chosen_value == get_text("OneDrive_pan"):
-                    download_link = update_info['url_onedrive_direct']
-                    latest_version = update_info["version_onedrive"][1:]
-                elif chosen_value == get_text("alist_pan"):
-                    download_link = update_info['url_alist_direct']
-                    latest_version = update_info["version_alist"][1:]
-                elif chosen_value == "Debug":
-                    download_link = update_info['debug_url']
-                    latest_version = update_info["version_123"][1:]
 
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version_inner) == 1:
@@ -1021,12 +1026,11 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
     """
     在一个独立的线程中检查客户端更新。
     """
-
-    def target():
-        check_for_client_updates(current_version_inner, selected_source, way_selected_source)
+    check_arg = (current_version_inner, selected_source, way_selected_source)
 
     try:
-        thread = threading.Thread(target=target)
+        thread = threading.Thread(target=check_for_client_updates, args=check_arg)
+        thread.daemon = True
         thread.start()
     except:
         print("检查客户端更新失败")
@@ -1103,16 +1107,16 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result1, comparison_result2 = compare_versions(latest_version, current_version_inner)
+        comparison_result= compare_versions(latest_version, current_version_inner)
 
-        if comparison_result1 > 0:  # 当前版本低于在线版本
+        if comparison_result == 1:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
                                get_text("update_question_available2") + current_version_inner +
                                get_text("update_question_available3"))
             answer = messagebox.askyesno("更新可用", update_question)
             Update(answer, window)
 
-        elif comparison_result2 > 0:
+        elif comparison_result == -1:
             update_question = (get_text("update_question_dev1") + latest_version +
                                get_text("update_question_dev2") + current_version_inner +
                                get_text("update_question_dev3"))
@@ -1127,9 +1131,12 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    return [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')], [int(v) for v in
-                                                                                           version1.split('.')] < [
-               int(v) for v in version2.split('.')]
+    if [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]:
+        return 1
+    elif [int(v) for v in version1.split('.')] < [int(v) for v in version2.split('.')]:
+        return -1
+    else:
+        return 0
 
 
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
@@ -1170,8 +1177,8 @@ def check_client_update():
             except:
                 print("Unzip_Debug已禁用")
                 return latest_version, name_list, "NoDebug"
-    except Exception as e:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{e}")
+    except:
+        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
@@ -1228,15 +1235,17 @@ def update_version_strip(version_strip_frame, version_label, current_version_inn
 
 def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result1, comparison_result2 = compare_versions(current_version_inner, latest_version)
+    comparison_result= compare_versions(current_version_inner, latest_version)
 
-    if comparison_result1 == 1:
+    if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
-    elif comparison_result2 == 1:  # 这里是当本地版本低于在线版本时的情况
+    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
         return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
-    else:
+    elif comparison_result == 0:
         return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
+    else:
+        return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
 
 
 def update_notice_from_queue(queue, notice_text_area):
@@ -1380,11 +1389,14 @@ def get_important_notice():
         messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
         return
 
-    root = tk.Tk()
-    root.title(get_text("important_notice"))
+    important_announce_win = tk.Tk()
+    important_announce_win.title(get_text("important_notice"))
+
+    # 设置窗口图标
+    important_announce_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 创建一个顶部色带Frame
-    top_bar = tk.Frame(root, bg=rgb_to_hex(data['top_bar_color']), height=160)
+    top_bar = tk.Frame(important_announce_win, bg=rgb_to_hex(data['top_bar_color']), height=160)
     top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在顶部色带中添加标题
@@ -1393,7 +1405,7 @@ def get_important_notice():
     title_label.pack(side=tk.LEFT, padx=10, pady=10)
 
     # 创建公告栏
-    announcement_box = scrolledtext.ScrolledText(root, width=40, height=10, state='disabled')
+    announcement_box = scrolledtext.ScrolledText(important_announce_win, width=40, height=10, state='disabled')
     announcement_box.pack(padx=10, pady=10)
     # 启用编辑
     announcement_box['state'] = 'normal'
@@ -1405,7 +1417,7 @@ def get_important_notice():
     font = (data["text_font_name"], int(data["text_font_size"]), "normal")
     announcement_box.configure(font=font, fg=rgb_to_hex(data['text_font_color']))
 
-    root.mainloop()
+    important_announce_win.mainloop()
 
 
 def Version_Check_for_Updater(online_version):
@@ -1469,7 +1481,6 @@ def select_download_source(selected_source, source_combobox_select):
         default_selected_source = get_text("source_fault")
     if date_update[2] != "NoDebug":
         download_sources.append("Debug")
-    # 这里可以添加更多的逻辑来处理selected_source，比如更新UI元素等
     # 更新Combobox选择框内容
     source_combobox_select['values'] = download_sources
     selected_source.set(default_selected_source)
@@ -1481,8 +1492,39 @@ def start_select_thread(selected_source, source_combobox_select):
     thread.start()
 
 
+def select_download_way_source(way_selected_source, source_combobox2):
+    # 下载方式选项
+    response = requests.get(global_json["update_url"])
+    # 检查请求是否成功
+    try:
+        if response.status_code == 200:
+            info_json_str = requests.get(global_json["update_url"]).text.strip()
+            update_info = json.loads(info_json_str)
+            if update_info["self_unzip_able"] == "False":
+                way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
+                default_way_selected_source = value=get_text("url_direct")
+            else:
+                way_sources = [get_text("url_direct"), get_text("url_origin")]
+                default_way_selected_source = get_text("url_direct")
+        else:
+            way_sources = [get_text("url_direct"), get_text("url_origin")]
+            default_way_selected_source = get_text("url_direct")
+    except:
+        way_sources = [get_text("url_direct"), get_text("url_origin")]
+        default_way_selected_source = get_text("url_direct")
+    # 更新Combobox选择框内容
+    source_combobox2['values'] = way_sources
+    way_selected_source.set(default_way_selected_source)
+
+
+def start_select_way_thread(way_selected_source, source_combobox2):
+    thread = threading.Thread(target=select_download_way_source, args=(way_selected_source, source_combobox2))
+    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.start()
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
-                   label_client, strip_suya_announcement, label_suya_announcement):
+                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source, source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         global global_json
@@ -1496,6 +1538,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
                     # 如果有新版本，启动新线程执行更新操作
                     print("启动更新线程...")
                     update_thread = threading.Thread(target=Update_Updater)
+                    update_thread.daemon = True
                     update_thread.start()
                 else:
                     print("无需更新。")
@@ -1507,10 +1550,15 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     except requests.RequestException as e:
         print("更新拉取失败，错误代码：{e}")
     try:
-        get_important_notice_thread = threading.Thread(target=get_important_notice, daemon=True)
+        get_important_notice_thread = threading.Thread(target=get_important_notice)
+        get_important_notice_thread.daemon = True
         get_important_notice_thread.start()
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
+    try:
+        start_select_way_thread(way_selected_source, source_combobox2)
+    except:
+        print(f"下载方式列表拉取失败，错误代码：{Exception}")
     try:
         start_select_thread(selected_source, source_combobox)
     except:
@@ -1530,18 +1578,21 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
                                                      args=pull_suya_announcement_args)
     try:
+        update_thread.daemon = True
         update_thread.start()
     except:
         print("下载器更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
                              get_text("check_error1"))
     try:
+        client_update_thread.daemon = True
         client_update_thread.start()
     except:
         print("客户端更新检查失败，错误代码：{e}")
         update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
                              get_text("check_error2"))
     try:
+        pull_suya_announcement_thread.daemon = True
         pull_suya_announcement_thread.start()
     except:
         print("Suya公告拉取失败，错误代码：{e}")
@@ -1558,6 +1609,9 @@ def create_gui():
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
+    window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
+
+    # 初始化图标
     try:
         play_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_note_black_24dp.png")
         stop_icon = Image.open("./Resources-Downloader/Pictures/Icons/outline_music_off_black_24dp.png")
@@ -1627,8 +1681,8 @@ def create_gui():
         download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
         # 资源获取方式选项
-        way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
-        way_selected_source = tk.StringVar(value=get_text("url_direct"))  # 初始化下载源选项
+        way_sources = [get_text("way_wait"), get_text("source_wait2")]
+        way_selected_source = tk.StringVar(value=get_text("way_wait"))  # 初始化方式选项
 
         # 创建Combobox选择框，指定宽度
         source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
@@ -1734,9 +1788,11 @@ def create_gui():
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         initialize_args = (selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader,
-                           strip_client, label_client, strip_suya_announcement, label_suya_announcement)
+                           strip_client, label_client, strip_suya_announcement, label_suya_announcement,
+                           way_selected_source, source_combobox2)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
+        initialize_thread.daemon = True
         initialize_thread.start()
         window_main.mainloop()
     except:
