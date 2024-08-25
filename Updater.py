@@ -10,7 +10,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.2.9"
+Suya_Updater_Version = "1.0.3.0"
 
 
 def is_admin():
@@ -95,17 +95,6 @@ def get_config():
     except:
         print("出现异常：" + str(Exception))
     final_global_config = merge_jsons(default_global_config, global_config_path)
-    ### 此处代码将于1.0.3.0删除
-    try:
-        if (final_global_config[
-            "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
-                final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
-            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-            print("检测到旧API地址，已自动更新为最新API地址")
-    except:
-        print("出现异常，已使用默认api地址替换")
-        final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-    ### 此处代码将于1.0.3.0删除
     with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config

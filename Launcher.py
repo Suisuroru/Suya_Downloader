@@ -20,7 +20,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.9"
+Suya_Downloader_Version = "1.0.3.0"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -272,18 +272,6 @@ def get_config(Initialize_Tag):
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
-    ### 此处代码将于1.0.3.0删除
-    if not Initialize_Tag:
-        try:
-            if (final_global_config[
-                "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
-                    final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
-                final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-                print("检测到旧API地址，已自动更新为最新API地址")
-        except:
-            print("出现异常，已使用默认api地址替换")
-            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-    ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
     with open(global_config_path, 'w', encoding='utf-8') as file:
         json.dump(final_global_config, file, indent=4)
