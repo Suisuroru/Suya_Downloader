@@ -54,6 +54,7 @@
     "suya_announcement": "Suya下载器公告：",
     "tip": "提示",
     "unable_to_get_IN": "无法获取重要通知",
+    "unable_to_get_source": "尝试获取下载源时遇到错误，可能是初始化未完成或网络连接不畅",
     "unknown_client": "未知客户端版本消息",
     "unknown_downloader": "未知下载器版本消息",
     "unknown_error": "未知错误：",

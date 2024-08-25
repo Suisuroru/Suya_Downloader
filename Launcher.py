@@ -13,6 +13,7 @@ import webbrowser
 import winreg
 import zipfile
 from getpass import getuser
+from http.client import responses
 from queue import Queue
 from tkinter import messagebox, scrolledtext, ttk, filedialog
 
@@ -933,10 +934,8 @@ def direct_download_client(download_link):
         thread.start()
 
 
-def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
+def check_for_client_updates(current_version_inner, selected_source, way_selected_source, response):
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
         if response.status_code == 200:
             info_json_str = requests.get(global_json["update_url"]).text.strip()
@@ -1095,7 +1094,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result= compare_versions(latest_version, current_version_inner)
+        comparison_result = compare_versions(latest_version, current_version_inner)
 
         if comparison_result == 1:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
@@ -1140,10 +1139,8 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
-def check_client_update():
+def check_client_update(response):
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
         if response.status_code == 200:
             info_json_str = requests.get(global_json["update_url"]).text.strip()
@@ -1188,9 +1185,10 @@ def pull_suya_announcement(version_strip_frame, version_label):
                          get_text("suya_announcement") + suya_announcement)
 
 
-def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
+def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label,
+                                                      current_version_inner):
     """检查更新并创建版本状态色带"""
-    latest_version = check_client_update()[0]
+    latest_version = check_client_update(response_client)[0]
     update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
 
 
@@ -1223,7 +1221,7 @@ def update_version_strip(version_strip_frame, version_label, current_version_inn
 
 def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result= compare_versions(current_version_inner, latest_version)
+    comparison_result = compare_versions(current_version_inner, latest_version)
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
@@ -1444,7 +1442,16 @@ def update_downloader(window):
 
 def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
-    date_update = check_client_update()
+    try:
+        date_update = check_client_update(response_client)
+        if response_client.status_code != 200:
+            print(f"无法获取下载源信息: {response_client.status_code}")
+            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
+            return
+    except:
+        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
+        print("无法获取下载源信息:", Exception)
+        return
     namelist = date_update[1]
     download_sources = []
     Tag_123 = Tag_OneDrive = Tag_Alist = False
@@ -1480,9 +1487,7 @@ def start_select_thread(selected_source, source_combobox_select):
     thread.start()
 
 
-def select_download_way_source(way_selected_source, source_combobox2):
-    # 下载方式选项
-    response = requests.get(global_json["update_url"])
+def select_download_way_source(way_selected_source, source_combobox2, response):
     # 检查请求是否成功
     try:
         if response.status_code == 200:
@@ -1490,7 +1495,7 @@ def select_download_way_source(way_selected_source, source_combobox2):
             update_info = json.loads(info_json_str)
             if update_info["self_unzip_able"] == "False":
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
-                default_way_selected_source = value=get_text("url_direct")
+                default_way_selected_source = value = get_text("url_direct")
             else:
                 way_sources = [get_text("url_direct"), get_text("url_origin")]
                 default_way_selected_source = get_text("url_direct")
@@ -1511,14 +1516,35 @@ def start_select_way_thread(way_selected_source, source_combobox2):
     thread.start()
 
 
+def initialize_client_api():
+    """
+    初始化客户端地址API
+    """
+    global response_client
+    count_num = 0
+    while count_num < 3:
+        try:
+            response_client = requests.get(global_json["update_url"])
+            count_num += 1
+            if response_client.status_code == 200:
+                break
+            else:
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
-                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source, source_combobox2):
+                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
+                   source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         global global_json
         global_json = get_config(False)
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
+    initialize_client_api()
     try:
         def Check_Update_for_Updater():
             if global_json['debug'] == "False":
