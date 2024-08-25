@@ -1856,9 +1856,6 @@ def on_closing():
 
 if __name__ == "__main__":
     initialize_languages(None)
-    try:
-        splash = TkTransparentSplashScreen()
-        # 主循环，等待启动画面关闭
-        splash.root.mainloop()
-    except:
-        dupe_crash_report(str(Exception))
+    splash = TkTransparentSplashScreen()
+    # 主循环，等待启动画面关闭
+    splash.root.mainloop()
