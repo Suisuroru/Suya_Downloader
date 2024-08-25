@@ -20,7 +20,7 @@ def is_admin():
         return False
 
 
-if os.name == 'nt':
+if os.name == "nt":
     if not is_admin():
         # 如果当前没有管理员权限，则重新启动脚本并请求管理员权限
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
@@ -58,7 +58,7 @@ def merge_jsons(default_json, file_path):
     :return: 合并后的 JSON 字典
     """
     try:
-        with open(file_path, 'r', encoding='utf-8') as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             loaded_json = json.load(file)
             # 使用文件中的数据覆盖默认值
             return {**default_json, **loaded_json}
@@ -80,7 +80,7 @@ def get_config():
     except:
         try:
             default_global_config = default_api_config
-            with open(default_api_setting_path, 'w', encoding='utf-8') as file:
+            with open(default_api_setting_path, "w", encoding="utf-8") as file:
                 json.dump(default_api_config, file, indent=4)
                 print("成功写入初始API参数")
         except:
@@ -95,44 +95,44 @@ def get_config():
     except:
         print("出现异常：" + str(Exception))
     final_global_config = merge_jsons(default_global_config, global_config_path)
-    with open(global_config_path, 'w', encoding='utf-8') as file:
+    with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
 
 
 global_json = get_config()
-api_url = global_json['api_url']
+api_url = global_json["api_url"]
 
 # 创建或覆盖版本文件
-global_json['Updater_Version'] = Suya_Updater_Version
-with open(global_config_path, 'w', encoding='utf-8') as file:
+global_json["Updater_Version"] = Suya_Updater_Version
+with open(global_config_path, "w", encoding="utf-8") as file:
     json.dump(global_json, file, ensure_ascii=False, indent=4)
 
 
 def del_Resources():
-    folder_path = './Resources-Downloader'
+    folder_path = "./Resources-Downloader"
     try:
         shutil.rmtree(folder_path)
-        print(f"'{folder_path}' 文件夹已成功删除。")
+        print(f"{folder_path} 文件夹已成功删除。")
     except FileNotFoundError:
-        print(f"'{folder_path}' 文件夹未找到。")
+        print(f"{folder_path} 文件夹未找到。")
     except Exception as e:
-        print(f"删除 '{folder_path}' 文件夹时发生错误: {e}")
+        print(f"删除 {folder_path} 文件夹时发生错误: {e}")
 
 
 def fetch_update_info():
-    if os.name == 'nt':
+    if os.name == "nt":
         """从API获取版本信息和下载链接"""
         try:
             try:
-                Update_Partner = global_json['Update_Partner']
+                Update_Partner = global_json["Update_Partner"]
             except:
-                global_json['Updater_Partner'] = "Full"
-                with open(global_config_path, 'w', encoding='utf-8') as f:
+                global_json["Updater_Partner"] = "Full"
+                with open(global_config_path, "w", encoding="utf-8") as f:
                     json.dump(global_json, f, ensure_ascii=False, indent=4)
                 Update_Partner = "Full"
             try:
-                Count = global_json['Pull_Resources_Count']
+                Count = global_json["Pull_Resources_Count"]
                 print("尝试拉取次数：" + str(Count))
             except:
                 Count = 1
@@ -141,8 +141,8 @@ def fetch_update_info():
             json_str = requests.get(api_url).text.strip()
             data = json.loads(json_str)
             if Update_Partner == "Full":
-                downloader_update_url = data['url_downloader']
-                version = data['version_downloader']
+                downloader_update_url = data["url_downloader"]
+                version = data["version_downloader"]
                 partner = "完整更新模式"
                 partner_en = "FULL UPDATE MODE"
                 message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
@@ -150,7 +150,7 @@ def fetch_update_info():
                 message_thread.start()
                 return version, downloader_update_url, Update_Partner
             elif Update_Partner == "Resources":
-                downloader_update_url = data['url_resource']
+                downloader_update_url = data["url_resource"]
                 partner = "重新拉取资源文件模式"
                 partner_en = "RESOURCES PULL MODE"
                 message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
@@ -174,7 +174,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         temp_dir = tempfile.mkdtemp()
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
         # 将响应内容写入临时文件
-        with open(temp_zip_file, 'wb') as f:
+        with open(temp_zip_file, "wb") as f:
             shutil.copyfileobj(response.raw, f)
         del_Resources()
         if update_partner_inner == "Resources":
@@ -194,25 +194,25 @@ def download_and_install(downloader_update_url, update_partner_inner):
                 member_path = os.path.abspath(os.path.join(pull_dir, member))
                 if not member_path.startswith(pull_dir):
                     raise Exception("Zip file contains invalid path.")
-                if member.endswith('/'):
+                if member.endswith("/"):
                     os.makedirs(member_path, exist_ok=True)
                 else:
-                    with open(member_path, 'wb') as f:
+                    with open(member_path, "wb") as f:
                         f.write(zip_file.read(member))
 
         # 清理临时ZIP文件
         os.remove(temp_zip_file)
 
-        global_json['Pull_Resources_Count'] = 0
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["Pull_Resources_Count"] = 0
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
-        if os.name == 'nt':
-            launcher_path = os.path.join(current_dir, 'Launcher.exe')
+        if os.name == "nt":
+            launcher_path = os.path.join(current_dir, "Launcher.exe")
         else:
-            launcher_path = os.path.join(current_dir, 'Launcher')
+            launcher_path = os.path.join(current_dir, "Launcher")
         if os.path.isfile(launcher_path):
             import subprocess
             subprocess.Popen([launcher_path])
