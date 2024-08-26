@@ -27,12 +27,14 @@ current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 global_config_path = os.path.join("./Settings", "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
+def check_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("已创建文件夹:", path)
 
 try:
     # 确保设置的文件夹存在
-    if not os.path.exists(settings_path):
-        os.makedirs(settings_path)
-        print("已创建文件夹:", settings_path)
+    check_folder(settings_path)
 except:
     if os.name == "nt":
         # 此处操作失败则说明此文件夹受保护，需要管理员权限
@@ -533,7 +535,7 @@ def initialize_settings():
 def ensure_directory_exists(directory_path):
     """确保目录存在，如果不存在则尝试创建。"""
     try:
-        os.makedirs(directory_path, exist_ok=True)
+        check_folder(directory_path)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
@@ -878,7 +880,7 @@ def start_download_in_new_window(download_link):
                         for member in zip_file.namelist():
                             member_path = os.path.abspath(os.path.join(pull_dir, member))
                             if member.endswith("/"):
-                                os.makedirs(member_path, exist_ok=True)
+                                check_folder(member)
                                 print("成功创建文件夹", str(member_path))
                             else:
                                 content = zip_file.read(member)
@@ -1318,7 +1320,7 @@ def download_and_install(update_url, version):
                 if not member_path.startswith(current_working_dir):
                     raise Exception("Zip file contains invalid path.")
                 if member.endswith("/"):
-                    os.makedirs(member_path, exist_ok=True)
+                    check_folder(member_path)
                 else:
                     with open(member_path, "wb") as f:
                         f.write(zip_file.read(member))
