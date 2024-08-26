@@ -27,10 +27,18 @@ current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
 global_config_path = os.path.join("./Settings", "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
+
+
 def check_folder(path):
     if not os.path.exists(path):
         os.makedirs(path)
         print("已创建文件夹:", path)
+
+
+def get_admin():
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
+
 
 try:
     # 确保设置的文件夹存在
@@ -38,8 +46,7 @@ try:
 except:
     if os.name == "nt":
         # 此处操作失败则说明此文件夹受保护，需要管理员权限
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
+        get_admin()
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -250,8 +257,7 @@ def get_config(Initialize_Tag):
                 json.dump(default_api_config, file, indent=4)
                 print("成功写入初始API参数")
         except:
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
+            get_admin()
     if os.name == "nt":
         try:
             default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
@@ -289,8 +295,7 @@ def get_config(Initialize_Tag):
 try:
     global_json = get_config(True)
 except:
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+    get_admin()
 
 
 def is_admin():
@@ -304,8 +309,7 @@ if global_json["debug"] == "True":
     print("非管理员模式运行")
 elif os.name == "nt" and not is_admin():
     # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+    get_admin()
 
 
 def get_language():
