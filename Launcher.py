@@ -70,8 +70,9 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, f"\n\n---------------Settings Information---------------\n"
-                               f"{global_json}\n-------------------------------------------------\n\n")
+        msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
+        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",","")}")
+        msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
     msg_box.insert(tk.END, f"System Information:\n")
@@ -205,7 +206,7 @@ def dupe_crash_report(error_message=None):
     scrollbar.config(command=msg_box.yview)
 
     msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed."
-                           "\n\n---------------Crash Report---------------\n")
+                           "\n\n---------------Crash Report---------------\n\n")
 
     # 如果有错误消息，先输出错误消息
     if error_message:
@@ -511,7 +512,7 @@ def export_info(event):
         system_info_box.delete("1.0", tk.END)
         system_info_box.insert(tk.END,
                                "Exported Information\nThis is not a crash report."
-                               "\n\n----------------Exported Information---------------\n")
+                               "\n\n----------------Exported Information---------------\n\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
