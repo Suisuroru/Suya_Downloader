@@ -525,14 +525,14 @@ def export_info(event):
 
 def initialize_settings():
     path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
-    ensure_directory_exists(path_from_file)
     try:
         path_from_file = global_json["Client_dir"]
     except:
         global_json["Client_dir"] = path_from_file
         with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
-    print("处理前的路径：" + path_from_file)
+    ensure_directory_exists(path_from_file)
+    print("格式化处理后的路径：" + path_from_file)
     return path_from_file
 
 
