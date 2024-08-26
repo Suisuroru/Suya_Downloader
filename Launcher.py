@@ -72,39 +72,33 @@ def export_system_info(msg_box):
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
         msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",","")}")
-        msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
+        msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
-    msg_box.insert(tk.END, f"System Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------System Information---------------\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
     msg_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
     msg_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
-    msg_box.insert(tk.END, f"\n")
 
     # CPU Information
-    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
-    msg_box.insert(tk.END, f"CPU Information:\n")
+    msg_box.insert(tk.END, "\n\n-----------------CPU Information-----------------\n")
     msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
     msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
     msg_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
     msg_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
     msg_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
-    msg_box.insert(tk.END, f"\n")
 
     # Memory Information
-    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
-    msg_box.insert(tk.END, f"Memory Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------Memory Information---------------\n")
     mem = psutil.virtual_memory()
     msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
-    msg_box.insert(tk.END, f"\n")
 
     # Disk Information
-    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
-    msg_box.insert(tk.END, f"Disk Information:\n")
+    msg_box.insert(tk.END, "\n\n----------------Disk Information----------------\n")
 
     try:
         for part in psutil.disk_partitions(all=False):
@@ -117,26 +111,22 @@ def export_system_info(msg_box):
                     msg_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
                     msg_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
                     msg_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
-                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
-                    msg_box.insert(tk.END, f"\n")
+                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n\n")
                 except Exception as e:
-                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
-                    msg_box.insert(tk.END, f"\n")
+                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n\n")
     except Exception as e:
         msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
 
     # Network Information
-    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
-    msg_box.insert(tk.END, f"Network Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------Network Information---------------\n")
     for interface, addrs in psutil.net_if_addrs().items():
-        msg_box.insert(tk.END, "\n|||||||||||||||||||||||||||||||||||||||||||||||||\n\n")
+        msg_box.insert(tk.END, f"\n||||||||||||||{interface}||||||||||||||\n\n")
         for addr in addrs:
             if addr.family == socket.AF_INET:
                 msg_box.insert(tk.END, f"Interface: {interface}\n")
                 msg_box.insert(tk.END, f"IP Address: {addr.address}\n")
                 msg_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
-                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
-                msg_box.insert(tk.END, f"\n")
+                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n\n")
 
 
 # 将文本框内容写入文件的函数
@@ -163,7 +153,7 @@ def write_to_file(text_box, file_name):
 
     # 写入文件
     file_path = os.path.join(download_folder, file_name + ".txt")
-    with open(file_path, "w") as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         file.write(info_text)
     return file_path
 
@@ -206,7 +196,7 @@ def dupe_crash_report(error_message=None):
     scrollbar.config(command=msg_box.yview)
 
     msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed."
-                           "\n\n---------------Crash Report---------------\n\n")
+                           "\n\n--------------Crash Report--------------\n\n")
 
     # 如果有错误消息，先输出错误消息
     if error_message:
@@ -512,7 +502,7 @@ def export_info(event):
         system_info_box.delete("1.0", tk.END)
         system_info_box.insert(tk.END,
                                "Exported Information\nThis is not a crash report."
-                               "\n\n----------------Exported Information---------------\n\n")
+                               "\n\n---------------Exported Information--------------\n\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
