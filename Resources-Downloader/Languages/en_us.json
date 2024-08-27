@@ -54,6 +54,7 @@
     "suya_announcement": "Suya Downloader Announcement: ",
     "tip": "Tip",
     "unable_to_get_IN": "Unable to get important notice",
+    "unable_to_get_source": "An error was encountered when trying to get the download source, either because the initialization was incomplete or the network connection was poor",
     "unknown_client": "Unknown client version message",
     "unknown_downloader": "Unknown downloader version message",
     "unknown_error": "Unknown error: ",

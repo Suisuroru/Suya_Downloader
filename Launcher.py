@@ -20,7 +20,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.2.9"
+Suya_Downloader_Version = "1.0.3.0"
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -28,16 +28,25 @@ settings_path = os.path.join("./Settings")
 global_config_path = os.path.join("./Settings", "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
+
+def check_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("已创建文件夹:", path)
+
+
+def get_admin():
+    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+    sys.exit()
+
+
 try:
     # 确保设置的文件夹存在
-    if not os.path.exists(settings_path):
-        os.makedirs(settings_path)
-        print("已创建文件夹:", settings_path)
+    check_folder(settings_path)
 except:
-    if os.name == 'nt':
+    if os.name == "nt":
         # 此处操作失败则说明此文件夹受保护，需要管理员权限
-        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-        sys.exit()
+        get_admin()
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -47,9 +56,9 @@ def generate_current_time(tag):
     from datetime import datetime
     # 使用strftime方法将当前时间格式化为指定的格式
     if tag == 0:
-        export_time = datetime.now().strftime('%Y_%m_%d_%H_%M_%S')
+        export_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     else:
-        export_time = datetime.now().strftime('%Y/%m/%d|%H:%M:%S')
+        export_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
     return export_time
 
 
@@ -61,37 +70,35 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, f"\n\n---------------Settings Information---------------\n"
-                               f"{global_json}\n-------------------------------------------------\n\n")
+        msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
+        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",","")}")
+        msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
-    msg_box.insert(tk.END, f"System Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------System Information---------------\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
     msg_box.insert(tk.END, f"Kernel Version: {platform.release()}\n")
     msg_box.insert(tk.END, f"Architecture: {platform.machine()}\n")
-    msg_box.insert(tk.END, f"\n")
 
     # CPU Information
-    msg_box.insert(tk.END, f"CPU Information:\n")
+    msg_box.insert(tk.END, "\n\n-----------------CPU Information-----------------\n")
     msg_box.insert(tk.END, f"Model: {platform.processor()}\n")
     msg_box.insert(tk.END, f"Physical Cores: {psutil.cpu_count(logical=False)}\n")
     msg_box.insert(tk.END, f"Total Cores: {psutil.cpu_count(logical=True)}\n")
     msg_box.insert(tk.END, f"Max Frequency: {psutil.cpu_freq().max:.2f} MHz\n")
     msg_box.insert(tk.END, f"Current Frequency: {psutil.cpu_freq().current:.2f} MHz\n")
-    msg_box.insert(tk.END, f"\n")
 
     # Memory Information
-    msg_box.insert(tk.END, f"Memory Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------Memory Information---------------\n")
     mem = psutil.virtual_memory()
     msg_box.insert(tk.END, f"Total Memory: {mem.total / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Available Memory: {mem.available / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Used Memory: {mem.used / (1024 ** 3):.2f} GB\n")
     msg_box.insert(tk.END, f"Memory Percent Used: {mem.percent}%\n")
-    msg_box.insert(tk.END, f"\n")
 
     # Disk Information
-    msg_box.insert(tk.END, f"Disk Information:\n")
+    msg_box.insert(tk.END, "\n\n----------------Disk Information----------------\n")
 
     try:
         for part in psutil.disk_partitions(all=False):
@@ -104,42 +111,40 @@ def export_system_info(msg_box):
                     msg_box.insert(tk.END, f"Total Size: {usage.total / (1024 ** 3):.2f}GB\n")
                     msg_box.insert(tk.END, f"Used: {usage.used / (1024 ** 3):.2f}GB\n")
                     msg_box.insert(tk.END, f"Free: {usage.free / (1024 ** 3):.2f}GB\n")
-                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n")
-                    msg_box.insert(tk.END, f"\n")
+                    msg_box.insert(tk.END, f"Percent Used: {usage.percent}%\n\n")
                 except Exception as e:
-                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n")
-                    msg_box.insert(tk.END, f"\n")
+                    msg_box.insert(tk.END, f"Error getting disk usage for {part.mountpoint}: {e}\n\n")
     except Exception as e:
         msg_box.insert(tk.END, f"Error iterating over disk partitions: {e}\n")
 
     # Network Information
-    msg_box.insert(tk.END, f"Network Information:\n")
+    msg_box.insert(tk.END, "\n\n---------------Network Information---------------\n")
     for interface, addrs in psutil.net_if_addrs().items():
+        msg_box.insert(tk.END, f"\n||||||||||||||{interface}||||||||||||||\n\n")
         for addr in addrs:
             if addr.family == socket.AF_INET:
                 msg_box.insert(tk.END, f"Interface: {interface}\n")
                 msg_box.insert(tk.END, f"IP Address: {addr.address}\n")
                 msg_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
-                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n")
-                msg_box.insert(tk.END, f"\n")
+                msg_box.insert(tk.END, f"Broadcast IP: {addr.broadcast}\n\n")
 
 
 # 将文本框内容写入文件的函数
 def write_to_file(text_box, file_name):
     # 获取文本框内容
-    info_text = text_box.get('1.0', tk.END)
+    info_text = text_box.get("1.0", tk.END)
 
     # 确定下载文件夹路径
-    if os.name == 'nt':  # Windows
+    if os.name == "nt":  # Windows
         def get_download_folder():
             try:
                 key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                                     r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders')
+                                     r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders")
                 print("从注册表获取到下载文件夹路径成功")
-                return winreg.QueryValueEx(key, '{374DE290-123F-4565-9164-39C4925E467B}')[0]
+                return winreg.QueryValueEx(key, "{374DE290-123F-4565-9164-39C4925E467B}")[0]
             except FileNotFoundError:
                 # 如果上述方法失败，回退到默认路径
-                return os.path.join(os.getenv('USERPROFILE'), 'Downloads')
+                return os.path.join(os.getenv("USERPROFILE"), "Downloads")
 
         download_folder = get_download_folder()
         print("获取到下载文件夹路径：" + download_folder)
@@ -148,18 +153,18 @@ def write_to_file(text_box, file_name):
 
     # 写入文件
     file_path = os.path.join(download_folder, file_name + ".txt")
-    with open(file_path, 'w') as file:
+    with open(file_path, "w", encoding="utf-8") as file:
         file.write(info_text)
     return file_path
 
 
 def open_directory(path):
     """在操作系统默认的文件管理器中打开指定路径的目录"""
-    if os.name == 'nt':  # Windows
+    if os.name == "nt":  # Windows
         os.startfile(os.path.dirname(path))
-    elif os.name == 'posix':  # Unix/Linux/MacOS
+    elif os.name == "posix":  # Unix/Linux/MacOS
         import subprocess
-        subprocess.run(['xdg-open', os.path.dirname(path)])
+        subprocess.run(["xdg-open", os.path.dirname(path)])
     else:
         print("Unsupported operating system")
 
@@ -191,7 +196,7 @@ def dupe_crash_report(error_message=None):
     scrollbar.config(command=msg_box.yview)
 
     msg_box.insert(tk.END, "Crash Report\nOh, it seems like it crashed."
-                           "\n\n---------------Crash Report---------------\n")
+                           "\n\n--------------Crash Report--------------\n\n")
 
     # 如果有错误消息，先输出错误消息
     if error_message:
@@ -200,6 +205,7 @@ def dupe_crash_report(error_message=None):
     # 输出堆栈跟踪信息
     traceback_info = get_traceback_info()
     msg_box.insert(tk.END, f"Traceback Info:\n{traceback_info}\n\n")
+    msg_box.insert(tk.END, "\n-------------------------------------------------\n\n")
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
@@ -219,7 +225,7 @@ def merge_jsons(default_json, file_or_json):
     :return: 合并后的 JSON 字典
     """
     try:
-        with open(file_or_json, 'r', encoding='utf-8') as file:
+        with open(file_or_json, "r", encoding="utf-8") as file:
             loaded_json = json.load(file)
     except:
         loaded_json = file_or_json
@@ -238,20 +244,19 @@ def get_config(Initialize_Tag):
     except:
         try:
             default_global_config = default_api_config
-            with open(default_api_setting_path, 'w', encoding='utf-8') as file:
+            with open(default_api_setting_path, "w", encoding="utf-8") as file:
                 json.dump(default_api_config, file, indent=4)
                 print("成功写入初始API参数")
         except:
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
-    if os.name == 'nt':
+            get_admin()
+    if os.name == "nt":
         try:
             default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
                                                         fr"{default_global_config["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
         print("最终initialize_path：", default_global_config["initialize_path"])
-    elif os.name == 'posix':
+    elif os.name == "posix":
         try:
             default_global_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_global_config["Server_Name"]}"
         except:
@@ -272,20 +277,8 @@ def get_config(Initialize_Tag):
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
-    ### 此处代码将于1.0.3.0删除
-    if not Initialize_Tag:
-        try:
-            if (final_global_config[
-                "api_url"] == "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Check_Version.json" or
-                    final_global_config["api_url"] == "https://api.suya.blue-millennium.fun/Check_Version.json"):
-                final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-                print("检测到旧API地址，已自动更新为最新API地址")
-        except:
-            print("出现异常，已使用默认api地址替换")
-            final_global_config["api_url"] = "https://api.suya.blue-millennium.fun/Suya_Update_API.json"
-    ### 此处代码将于1.0.3.0删除
     print("最终全局配置：", final_global_config)
-    with open(global_config_path, 'w', encoding='utf-8') as file:
+    with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
 
@@ -293,8 +286,7 @@ def get_config(Initialize_Tag):
 try:
     global_json = get_config(True)
 except:
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+    get_admin()
 
 
 def is_admin():
@@ -304,12 +296,11 @@ def is_admin():
         return False
 
 
-if global_json['debug'] == "True":
+if global_json["debug"] == "True":
     print("非管理员模式运行")
-elif os.name == 'nt' and not is_admin():
+elif os.name == "nt" and not is_admin():
     # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
-    ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-    sys.exit()
+    get_admin()
 
 
 def get_language():
@@ -317,7 +308,7 @@ def get_language():
 
     def set_lang(setting_json_inner):
         choose_language()
-        setting_json_inner['language'] = global_selected_lang
+        setting_json_inner["language"] = global_selected_lang
         final_language = global_selected_lang
         if final_language is not None:
             return final_language
@@ -325,20 +316,20 @@ def get_language():
             exit(1)
 
     try:
-        language = global_json['language']
+        language = global_json["language"]
     except:
         language = set_lang(global_json)
-        global_json['language'] = language
-        with open(global_config_path, 'w', encoding='utf-8') as file_w:
+        global_json["language"] = language
+        with open(global_config_path, "w", encoding="utf-8") as file_w:
             json.dump(global_json, file_w, ensure_ascii=False, indent=4)
 
 
 def Open_Updater(window):
     try:
-        if os.name == 'nt':
-            launcher_path = os.path.join(current_working_dir, 'Updater.exe')
-        if os.name == 'posix':
-            launcher_path = os.path.join(current_working_dir, 'Updater')
+        if os.name == "nt":
+            launcher_path = os.path.join(current_working_dir, "Updater.exe")
+        if os.name == "posix":
+            launcher_path = os.path.join(current_working_dir, "Updater")
         if os.path.isfile(launcher_path):
             import subprocess
             subprocess.Popen([launcher_path])
@@ -356,13 +347,13 @@ def Open_Updater(window):
 
 
 def Pull_Resources(window):
-    if os.name == 'nt':
-        global_json['Update_Partner'] = "Resources"
+    if os.name == "nt":
+        global_json["Update_Partner"] = "Resources"
         try:
-            global_json['Pull_Resources_Count'] += 1
+            global_json["Pull_Resources_Count"] += 1
         except:
-            global_json['Pull_Resources_Count'] = 1
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+            global_json["Pull_Resources_Count"] = 1
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         Open_Updater(window)
 
@@ -371,10 +362,21 @@ def choose_language():
     # 初始化Tkinter窗口
     language_choose_window = tk.Tk()
     language_choose_window.title("Choose Your Language")
-    language_choose_window.geometry("300x150")
+    language_choose_window.geometry("300x250")
     # 设置窗口图标
     language_choose_window.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     center_window(language_choose_window)
+    # 加载图标并显示在窗口内
+    try:
+        try:
+            top_icon = Image.open("./Resources-Server/Pictures/Server-icon.png")
+        except:
+            top_icon = Image.open("./Resources-Downloader/Pictures/Suya.png")
+    except:
+        top_icon = ImageTk.PhotoImage(Image.new("RGB", (100, 100), color="red"))
+    top_icon = top_icon.resize((100, 100))
+    top_icon_image = ImageTk.PhotoImage(top_icon)
+    tk.Label(language_choose_window, image=top_icon_image).pack(side=tk.TOP)  # 显示图标在顶部
 
     # 定义一个变量来存储所选语言，并设置默认值为简体中文
     selected_lang = tk.StringVar(value="zh_hans")
@@ -412,13 +414,13 @@ def initialize_languages(tag):
         lang_path = os.path.join("./Resources-Downloader/Languages", "en_us.json")
     else:
         lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hans.json")
-        global_json['language'] = "zh_hans"
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["language"] = "zh_hans"
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_config_path, file, ensure_ascii=False, indent=4)
     try:
-        with open(lang_path, 'r', encoding='utf-8') as file:
+        with open(lang_path, "r", encoding="utf-8") as file:
             lang_json = json.load(file)
-        with open(os.path.join("./Resources-Downloader/Languages", "zh_hans.json"), 'r', encoding='utf-8') as file:
+        with open(os.path.join("./Resources-Downloader/Languages", "zh_hans.json"), "r", encoding="utf-8") as file:
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
@@ -497,10 +499,10 @@ def export_info(event):
         close_button = tk.Button(buttons_frame, text=get_text("close"), command=export_info_window.destroy)
         close_button.pack(side="right", padx=5)
         # 清空文本框内容
-        system_info_box.delete('1.0', tk.END)
+        system_info_box.delete("1.0", tk.END)
         system_info_box.insert(tk.END,
                                "Exported Information\nThis is not a crash report."
-                               "\n\n----------------Exported Information---------------\n")
+                               "\n\n---------------Exported Information--------------\n\n")
         # 写入系统信息
         export_system_info(system_info_box)
         # 禁止编辑文本框
@@ -514,21 +516,21 @@ def export_info(event):
 
 def initialize_settings():
     path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
-    ensure_directory_exists(path_from_file)
     try:
-        path_from_file = global_json['Client_dir']
+        path_from_file = global_json["Client_dir"]
     except:
-        global_json['Client_dir'] = path_from_file
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["Client_dir"] = path_from_file
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
-    print("处理前的路径：" + path_from_file)
+    ensure_directory_exists(path_from_file)
+    print("格式化处理后的路径：" + path_from_file)
     return path_from_file
 
 
 def ensure_directory_exists(directory_path):
     """确保目录存在，如果不存在则尝试创建。"""
     try:
-        os.makedirs(directory_path, exist_ok=True)
+        check_folder(directory_path)
     except OSError as e:
         if e.errno != errno.EEXIST:
             raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
@@ -552,13 +554,13 @@ def read_client_version_from_file():
     file_path = os.path.join(global_json["initialize_path"], "client_version.txt")
 
     try:
-        with open(file_path, 'r') as file:
+        with open(file_path, "r") as file:
             client_version_inner = file.read().strip()
             return client_version_inner
     except FileNotFoundError:
         print("版本文件未找到，正在尝试创建并写入默认版本号...")
         try:
-            with open(file_path, 'w') as file:
+            with open(file_path, "w") as file:
                 file.write("0.0.0.0")  # 写入默认版本号
             print("默认版本号已成功写入。")
             return "0.0.0.0"
@@ -612,7 +614,7 @@ class TkTransparentSplashScreen:
                 img = Image.open("./Resources-Downloader/Pictures/Suya.png")
                 pic_ratio = img.size[0] / img.size[1]
             except:
-                img = Image.new('RGB', (200, 200), color='white')
+                img = Image.new("RGB", (200, 200), color="white")
                 pic_ratio = 1.0
 
         window_width = min(int(screen_width * 0.8), int(screen_height * 0.6 * pic_ratio))
@@ -706,9 +708,7 @@ def language_formated(selected):
 
 
 def create_setting_window(event):
-    """
-    在新窗口中创建设置界面。
-    """
+    """在新窗口中创建设置界面。"""
 
     def on_choose_path():
         """处理选择路径按钮点击的逻辑"""
@@ -725,8 +725,8 @@ def create_setting_window(event):
                 entry.insert(0, path_user)  # 插入默认路径
             else:
                 path_user = entry.get()
-        global_json['Client_dir'] = path_user
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["Client_dir"] = path_user
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         ensure_directory_exists(path_user)
 
@@ -738,7 +738,7 @@ def create_setting_window(event):
     setting_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 添加说明标签
-    instruction_label = tk.Label(setting_win, text=get_text("direct_pull_path"), anchor='w')
+    instruction_label = tk.Label(setting_win, text=get_text("direct_pull_path"), anchor="w")
     instruction_label.pack(pady=(10, 0))  # 上方预留一些间距
 
     # 添加一个文本框显示选择的路径
@@ -776,8 +776,8 @@ def create_setting_window(event):
         if lang_new != language:
             answer = messagebox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
-                global_json['language'] = lang_new
-                with open(global_config_path, 'w', encoding='utf-8') as file:
+                global_json["language"] = lang_new
+                with open(global_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
             else:
@@ -796,18 +796,18 @@ def create_setting_window(event):
 
 def update_progress_bar(progress_bar, value, max_value):
     """更新进度条的值"""
-    progress_bar['value'] = value
-    progress_bar['maximum'] = max_value
+    progress_bar["value"] = value
+    progress_bar["maximum"] = max_value
     progress_bar.update()
 
 
 def download_file_with_progress(url, save_path, chunk_size=1024, progress_callback=None):
     """带有进度显示的文件下载函数，直接保存到指定路径"""
     response = requests.get(url, stream=True)
-    total_size = int(response.headers.get('content-length', 0))
+    total_size = int(response.headers.get("content-length", 0))
     downloaded_size = 0
 
-    with open(save_path, 'wb') as file:
+    with open(save_path, "wb") as file:
         for chunk in response.iter_content(chunk_size):
             if chunk:
                 file.write(chunk)
@@ -822,15 +822,15 @@ def start_download_in_new_window(download_link):
         # 添加进度文字标签
         progress_text = tk.StringVar()
         progress_label = ttk.Label(new_window, textvariable=progress_text)
-        progress_label.pack(anchor='w', pady=(10, 0))  # 上方添加进度文字，修正了语法错误
+        progress_label.pack(anchor="w", pady=(10, 0))  # 上方添加进度文字，修正了语法错误
         # 添加百分比标签
         percentage_text = tk.StringVar()
         percentage_label = ttk.Label(new_window, textvariable=percentage_text)
-        percentage_label.pack(anchor='center', pady=(0, 10))  # 下方添加百分比，这里原本就是正确的
+        percentage_label.pack(anchor="center", pady=(0, 10))  # 下方添加百分比，这里原本就是正确的
         # 添加速度相关变量和标签
         speed_text = tk.StringVar()
         speed_label = ttk.Label(new_window, textvariable=speed_text)
-        speed_label.pack(anchor='w', pady=(0, 10))  # 在百分比标签下方添加速度标签
+        speed_label.pack(anchor="w", pady=(0, 10))  # 在百分比标签下方添加速度标签
 
         def update_labels(downloaded, total, start_time=None):
             """更新进度文字、百分比和速度"""
@@ -874,12 +874,12 @@ def start_download_in_new_window(download_link):
                     with zipfile.ZipFile(temp_file.name) as zip_file:
                         for member in zip_file.namelist():
                             member_path = os.path.abspath(os.path.join(pull_dir, member))
-                            if member.endswith('/'):
-                                os.makedirs(member_path, exist_ok=True)
+                            if member.endswith("/"):
+                                check_folder(member)
                                 print("成功创建文件夹", str(member_path))
                             else:
                                 content = zip_file.read(member)
-                                with open(member_path, 'wb') as f:
+                                with open(member_path, "wb") as f:
                                     f.write(content)
                                 print("成功写入文件", str(member_path))
                         progress_text.set(get_text("unzip_finished"))
@@ -923,18 +923,18 @@ def start_download_in_new_window(download_link):
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
-        Confirm_tag = global_json['Confirm_tag']
+        Confirm_tag = global_json["Confirm_tag"]
     except:
         Confirm_tag = "No"
-        global_json['Confirm_tag'] = Confirm_tag
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["Confirm_tag"] = Confirm_tag
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
         if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                                 get_text("path_tip2")):
             Confirm_tag = "Yes"
-            global_json['Confirm_tag'] = Confirm_tag
-            with open(global_config_path, 'w', encoding='utf-8') as file:
+            global_json["Confirm_tag"] = Confirm_tag
+            with open(global_config_path, "w", encoding="utf-8") as file:
                 json.dump(global_json, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
@@ -947,11 +947,9 @@ def direct_download_client(download_link):
 
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -961,13 +959,13 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
             if way_chosen_value == get_text("url_origin"):
                 tag_download = "web"
                 if chosen_value == get_text("123_pan"):
-                    download_link = update_info['url_123']
+                    download_link = update_info["url_123"]
                     latest_version = update_info["version_123"][1:]
                 elif chosen_value == get_text("OneDrive_pan"):
-                    download_link = update_info['url_onedrive_origin']
+                    download_link = update_info["url_onedrive_origin"]
                     latest_version = update_info["version_onedrive"][1:]
                 elif chosen_value == get_text("alist_pan"):
-                    download_link = update_info['url_alist_origin']
+                    download_link = update_info["url_alist_origin"]
                     latest_version = update_info["version_alist"][1:]
             elif way_chosen_value == get_text("url_direct") or way_chosen_value == get_text("downloader_direct"):
                 if way_chosen_value == get_text("url_direct"):
@@ -975,16 +973,16 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                 elif way_chosen_value == get_text("downloader_direct"):
                     tag_download = "direct"
                 if chosen_value == get_text("123_pan"):
-                    link = "https://tool.bitefu.net/123pan/?url=" + update_info['url_123']
+                    link = "https://tool.bitefu.net/123pan/?url=" + update_info["url_123"]
                     json_str = requests.get(link).text.strip()
                     data = json.loads(json_str)
-                    download_link = data['info']
+                    download_link = data["info"]
                     latest_version = update_info["version_123"][1:]
                 elif chosen_value == get_text("OneDrive_pan"):
-                    download_link = update_info['url_onedrive_direct']
+                    download_link = update_info["url_onedrive_direct"]
                     latest_version = update_info["version_onedrive"][1:]
                 elif chosen_value == get_text("alist_pan"):
-                    download_link = update_info['url_alist_direct']
+                    download_link = update_info["url_alist_direct"]
                     latest_version = update_info["version_alist"][1:]
 
             # 比较版本号并决定是否提示用户更新
@@ -1017,15 +1015,15 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
         else:
-            print(f"请求更新信息失败，状态码：{response.status_code}")
+            print(f"无法获取下载源信息: {response_client.status_code}")
+            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
-        print(f"检查更新时发生错误: {Exception}")
+        print("无法获取下载源信息")
+        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
-    """
-    在一个独立的线程中检查客户端更新。
-    """
+    """在一个独立的线程中检查客户端更新。"""
     check_arg = (current_version_inner, selected_source, way_selected_source)
 
     try:
@@ -1052,8 +1050,8 @@ def new_compare_versions(versionlist, namelist):
 def compare_client_versions(version1, version2):
     try:
         """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
-        v1_parts = list(map(int, version1.split('.')))
-        v2_parts = list(map(int, version2.split('.')))
+        v1_parts = list(map(int, version1.split(".")))
+        v2_parts = list(map(int, version2.split(".")))
 
         for i in range(max(len(v1_parts), len(v2_parts))):
             part1 = v1_parts[i] if i < len(v1_parts) else 0
@@ -1070,12 +1068,10 @@ def compare_client_versions(version1, version2):
 
 
 def get_client_status(current_version_inner, latest_version):
-    """
-    根据版本比较结果返回状态、颜色和消息
-    """
+    """根据版本比较结果返回状态、颜色和消息"""
     comparison_result = compare_client_versions(current_version_inner, latest_version)
-    if current_version_inner == '0.0.0.0':
-        # 当前版本号为“0.0.0.0”即未发现本地客户端版本，提示用户需要下载客户端
+    if current_version_inner == "0.0.0.0":
+        # 当前版本号为"0.0.0.0"即未发现本地客户端版本，提示用户需要下载客户端
         print("未发现客户端")
         return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
     elif comparison_result == 1:
@@ -1092,22 +1088,21 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
-        update_url = data['url_downloader']
-        latest_version = data['version_downloader']
+        data = json.loads(api_json_str)
+        update_url = data["url_downloader"]
+        latest_version = data["version_downloader"]
 
         def Update(answer, window):
             if answer:  # 用户选择是
-                global_json['Update_Partner'] = "Full"
-                with open(global_config_path, 'w', encoding='utf-8') as file:
+                global_json["Update_Partner"] = "Full"
+                with open(global_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
                 Open_Updater(window)
 
         if current_version_inner == "url":
             return update_url
         # 比较版本号
-        comparison_result= compare_versions(latest_version, current_version_inner)
+        comparison_result = compare_versions(latest_version, current_version_inner)
 
         if comparison_result == 1:  # 当前版本低于在线版本
             update_question = (get_text("update_question_available1") + latest_version +
@@ -1131,9 +1126,9 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    if [int(v) for v in version1.split('.')] > [int(v) for v in version2.split('.')]:
+    if [int(v) for v in version1.split(".")] > [int(v) for v in version2.split(".")]:
         return 1
-    elif [int(v) for v in version1.split('.')] < [int(v) for v in version2.split('.')]:
+    elif [int(v) for v in version1.split(".")] < [int(v) for v in version2.split(".")]:
         return -1
     else:
         return 0
@@ -1142,9 +1137,8 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
-        latest_version = data['version_downloader']
+        data = json.loads(api_json_str)
+        latest_version = data["version_downloader"]
 
         update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
@@ -1154,16 +1148,14 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        # 发送GET请求获取更新信息
-        response = requests.get(global_json["update_url"])
         # 检查请求是否成功
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
-            latest_version_123 = update_info['version_123'][1:]
-            latest_version_onedrive = update_info['version_onedrive'][1:]
-            latest_version_alist = update_info['version_alist'][1:]
+            latest_version_123 = update_info["version_123"][1:]
+            latest_version_onedrive = update_info["version_onedrive"][1:]
+            latest_version_alist = update_info["version_alist"][1:]
             versionlist = [latest_version_123, latest_version_onedrive, latest_version_alist]
             name_list = ["123", "onedrive", "alist"]
             latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
@@ -1182,7 +1174,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    data = requests.get(global_json["api_url"]).json()
+    data = json.loads(api_json_str)
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1200,7 +1192,8 @@ def pull_suya_announcement(version_strip_frame, version_label):
                          get_text("suya_announcement") + suya_announcement)
 
 
-def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
+def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label,
+                                                      current_version_inner):
     """检查更新并创建版本状态色带"""
     latest_version = check_client_update()[0]
     update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
@@ -1217,9 +1210,7 @@ def create_version_strip(color_code, message, window):
 
 
 def update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, type):
-    """
-    更新色带的背景颜色和内部标签的文本。
-    """
+    """更新色带的背景颜色和内部标签的文本。"""
     if type == 0:
         status, color_code, message = get_version_status(current_version_inner, latest_version)
     elif type == 1:
@@ -1235,7 +1226,7 @@ def update_version_strip(version_strip_frame, version_label, current_version_inn
 
 def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result= compare_versions(current_version_inner, latest_version)
+    comparison_result = compare_versions(current_version_inner, latest_version)
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
@@ -1251,10 +1242,10 @@ def get_version_status(current_version_inner, latest_version):
 def update_notice_from_queue(queue, notice_text_area):
     """从队列中获取公告内容并更新到界面"""
     notice_content = queue.get()
-    notice_text_area.config(state='normal')
+    notice_text_area.config(state="normal")
     notice_text_area.delete(1.0, tk.END)
     notice_text_area.insert(tk.END, notice_content)
-    notice_text_area.config(state='disabled')
+    notice_text_area.config(state="disabled")
     print("尝试更新公告内容:", notice_content)
 
 
@@ -1293,10 +1284,9 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        json_str = requests.get(global_json["api_url"]).text.strip()
-        data = json.loads(json_str)
-        updater_upgrade_url = data['url_updater']
-        version = data['version_updater']
+        data = json.loads(api_json_str)
+        updater_upgrade_url = data["url_updater"]
+        version = data["version_updater"]
         return version, updater_upgrade_url
     except requests.RequestException as exp:
         print(f"请求错误: {exp}")
@@ -1313,7 +1303,7 @@ def download_and_install(update_url, version):
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
 
         # 将响应内容写入临时文件
-        with open(temp_zip_file, 'wb') as f:
+        with open(temp_zip_file, "wb") as f:
             shutil.copyfileobj(response.raw, f)
 
         # 创建ZipFile对象，从临时文件中读取
@@ -1324,18 +1314,18 @@ def download_and_install(update_url, version):
                 member_path = os.path.abspath(os.path.join(current_working_dir, member))
                 if not member_path.startswith(current_working_dir):
                     raise Exception("Zip file contains invalid path.")
-                if member.endswith('/'):
-                    os.makedirs(member_path, exist_ok=True)
+                if member.endswith("/"):
+                    check_folder(member_path)
                 else:
-                    with open(member_path, 'wb') as f:
+                    with open(member_path, "wb") as f:
                         f.write(zip_file.read(member))
 
         # 清理临时ZIP文件
         os.remove(temp_zip_file)
 
         # 更新设置文件
-        global_json['Updater_Version'] = version
-        with open(global_config_path, 'w', encoding='utf-8') as file:
+        global_json["Updater_Version"] = version
+        with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except:
@@ -1354,7 +1344,7 @@ def Update_Updater():
 
 def rgb_to_hex(rgb_string):
     # 移除逗号并分割成三个部分
-    r, g, b = rgb_string.split(',')
+    r, g, b = rgb_string.split(",")
 
     # 将每个部分转换为整数
     r = int(r)
@@ -1396,26 +1386,26 @@ def get_important_notice():
     important_announce_win.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
 
     # 创建一个顶部色带Frame
-    top_bar = tk.Frame(important_announce_win, bg=rgb_to_hex(data['top_bar_color']), height=160)
+    top_bar = tk.Frame(important_announce_win, bg=rgb_to_hex(data["top_bar_color"]), height=160)
     top_bar.pack(fill=tk.X, pady=(0, 10))  # 设置纵向填充和外边距
 
     # 在顶部色带中添加标题
     title_label = tk.Label(top_bar, font=(data["text_font_name"], int(str(2 * int(data["text_font_size"]))), "bold"),
-                           text=data["title"], fg="white", bg=top_bar.cget('bg'))
+                           text=data["title"], fg="white", bg=top_bar.cget("bg"))
     title_label.pack(side=tk.LEFT, padx=10, pady=10)
 
     # 创建公告栏
-    announcement_box = scrolledtext.ScrolledText(important_announce_win, width=40, height=10, state='disabled')
+    announcement_box = scrolledtext.ScrolledText(important_announce_win, width=40, height=10, state="disabled")
     announcement_box.pack(padx=10, pady=10)
     # 启用编辑
-    announcement_box['state'] = 'normal'
+    announcement_box["state"] = "normal"
     # 插入文本
     announcement_box.insert(tk.END, data["text"])
     # 禁止编辑
-    announcement_box['state'] = 'disabled'
+    announcement_box["state"] = "disabled"
     # 设置字体
     font = (data["text_font_name"], int(data["text_font_size"]), "normal")
-    announcement_box.configure(font=font, fg=rgb_to_hex(data['text_font_color']))
+    announcement_box.configure(font=font, fg=rgb_to_hex(data["text_font_color"]))
 
     important_announce_win.mainloop()
 
@@ -1429,7 +1419,7 @@ def Version_Check_for_Updater(online_version):
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     try:
         try:
-            updater_version = global_json['Updater_Version']
+            updater_version = global_json["Updater_Version"]
         except:
             updater_version = "0.0.0.0"
     except:
@@ -1460,14 +1450,14 @@ def select_download_source(selected_source, source_combobox_select):
     namelist = date_update[1]
     download_sources = []
     Tag_123 = Tag_OneDrive = Tag_Alist = False
-    for i in namelist:
-        if i == "123":
+    for name in namelist:
+        if name == "123":
             download_sources.append(get_text("123_pan"))
             Tag_123 = True
-        elif i == "onedrive":
+        elif name == "onedrive":
             download_sources.append(get_text("OneDrive_pan"))
             Tag_OneDrive = True
-        elif i == "alist":
+        elif name == "alist":
             download_sources.append(get_text("alist_pan"))
             Tag_Alist = True
     if Tag_OneDrive:
@@ -1482,7 +1472,7 @@ def select_download_source(selected_source, source_combobox_select):
     if date_update[2] != "NoDebug":
         download_sources.append("Debug")
     # 更新Combobox选择框内容
-    source_combobox_select['values'] = download_sources
+    source_combobox_select["values"] = download_sources
     selected_source.set(default_selected_source)
 
 
@@ -1493,16 +1483,14 @@ def start_select_thread(selected_source, source_combobox_select):
 
 
 def select_download_way_source(way_selected_source, source_combobox2):
-    # 下载方式选项
-    response = requests.get(global_json["update_url"])
     # 检查请求是否成功
     try:
-        if response.status_code == 200:
-            info_json_str = requests.get(global_json["update_url"]).text.strip()
+        if response_client.status_code == 200:
+            info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
             if update_info["self_unzip_able"] == "False":
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
-                default_way_selected_source = value=get_text("url_direct")
+                default_way_selected_source = value = get_text("url_direct")
             else:
                 way_sources = [get_text("url_direct"), get_text("url_origin")]
                 default_way_selected_source = get_text("url_direct")
@@ -1513,91 +1501,144 @@ def select_download_way_source(way_selected_source, source_combobox2):
         way_sources = [get_text("url_direct"), get_text("url_origin")]
         default_way_selected_source = get_text("url_direct")
     # 更新Combobox选择框内容
-    source_combobox2['values'] = way_sources
+    source_combobox2["values"] = way_sources
     way_selected_source.set(default_way_selected_source)
 
 
 def start_select_way_thread(way_selected_source, source_combobox2):
     thread = threading.Thread(target=select_download_way_source, args=(way_selected_source, source_combobox2))
-    thread.daemon = True  # 设置为守护线程，这样当主线程（Tkinter事件循环）结束时，这个线程也会被终止
+    thread.daemon = True  # 设置为守护线程
     thread.start()
 
 
+def initialize_client_api():
+    """初始化客户端地址API"""
+    global response_client
+    count_num = 0
+    while count_num < 3:
+        try:
+            response_client = requests.get(global_json["update_url"])
+            if response_client.status_code == 200:
+                return
+            else:
+                count_num += 1
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
+def initialize_api_str():
+    """初始化Suya API"""
+    global api_json_str
+    count_num = 0
+    while count_num < 3:
+        try:
+            api_json_str = requests.get(global_json["api_url"]).text.strip()
+            if response_client.status_code == 200:
+                return
+            else:
+                count_num += 1
+                time.sleep(1)
+        except:
+            count_num += 1
+            time.sleep(1)
+
+
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
-                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source, source_combobox2):
+                   label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
+                   source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
     try:
         global global_json
         global_json = get_config(False)
     except:
         messagebox.showerror(get_text("warn"), get_text("config_fault"))
-    try:
-        def Check_Update_for_Updater():
-            if global_json['debug'] == "False":
-                if Version_Check_for_Updater(fetch_update_info()[0]):
-                    # 如果有新版本，启动新线程执行更新操作
-                    print("启动更新线程...")
-                    update_thread = threading.Thread(target=Update_Updater)
-                    update_thread.daemon = True
-                    update_thread.start()
-                else:
-                    print("无需更新。")
-            else:
-                print("跳过更新检查")
 
-        check_thread = threading.Thread(target=Check_Update_for_Updater)
-        check_thread.start()
-    except requests.RequestException as e:
-        print("更新拉取失败，错误代码：{e}")
+    def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
+                            way_selected_source, source_combobox2):
+        initialize_client_api()
+        try:
+            start_select_way_thread(way_selected_source, source_combobox2)
+        except:
+            print(f"下载方式列表拉取失败，错误代码：{Exception}")
+        try:
+            start_select_thread(selected_source, source_combobox)
+        except:
+            print(f"下载源列表拉取失败，错误代码：{Exception}")
+        try:
+            client_update_thread_args = (strip_client, label_client, client_version)
+            client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
+                                                    args=client_update_thread_args)
+            client_update_thread.daemon = True
+            client_update_thread.start()
+        except:
+            print("客户端更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error2"))
+
+    client_api_thread_args = (strip_client, label_client, client_version, selected_source, source_combobox,
+                              way_selected_source, source_combobox2)
+    client_api_thread = threading.Thread(target=client_api_function, args=client_api_thread_args)
+    client_api_thread.daemon = True
+    client_api_thread.start()
+
+    def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                     label_suya_announcement):
+        initialize_api_str()
+        try:
+            def Check_Update_for_Updater():
+                if global_json["debug"] == "False":
+                    if Version_Check_for_Updater(fetch_update_info()[0]):
+                        # 如果有新版本，启动新线程执行更新操作
+                        print("启动更新线程...")
+                        update_thread = threading.Thread(target=Update_Updater)
+                        update_thread.daemon = True
+                        update_thread.start()
+                    else:
+                        print("无需更新。")
+                else:
+                    print("跳过更新检查")
+
+            check_thread = threading.Thread(target=Check_Update_for_Updater)
+            check_thread.start()
+        except requests.RequestException as e:
+            print("更新拉取失败，错误代码：{e}")
+        try:
+            update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
+            update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
+            update_thread.daemon = True
+            update_thread.start()
+        except:
+            print("下载器更新检查失败，错误代码：{e}")
+            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+                                 get_text("check_error1"))
+        try:
+            pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
+            pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
+                                                             args=pull_suya_announcement_args)
+            pull_suya_announcement_thread.daemon = True
+            pull_suya_announcement_thread.start()
+        except:
+            print("Suya公告拉取失败，错误代码：{e}")
+            update_version_strip(strip_suya_announcement, label_suya_announcement,
+                                 "失败", "A00000", "check_error3")
+
+    api_function_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
+                                label_suya_announcement)
+    api_function_thread = threading.Thread(target=api_function, args=api_function_thread_args)
+    api_function_thread.daemon = True
+    api_function_thread.start()
     try:
         get_important_notice_thread = threading.Thread(target=get_important_notice)
         get_important_notice_thread.daemon = True
         get_important_notice_thread.start()
     except:
-        print(f"公告拉取失败，错误代码：{Exception}")
-    try:
-        start_select_way_thread(way_selected_source, source_combobox2)
-    except:
-        print(f"下载方式列表拉取失败，错误代码：{Exception}")
-    try:
-        start_select_thread(selected_source, source_combobox)
-    except:
-        print(f"下载源列表拉取失败，错误代码：{Exception}")
+        print(f"IN公告拉取失败，错误代码：{Exception}")
     try:
         start_fetch_notice(notice_text_area)
     except:
         print(f"公告拉取失败，错误代码：{Exception}")
-
-    update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
-    client_update_thread_args = (strip_client, label_client, client_version)
-    pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
-    # 启动线程
-    update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
-    client_update_thread = threading.Thread(target=check_for_client_updates_and_create_version_strip,
-                                            args=client_update_thread_args, daemon=True)
-    pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement, daemon=True,
-                                                     args=pull_suya_announcement_args)
-    try:
-        update_thread.daemon = True
-        update_thread.start()
-    except:
-        print("下载器更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error1"))
-    try:
-        client_update_thread.daemon = True
-        client_update_thread.start()
-    except:
-        print("客户端更新检查失败，错误代码：{e}")
-        update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                             get_text("check_error2"))
-    try:
-        pull_suya_announcement_thread.daemon = True
-        pull_suya_announcement_thread.start()
-    except:
-        print("Suya公告拉取失败，错误代码：{e}")
-        update_version_strip(strip_suya_announcement, label_suya_announcement,
-                             "失败", "A00000", "check_error3")
 
 
 def create_gui():
@@ -1629,10 +1670,10 @@ def create_gui():
     except Exception as e:
         print(f"Error loading images: {e}")
         # Handle the error and possibly load default images or placeholders
-        play_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='white'))
-        stop_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='black'))
-        setting_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='green'))
-        export_icon_image = ImageTk.PhotoImage(Image.new('RGB', (24, 24), color='red'))
+        play_icon_image = ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="white"))
+        stop_icon_image = ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="black"))
+        setting_icon_image = ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="green"))
+        export_icon_image = ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="red"))
 
     try:
         # 创建一个容器Frame来对齐公告和检查更新按钮
@@ -1676,7 +1717,7 @@ def create_gui():
         download_source_way_frame = tk.Frame(update_buttons_frame)
         download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))  # 适当设置padx以保持间距
 
-        # 添加“资源获取方式：”标签
+        # 添加"资源获取方式："标签
         download_source_way_label = tk.Label(download_source_way_frame, text=get_text("pull_resources"), anchor="w")
         download_source_way_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
@@ -1685,9 +1726,9 @@ def create_gui():
         way_selected_source = tk.StringVar(value=get_text("way_wait"))  # 初始化方式选项
 
         # 创建Combobox选择框，指定宽度
-        source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                        state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-        source_combobox2.pack()
+        source_way_combobox = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
+                                        state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_way_combobox.pack()
 
         # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
         download_source_frame = tk.Frame(update_buttons_frame)
@@ -1698,7 +1739,7 @@ def create_gui():
         download_source_way_frame.pack(side=tk.LEFT, padx=(5, 0))
         # 设置在左侧，但因为之前已经有一个Frame在左侧，这个应调整为tk.RIGHT以实现并排左侧布局
 
-        # 添加“下载源：”标签
+        # 添加"下载源："标签
         download_source_label = tk.Label(download_source_frame, text=get_text("download_source"), anchor="w")
         download_source_label.pack(side=tk.LEFT, padx=(0, 5))  # 设置padx以保持与Combobox的间距
 
@@ -1707,16 +1748,16 @@ def create_gui():
         selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
 
         # 创建Combobox选择框，指定宽度
-        source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
-                                       state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-        source_combobox.pack()
+        source_origin_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
+                                       state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_origin_combobox.pack()
 
         # 检查BC客户端更新按钮
         check_bc_update_button = tk.Button(update_buttons_frame, text=get_text("check_client_update"),
                                            command=lambda: threaded_check_for_updates(client_version, selected_source,
                                                                                       way_selected_source))
         check_bc_update_button.pack(side=tk.LEFT,
-                                    padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
+                                    padx=(5 + source_origin_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
         # 检查下载器更新按钮
         check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
@@ -1727,7 +1768,7 @@ def create_gui():
                                  fg="gray")
         creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
-        # 在下载器最上方创建灰色色带，文字为“等待Suya下载器公告数据回传中...”
+        # 在下载器最上方创建灰色色带，文字为"等待Suya下载器公告数据回传中..."
         status, color_code_gray, message_gray = "等待数据回传", "#808080", get_text("wait_message")
         strip_suya_announcement, label_suya_announcement = create_version_strip(color_code_gray, message_gray,
                                                                                 window_main)
@@ -1787,9 +1828,9 @@ def create_gui():
         center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
-        initialize_args = (selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader,
+        initialize_args = (selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
                            strip_client, label_client, strip_suya_announcement, label_suya_announcement,
-                           way_selected_source, source_combobox2)
+                           way_selected_source, source_way_combobox)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
         initialize_thread.daemon = True
@@ -1812,9 +1853,6 @@ def on_closing():
 
 if __name__ == "__main__":
     initialize_languages(None)
-    try:
-        splash = TkTransparentSplashScreen()
-        # 主循环，等待启动画面关闭
-        splash.root.mainloop()
-    except:
-        dupe_crash_report(str(Exception))
+    splash = TkTransparentSplashScreen()
+    # 主循环，等待启动画面关闭
+    splash.root.mainloop()
