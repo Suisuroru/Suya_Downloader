@@ -1450,14 +1450,14 @@ def select_download_source(selected_source, source_combobox_select):
     namelist = date_update[1]
     download_sources = []
     Tag_123 = Tag_OneDrive = Tag_Alist = False
-    for i in namelist:
-        if i == "123":
+    for name in namelist:
+        if name == "123":
             download_sources.append(get_text("123_pan"))
             Tag_123 = True
-        elif i == "onedrive":
+        elif name == "onedrive":
             download_sources.append(get_text("OneDrive_pan"))
             Tag_OneDrive = True
-        elif i == "alist":
+        elif name == "alist":
             download_sources.append(get_text("alist_pan"))
             Tag_Alist = True
     if Tag_OneDrive:
