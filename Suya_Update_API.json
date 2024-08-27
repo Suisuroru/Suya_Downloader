@@ -1,11 +1,11 @@
 {
-    "version_downloader": "1.0.2.9",
-    "url_downloader": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EVVs4ab_t-BPiv9TE7HiMpkBBwsDlSqNZnJzGA_FZEp6vw",
-    "version_updater": "1.0.2.9",
-    "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EeKkxNZTSVZBuyW-YeVyfmwByPzNkA_5DqM7Iccpej1B_Q",
-    "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EdoGN3Ua2YVAvb1q32B-EE0BWNTI8OZAeM3qS_myArskXQ",
-    "suya_announcement_message": "1.0.2.9版本已发布，欢迎您来体验",
-    "suya_announcement_message_zh_hant": "1.0.2.9版本已發佈，歡迎您來體驗",
-    "suya_announcement_message_en_us": "Version 1.0.2.9 has been released, and you are welcome to experience it",
+    "version_downloader": "1.0.3.0",
+    "url_downloader": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=Ecx34f4R371PhWVTgcXxlswB2z6h1BulBM_MpA_X2cMWFQ",
+    "version_updater": "1.0.3.0",
+    "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=ETXl96fhm6VCsTGswBj0HewBsrQ0goCs6yfQpFvE2ZwdGw",
+    "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EYKiIl87cXBCvLp24m998ekBl_HgC5RgEkjZzgnBJerRig",
+    "suya_announcement_message": "1.0.3.0版本已发布，欢迎您来体验",
+    "suya_announcement_message_zh_hant": "1.0.3.0版本已發佈，歡迎您來體驗",
+    "suya_announcement_message_en_us": "Version 1.0.3.0 has been released, and you are welcome to experience it",
     "suya_announcement_color": "#009900"
 }
