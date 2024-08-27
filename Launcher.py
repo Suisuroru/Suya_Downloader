@@ -1726,9 +1726,9 @@ def create_gui():
         way_selected_source = tk.StringVar(value=get_text("way_wait"))  # 初始化方式选项
 
         # 创建Combobox选择框，指定宽度
-        source_combobox2 = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                        state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-        source_combobox2.pack()
+        source_way_combobox = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
+                                        state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_way_combobox.pack()
 
         # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
         download_source_frame = tk.Frame(update_buttons_frame)
@@ -1748,16 +1748,16 @@ def create_gui():
         selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
 
         # 创建Combobox选择框，指定宽度
-        source_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
-                                       state="readonly", width=15)  # 设定Combobox宽度为15字符宽
-        source_combobox.pack()
+        source_origin_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
+                                       state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_origin_combobox.pack()
 
         # 检查BC客户端更新按钮
         check_bc_update_button = tk.Button(update_buttons_frame, text=get_text("check_client_update"),
                                            command=lambda: threaded_check_for_updates(client_version, selected_source,
                                                                                       way_selected_source))
         check_bc_update_button.pack(side=tk.LEFT,
-                                    padx=(5 + source_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
+                                    padx=(5 + source_origin_combobox.winfo_width(), 5))  # 调整 padx 以考虑Combobox的宽度
 
         # 检查下载器更新按钮
         check_downloader_update_button = tk.Button(update_buttons_frame, text=get_text("check_downloader_update"),
@@ -1828,9 +1828,9 @@ def create_gui():
         center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
-        initialize_args = (selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader,
+        initialize_args = (selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
                            strip_client, label_client, strip_suya_announcement, label_suya_announcement,
-                           way_selected_source, source_combobox2)
+                           way_selected_source, source_way_combobox)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
         initialize_thread.daemon = True
