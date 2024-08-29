@@ -9,3 +9,5 @@
 ### 此项目暂时仍以Bluecraft定制版为模板发布，后续将提供可供自定义的模板。
 
 ### 请注意，当前版本的API仍不完善
+
+### 使用前请修改 default_api_setting.json，同时注意留意example_files内的文件

@@ -1,0 +1,6 @@
+{
+    "api_url": "https://api.suya.blue-millennium.fun/Suya_Update_API.json",
+    "update_url": "https://www.example.com/Get_Package_Latest.json",
+    "announcement_url": "https://www.example.com/GetAnnouncement",
+    "important_notice_url": "https://www.example.com/Get_Important_Notice.json"
+}
