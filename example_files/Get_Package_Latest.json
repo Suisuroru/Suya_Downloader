@@ -1,0 +1,12 @@
+{
+    "self_unzip_able": "True/False",
+    "version_123": "v0.0.0.0",
+    "url_123": "hhttps://www.example.com/origin",
+    "version_onedrive": "v0.0.0.0",
+    "url_onedrive_origin": "https://www.example.com/origin",
+    "url_onedrive_direct": "https://www.example.com/direct",
+    "version_alist": "v0.0.0.0",
+    "url_alist_origin": "https://www.example.com/origin",
+    "url_alist_direct": "https://www.example.com/direct",
+    "debug_tag": "False"
+}
