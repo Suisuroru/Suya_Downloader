@@ -80,7 +80,8 @@ jobs:
         run: |
           cp -r Resources-Downloader ./dist/
           cp -r Resources-Server ./dist/
-          cp default_api_setting.json ./dist/
+          cp default_api_setting_BC.json ./dist/
+          mv ./dist/default_api_setting_BC.json ./dist/default_api_setting.json
 
       - name: Compress dist folder into app.zip
         run: |
@@ -160,7 +161,7 @@ jobs:
         move ./Resources-Server ./dist/Resources-Server
         
         # Move the default_api_setting.json file to the dist folder
-        move ./default_api_setting.json ./dist/default_api_setting.json
+        move ./default_api_setting_BC.json ./dist/default_api_setting.json
       shell: cmd
 
 
@@ -278,7 +279,7 @@ jobs:
           mv ./Resources-Server ./dist/Resources-Server
           
           # Move the default_api_setting.json file to the dist folder
-          mv ./default_api_setting.json ./dist/default_api_setting.json
+          mv ./default_api_setting_BC.json ./dist/default_api_setting.json
 
       - name: Package dist files into a zip archive
         run: |
