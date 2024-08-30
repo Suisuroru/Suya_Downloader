@@ -542,7 +542,7 @@ def update_version_info(new_version):
     :param new_version: 最新的版本号
     """
     try:
-        with open(os.path.join(global_json["initialize_path"], "client_version.txt"), "w") as file:
+        with open(os.path.join(global_json["initialize_path"], "client_version.txt"), "w", encoding="utf-8") as file:
             file.write(new_version)
         print(f"版本信息已更新至{new_version}")
     except IOError as e:
@@ -554,13 +554,13 @@ def read_client_version_from_file():
     file_path = os.path.join(global_json["initialize_path"], "client_version.txt")
 
     try:
-        with open(file_path, "r") as file:
+        with open(file_path, "r", encoding="utf-8") as file:
             client_version_inner = file.read().strip()
             return client_version_inner
     except FileNotFoundError:
         print("版本文件未找到，正在尝试创建并写入默认版本号...")
         try:
-            with open(file_path, "w") as file:
+            with open(file_path, "w", encoding="utf-8") as file:
                 file.write("0.0.0.0")  # 写入默认版本号
             print("默认版本号已成功写入。")
             return "0.0.0.0"
@@ -807,7 +807,7 @@ def download_file_with_progress(url, save_path, chunk_size=1024, progress_callba
     total_size = int(response.headers.get("content-length", 0))
     downloaded_size = 0
 
-    with open(save_path, "wb") as file:
+    with open(save_path, "wb", encoding="utf-8") as file:
         for chunk in response.iter_content(chunk_size):
             if chunk:
                 file.write(chunk)
@@ -879,7 +879,7 @@ def start_download_in_new_window(download_link):
                                 print("成功创建文件夹", str(member_path))
                             else:
                                 content = zip_file.read(member)
-                                with open(member_path, "wb") as f:
+                                with open(member_path, "wb", encoding="utf-8") as f:
                                     f.write(content)
                                 print("成功写入文件", str(member_path))
                         progress_text.set(get_text("unzip_finished"))
@@ -1303,7 +1303,7 @@ def download_and_install(update_url, version):
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
 
         # 将响应内容写入临时文件
-        with open(temp_zip_file, "wb") as f:
+        with open(temp_zip_file, "wb", encoding="utf-8") as f:
             shutil.copyfileobj(response.raw, f)
 
         # 创建ZipFile对象，从临时文件中读取
@@ -1317,7 +1317,7 @@ def download_and_install(update_url, version):
                 if member.endswith("/"):
                     check_folder(member_path)
                 else:
-                    with open(member_path, "wb") as f:
+                    with open(member_path, "wb", encoding="utf-8") as f:
                         f.write(zip_file.read(member))
 
         # 清理临时ZIP文件
