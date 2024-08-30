@@ -9,7 +9,7 @@ import tempfile
 import threading
 import time
 import tkinter as tk
-import webbrowser
+from webbrowser import open as webopen
 import winreg
 import zipfile
 from getpass import getuser
@@ -992,7 +992,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                                                     latest_version + get_text("update_available_msg2"))
                 if user_response:
                     if tag_download == "web":
-                        webbrowser.open(download_link)  # 打开下载链接
+                        webopen(download_link)  # 打开下载链接
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
@@ -1001,7 +1001,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                                                     latest_version)
                 if user_response:
                     if tag_download == "web":
-                        webbrowser.open(download_link)  # 打开下载链接
+                        webopen(download_link)  # 打开下载链接
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
@@ -1010,7 +1010,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                                                     latest_version)
                 if user_response:
                     if tag_download == "web":
-                        webbrowser.open(download_link)  # 打开下载链接
+                        webopen(download_link)  # 打开下载链接
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
