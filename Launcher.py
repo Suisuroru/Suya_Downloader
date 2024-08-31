@@ -237,7 +237,7 @@ def get_config(Initialize_Tag):
     default_api_config = {
         "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
         "Server_Name": "Bluecraft",
-        "debug": "False"
+        "debug": False
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -278,6 +278,12 @@ def get_config(Initialize_Tag):
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
     print("最终全局配置：", final_global_config)
+    ### 此处将保留几个版本
+    if final_global_config["debug"] == "True":
+        final_global_config["debug"] = True
+    elif final_global_config["debug"] == "False":
+        final_global_config["debug"] = False
+    ### 此处将保留几个版本
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
@@ -296,7 +302,7 @@ def is_admin():
         return False
 
 
-if global_json["debug"] == "True":
+if global_json["debug"]:
     print("非管理员模式运行")
 elif os.name == "nt" and not is_admin():
     # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
@@ -751,6 +757,23 @@ def create_setting_window(event):
     choose_button = tk.Button(setting_win, text=get_text("choose_folders"), command=on_choose_path)
     choose_button.pack(pady=10)
 
+    # 定义一个变量来追踪复选框的状态
+    cf_mirror_enabled = tk.BooleanVar(value=global_json.get("cf_mirror_enabled", True))
+
+    # 在设置窗口的语言选项下方添加启用/禁用CF镜像源的复选框
+    cf_mirror_checkbox = tk.Checkbutton(setting_win, text="启用CF镜像源", variable=cf_mirror_enabled)
+    cf_mirror_checkbox.pack(pady=10)
+
+    # 更新保存设置的逻辑，确保新的设置被保存
+    def save_settings():
+        global_json["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        with open(global_config_path, "w", encoding="utf-8") as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
+
+    # 确保在关闭窗口前调用save_settings函数来保存所有设置
+    setting_win.protocol("WM_DELETE_WINDOW", lambda: [save_settings(), setting_win.destroy()])
+
+    # 语言选项部分
     lang_frame = tk.Frame(setting_win)
     lang_frame.pack(side=tk.LEFT, padx=(5, 0), fill=tk.Y)  # 使用fill=tk.Y允许frame填充垂直空间
 
@@ -1588,7 +1611,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         initialize_api_str()
         try:
             def Check_Update_for_Updater():
-                if global_json["debug"] == "False":
+                if not global_json["debug"]:
                     if Version_Check_for_Updater(fetch_update_info()[0]):
                         # 如果有新版本，启动新线程执行更新操作
                         print("启动更新线程...")
