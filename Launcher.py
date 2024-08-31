@@ -1085,15 +1085,19 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
 
 
 def new_compare_versions(versionlist, namelist):
+    print("输入", versionlist, namelist)
     newest_version = max_value = 0
-    versionlist_new = namelist_new = []
+    versionlist_new = []
     for i in range(len(versionlist)):
         versionlist_new.append(int(versionlist[i].replace(".", "")))
         max_value = max(max_value, versionlist_new[i])
+    namelist_new = []
     for n in range(len(versionlist_new)):
         if versionlist_new[n] == max_value:
             namelist_new.append(namelist[n])
             newest_version = versionlist[n]
+
+    print("返回", newest_version, namelist_new)
     return newest_version, namelist_new
 
 
