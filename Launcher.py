@@ -1092,15 +1092,19 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
 
 
 def new_compare_versions(versionlist, namelist):
+    print("输入", versionlist, namelist)
     newest_version = max_value = 0
-    versionlist_new = namelist_new = []
+    versionlist_new = []
     for i in range(len(versionlist)):
         versionlist_new.append(int(versionlist[i].replace(".", "")))
         max_value = max(max_value, versionlist_new[i])
+    namelist_new = []
     for n in range(len(versionlist_new)):
         if versionlist_new[n] == max_value:
             namelist_new.append(namelist[n])
             newest_version = versionlist[n]
+
+    print("返回", newest_version, namelist_new)
     return newest_version, namelist_new
 
 
@@ -1220,12 +1224,12 @@ def check_client_update():
                 debug_url = update_info["debug_url"]
                 print("Unzip_Debug已启用")
                 if update_info["debug_tag"] == "True":
-                    return latest_version, name_list, debug_url
+                    return latest_version, newest_version_list, debug_url
                 else:
-                    return latest_version, name_list, "NoDebug"
+                    return latest_version, newest_version_list, "NoDebug"
             except:
                 print("Unzip_Debug已禁用")
-                return latest_version, name_list, "NoDebug"
+                return latest_version, newest_version_list, "NoDebug"
     except:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
@@ -1505,8 +1509,11 @@ def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
     date_update = check_client_update()
     namelist = date_update[1]
+    print("选择输入", namelist)
     download_sources = []
-    Tag_123 = Tag_OneDrive = Tag_Alist = False
+    Tag_123 = False
+    Tag_OneDrive = False
+    Tag_Alist = False
     for name in namelist:
         if name == "123":
             download_sources.append(get_text("123_pan"))
@@ -1517,6 +1524,7 @@ def select_download_source(selected_source, source_combobox_select):
         elif name == "alist":
             download_sources.append(get_text("alist_pan"))
             Tag_Alist = True
+        print("选择过程", name)
     if Tag_OneDrive:
         default_selected_source = get_text("OneDrive_pan")
     elif Tag_123:
@@ -1528,6 +1536,7 @@ def select_download_source(selected_source, source_combobox_select):
         default_selected_source = get_text("source_fault")
     if date_update[2] != "NoDebug":
         download_sources.append("Debug")
+    print("选择", download_sources)
     # 更新Combobox选择框内容
     source_combobox_select["values"] = download_sources
     selected_source.set(default_selected_source)
