@@ -10,4 +10,4 @@
 
 ### 请注意，当前版本的API仍不完善
 
-### 使用前请修改 [`default_api_setting.json`](https://github.com/Suisuroru/Suya_Downloader/blob/Suya/default_api_setting.json) ，同时注意留意 [`example_files`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/example_files) 文件夹内的文件
+### 使用前请修改 [`default_api_setting.json`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/example_files/default_api_setting.json) ，同时注意留意 [`example_files`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/example_files) 文件夹内的文件
