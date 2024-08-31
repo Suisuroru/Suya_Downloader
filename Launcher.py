@@ -7,7 +7,7 @@ import socket
 import sys
 import tempfile
 import threading
-import time
+from time import time, sleep
 import tkinter as tk
 from webbrowser import open as webopen
 import winreg
@@ -891,7 +891,7 @@ def start_download_in_new_window(download_link):
 
         def update_labels(downloaded, total, start_time=None):
             """更新进度文字、百分比和速度"""
-            current_time = time.time()
+            current_time = time()
             if start_time is None:
                 start_time = current_time
             elapsed_time = current_time - start_time
@@ -902,7 +902,7 @@ def start_download_in_new_window(download_link):
             progress_text.set(get_text("downloading_process") + f"{percent}%")
             speed_text.set(get_text("downloading_speed") + f"{speed} kiB/s")  # 更新速度文本
 
-        download_start_time = time.time()  # 记录下载开始时间
+        download_start_time = time()  # 记录下载开始时间
         download_complete_event = threading.Event()
         temp_file = tempfile.NamedTemporaryFile(delete=False)  # 创建临时文件，delete=False表示手动管理文件生命周期
 
@@ -1588,10 +1588,10 @@ def initialize_client_api():
                 return
             else:
                 count_num += 1
-                time.sleep(1)
+                sleep(1)
         except:
             count_num += 1
-            time.sleep(1)
+            sleep(1)
 
 
 def initialize_api_str():
@@ -1605,10 +1605,10 @@ def initialize_api_str():
                 return
             else:
                 count_num += 1
-                time.sleep(1)
+                sleep(1)
         except:
             count_num += 1
-            time.sleep(1)
+            sleep(1)
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
