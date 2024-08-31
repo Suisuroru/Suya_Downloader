@@ -288,6 +288,13 @@ def get_config(Initialize_Tag):
     except:
         final_global_config["debug"] = False
     try:
+        if final_global_config["cf_mirror_enabled"]:
+            print("使用CF镜像")
+        else:
+            print("使用Github镜像")
+    except:
+        final_global_config["cf_mirror_enabled"] = True
+    try:
         if Initialize_Tag:
             if final_global_config["cf_mirror_enabled"]:
                 final_global_config["latest_api_url"] = final_global_config["server_api_url"]
