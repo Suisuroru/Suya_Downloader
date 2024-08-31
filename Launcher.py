@@ -266,14 +266,6 @@ def get_config(Initialize_Tag):
     else:
         api_content = requests.get(default_global_config["server_api_url"]).json()
         print("获取到API信息: ", api_content)
-        if global_json["cf_mirror_enabled"]:
-            global_json["latest_update_url"] = global_json["update_url"]
-            global_json["latest_announcement_url"] = global_json["announcement_url"]
-            global_json["latest_important_notice_url"] = global_json["important_notice_url"]
-        elif not global_json["cf_mirror_enabled"]:
-            global_json["latest_update_url"] = global_json["update_url_gh"]
-            global_json["latest_announcement_url"] = global_json["announcement_url_gh"]
-            global_json["latest_important_notice_url"] = global_json["important_notice_url_gh"]
     try:
         default_global_config = merge_jsons(default_global_config, api_content)
         print("合并全局配置：", default_global_config)
@@ -285,10 +277,23 @@ def get_config(Initialize_Tag):
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
-    if global_json["cf_mirror_enabled"]:
-        global_json["latest_api_url"] = global_json["api_url"]
-    elif not global_json["cf_mirror_enabled"]:
-        global_json["latest_api_url"] = global_json["api_url_gh"]
+    try:
+        if Initialize_Tag:
+            if final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url"]
+            elif not final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
+        else:
+            if final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_update_url"] = final_global_config["update_url"]
+                final_global_config["latest_announcement_url"] = final_global_config["announcement_url"]
+                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url"]
+            elif not final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_update_url"] = final_global_config["update_url_gh"]
+                final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
+                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
+    except:
+        messagebox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     ### 此处将保留几个版本
     if final_global_config["debug"] == "True":
