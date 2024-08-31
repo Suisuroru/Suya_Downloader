@@ -266,6 +266,14 @@ def get_config(Initialize_Tag):
     else:
         api_content = requests.get(default_global_config["server_api_url"]).json()
         print("获取到API信息: ", api_content)
+        if global_json["cf_mirror_enabled"]:
+            global_json["latest_update_url"] = global_json["update_url"]
+            global_json["latest_announcement_url"] = global_json["announcement_url"]
+            global_json["latest_important_notice_url"] = global_json["important_notice_url"]
+        elif not global_json["cf_mirror_enabled"]:
+            global_json["latest_update_url"] = global_json["update_url_gh"]
+            global_json["latest_announcement_url"] = global_json["announcement_url_gh"]
+            global_json["latest_important_notice_url"] = global_json["important_notice_url_gh"]
     try:
         default_global_config = merge_jsons(default_global_config, api_content)
         print("合并全局配置：", default_global_config)
@@ -1279,7 +1287,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(global_json["announcement_url"])
+        response = requests.get(global_json["latest_announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1385,7 +1393,7 @@ def rgb_to_hex(rgb_string):
 
 
 def get_important_notice():
-    important_notice_url = global_json["important_notice_url"]
+    important_notice_url = global_json["latest_important_notice_url"]
     try:
         # 发送GET请求
         response = requests.get(important_notice_url)
@@ -1544,7 +1552,7 @@ def initialize_client_api():
     count_num = 0
     while count_num < 3:
         try:
-            response_client = requests.get(global_json["update_url"])
+            response_client = requests.get(global_json["latest_update_url"])
             if response_client.status_code == 200:
                 return
             else:
