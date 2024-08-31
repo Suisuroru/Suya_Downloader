@@ -2,5 +2,5 @@
     "server_api_url": "https://www.example.com/Get_API.json",
     "server_api_url_gh": "同上，请都填入，如有不同，可填入备用api地址",
     "Server_Name": "YourServerName",
-    "debug": false
+    "cf_mirror_enabled": true
 }

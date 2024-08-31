@@ -2,5 +2,5 @@
     "server_api_url": "https://bluecraft-api.pages.dev/Python_Downloader_API/Get_API.json",
     "server_api_url_gh": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
     "Server_Name": "Bluecraft",
-    "debug": false
+    "cf_mirror_enabled": true
 }

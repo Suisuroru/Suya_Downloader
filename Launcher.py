@@ -217,10 +217,10 @@ def dupe_crash_report(error_message=None):
     crash_window.mainloop()
 
 
-def merge_jsons(default_json, file_or_json):
+def merge_jsons(default_json_or_path, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
+    :param default_json_or_path: 默认的 JSON 字典或对应文件路径
     :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
@@ -229,15 +229,20 @@ def merge_jsons(default_json, file_or_json):
             loaded_json = json.load(file)
     except:
         loaded_json = file_or_json
+    try:
+        with open(default_json_or_path, "r", encoding="utf-8") as file:
+            default_json_loaded = json.load(file)
+    except:
+        default_json_loaded = default_json_or_path
     # 使用文件中的数据覆盖默认值
-    return {**default_json, **loaded_json}
+    return {**default_json_loaded, **loaded_json}
 
 
 def get_config(Initialize_Tag):
     default_api_config = {
-        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
-        "Server_Name": "Bluecraft",
-        "debug": False
+        "server_api_url": "https://bluecraft-api.pages.dev/Python_Downloader_API/Get_API.json",
+        "server_api_url_gh": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
+        "Server_Name": "Bluecraft"
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -273,34 +278,35 @@ def get_config(Initialize_Tag):
         print("出现异常：" + str(Exception))
         dupe_crash_report()
     try:
-        final_global_config = merge_jsons(default_global_config, global_config_path)
+        final_global_config = merge_jsons(global_config_path, default_global_config)
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
     try:
+        if final_global_config["debug"]:
+            pass
+    except:
+        final_global_config["debug"] = False
+    try:
         if Initialize_Tag:
             if final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url"]
+                final_global_config["latest_api_url"] = final_global_config["server_api_url"]
             elif not final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
+                final_global_config["latest_api_url"] = final_global_config["server_api_url_gh"]
         else:
             if final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url"]
                 final_global_config["latest_update_url"] = final_global_config["update_url"]
                 final_global_config["latest_announcement_url"] = final_global_config["announcement_url"]
                 final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url"]
             elif not final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
                 final_global_config["latest_update_url"] = final_global_config["update_url_gh"]
                 final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
                 final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
     except:
         messagebox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
-    ### 此处将保留几个版本
-    if final_global_config["debug"] == "True":
-        final_global_config["debug"] = True
-    elif final_global_config["debug"] == "False":
-        final_global_config["debug"] = False
-    ### 此处将保留几个版本
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     return final_global_config
