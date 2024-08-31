@@ -277,6 +277,10 @@ def get_config(Initialize_Tag):
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
+    if global_json["cf_mirror_enabled"]:
+        global_json["latest_api_url"] = global_json["api_url"]
+    elif not global_json["cf_mirror_enabled"]:
+        global_json["latest_api_url"] = global_json["api_url_gh"]
     print("最终全局配置：", final_global_config)
     ### 此处将保留几个版本
     if final_global_config["debug"] == "True":
@@ -1557,7 +1561,7 @@ def initialize_api_str():
     count_num = 0
     while count_num < 3:
         try:
-            api_json_str = requests.get(global_json["api_url"]).text.strip()
+            api_json_str = requests.get(global_json["latest_api_url"]).text.strip()
             if response_client.status_code == 200:
                 return
             else:
