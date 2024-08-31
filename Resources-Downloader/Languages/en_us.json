@@ -3,6 +3,8 @@
     "Alister_Disk": "Aliste Net Disk(TPOD self-built)",
     "OneDrive_pan": "OneDrive Pan",
     "cant_make_dir": "Unable to create directory: ",
+    "cf_mirror_enable": "Cloudflare Mirror Enabled",
+    "cf_mirror_description": "To enable and disable mirroring, you need to close the settings window and restart the downloader to take effect",
     "check_client_update": "Check BC Client Update",
     "check_downloader_update": "Check Downloader Update",
     "check_error1": "Downloader update check failed",

@@ -3,6 +3,8 @@
     "OneDrive_pan": "OneDrive网盘",
     "alist_pan": "Alist网盘(TPOD自建)",
     "cant_make_dir": "无法创建目录: ",
+    "cf_mirror_enable": "启用Cloudflare镜像",
+    "cf_mirror_description": "启用和关闭镜像需要关闭设置窗口后重启下载器生效",
     "check_client_update": "检查BC客户端更新",
     "check_downloader_update": "检查下载器更新",
     "check_error1": "下载器更新检查失败",

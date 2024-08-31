@@ -777,8 +777,12 @@ def create_setting_window(event):
     # 定义一个变量来追踪复选框的状态
     cf_mirror_enabled = tk.BooleanVar(value=global_json.get("cf_mirror_enabled", True))
 
+    # 添加描述性标签
+    description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
+    description_label.pack(pady=(10, 0))
+
     # 在设置窗口的语言选项下方添加启用/禁用CF镜像源的复选框
-    cf_mirror_checkbox = tk.Checkbutton(setting_win, text="启用CF镜像源", variable=cf_mirror_enabled)
+    cf_mirror_checkbox = tk.Checkbutton(setting_win, text=get_text("cf_mirror_enable"), variable=cf_mirror_enabled)
     cf_mirror_checkbox.pack(pady=10)
 
     # 更新保存设置的逻辑，确保新的设置被保存
