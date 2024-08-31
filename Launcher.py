@@ -7,7 +7,7 @@ import socket
 import sys
 import tempfile
 import threading
-import time
+from time import time, sleep
 import tkinter as tk
 from webbrowser import open as webopen
 import winreg
@@ -217,10 +217,10 @@ def dupe_crash_report(error_message=None):
     crash_window.mainloop()
 
 
-def merge_jsons(default_json, file_or_json):
+def merge_jsons(default_json_or_path, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
+    :param default_json_or_path: 默认的 JSON 字典或对应文件路径
     :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
@@ -229,15 +229,20 @@ def merge_jsons(default_json, file_or_json):
             loaded_json = json.load(file)
     except:
         loaded_json = file_or_json
+    try:
+        with open(default_json_or_path, "r", encoding="utf-8") as file:
+            default_json_loaded = json.load(file)
+    except:
+        default_json_loaded = default_json_or_path
     # 使用文件中的数据覆盖默认值
-    return {**default_json, **loaded_json}
+    return {**default_json_loaded, **loaded_json}
 
 
 def get_config(Initialize_Tag):
     default_api_config = {
-        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
-        "Server_Name": "Bluecraft",
-        "debug": "False"
+        "server_api_url": "https://bluecraft-api.pages.dev/Python_Downloader_API/Get_API.json",
+        "server_api_url_gh": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
+        "Server_Name": "Bluecraft"
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -273,10 +278,41 @@ def get_config(Initialize_Tag):
         print("出现异常：" + str(Exception))
         dupe_crash_report()
     try:
-        final_global_config = merge_jsons(default_global_config, global_config_path)
+        final_global_config = merge_jsons(global_config_path, default_global_config)
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
+    try:
+        if final_global_config["debug"]:
+            pass
+    except:
+        final_global_config["debug"] = False
+    try:
+        if final_global_config["cf_mirror_enabled"]:
+            print("使用CF镜像")
+        else:
+            print("使用Github镜像")
+    except:
+        final_global_config["cf_mirror_enabled"] = True
+    try:
+        if Initialize_Tag:
+            if final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["server_api_url"]
+            elif not final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["server_api_url_gh"]
+        else:
+            if final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url"]
+                final_global_config["latest_update_url"] = final_global_config["update_url"]
+                final_global_config["latest_announcement_url"] = final_global_config["announcement_url"]
+                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url"]
+            elif not final_global_config["cf_mirror_enabled"]:
+                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
+                final_global_config["latest_update_url"] = final_global_config["update_url_gh"]
+                final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
+                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
+    except:
+        messagebox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
@@ -296,7 +332,7 @@ def is_admin():
         return False
 
 
-if global_json["debug"] == "True":
+if global_json["debug"]:
     print("非管理员模式运行")
 elif os.name == "nt" and not is_admin():
     # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
@@ -751,6 +787,27 @@ def create_setting_window(event):
     choose_button = tk.Button(setting_win, text=get_text("choose_folders"), command=on_choose_path)
     choose_button.pack(pady=10)
 
+    # 定义一个变量来追踪复选框的状态
+    cf_mirror_enabled = tk.BooleanVar(value=global_json.get("cf_mirror_enabled", True))
+
+    # 添加描述性标签
+    description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
+    description_label.pack(pady=(10, 0))
+
+    # 在设置窗口的语言选项下方添加启用/禁用CF镜像源的复选框
+    cf_mirror_checkbox = tk.Checkbutton(setting_win, text=get_text("cf_mirror_enable"), variable=cf_mirror_enabled)
+    cf_mirror_checkbox.pack(pady=10)
+
+    # 更新保存设置的逻辑，确保新的设置被保存
+    def save_settings():
+        global_json["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        with open(global_config_path, "w", encoding="utf-8") as file:
+            json.dump(global_json, file, ensure_ascii=False, indent=4)
+
+    # 确保在关闭窗口前调用save_settings函数来保存所有设置
+    setting_win.protocol("WM_DELETE_WINDOW", lambda: [save_settings(), setting_win.destroy()])
+
+    # 语言选项部分
     lang_frame = tk.Frame(setting_win)
     lang_frame.pack(side=tk.LEFT, padx=(5, 0), fill=tk.Y)  # 使用fill=tk.Y允许frame填充垂直空间
 
@@ -834,7 +891,7 @@ def start_download_in_new_window(download_link):
 
         def update_labels(downloaded, total, start_time=None):
             """更新进度文字、百分比和速度"""
-            current_time = time.time()
+            current_time = time()
             if start_time is None:
                 start_time = current_time
             elapsed_time = current_time - start_time
@@ -845,7 +902,7 @@ def start_download_in_new_window(download_link):
             progress_text.set(get_text("downloading_process") + f"{percent}%")
             speed_text.set(get_text("downloading_speed") + f"{speed} kiB/s")  # 更新速度文本
 
-        download_start_time = time.time()  # 记录下载开始时间
+        download_start_time = time()  # 记录下载开始时间
         download_complete_event = threading.Event()
         temp_file = tempfile.NamedTemporaryFile(delete=False)  # 创建临时文件，delete=False表示手动管理文件生命周期
 
@@ -1035,15 +1092,19 @@ def threaded_check_for_updates(current_version_inner, selected_source, way_selec
 
 
 def new_compare_versions(versionlist, namelist):
+    print("输入", versionlist, namelist)
     newest_version = max_value = 0
-    versionlist_new = namelist_new = []
+    versionlist_new = []
     for i in range(len(versionlist)):
         versionlist_new.append(int(versionlist[i].replace(".", "")))
         max_value = max(max_value, versionlist_new[i])
+    namelist_new = []
     for n in range(len(versionlist_new)):
         if versionlist_new[n] == max_value:
             namelist_new.append(namelist[n])
             newest_version = versionlist[n]
+
+    print("返回", newest_version, namelist_new)
     return newest_version, namelist_new
 
 
@@ -1163,12 +1224,12 @@ def check_client_update():
                 debug_url = update_info["debug_url"]
                 print("Unzip_Debug已启用")
                 if update_info["debug_tag"] == "True":
-                    return latest_version, name_list, debug_url
+                    return latest_version, newest_version_list, debug_url
                 else:
-                    return latest_version, name_list, "NoDebug"
+                    return latest_version, newest_version_list, "NoDebug"
             except:
                 print("Unzip_Debug已禁用")
-                return latest_version, name_list, "NoDebug"
+                return latest_version, newest_version_list, "NoDebug"
     except:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
@@ -1252,7 +1313,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(global_json["announcement_url"])
+        response = requests.get(global_json["latest_announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1358,7 +1419,7 @@ def rgb_to_hex(rgb_string):
 
 
 def get_important_notice():
-    important_notice_url = global_json["important_notice_url"]
+    important_notice_url = global_json["latest_important_notice_url"]
     try:
         # 发送GET请求
         response = requests.get(important_notice_url)
@@ -1448,8 +1509,11 @@ def select_download_source(selected_source, source_combobox_select):
     # 下载源选项
     date_update = check_client_update()
     namelist = date_update[1]
+    print("选择输入", namelist)
     download_sources = []
-    Tag_123 = Tag_OneDrive = Tag_Alist = False
+    Tag_123 = False
+    Tag_OneDrive = False
+    Tag_Alist = False
     for name in namelist:
         if name == "123":
             download_sources.append(get_text("123_pan"))
@@ -1460,6 +1524,7 @@ def select_download_source(selected_source, source_combobox_select):
         elif name == "alist":
             download_sources.append(get_text("alist_pan"))
             Tag_Alist = True
+        print("选择过程", name)
     if Tag_OneDrive:
         default_selected_source = get_text("OneDrive_pan")
     elif Tag_123:
@@ -1471,6 +1536,7 @@ def select_download_source(selected_source, source_combobox_select):
         default_selected_source = get_text("source_fault")
     if date_update[2] != "NoDebug":
         download_sources.append("Debug")
+    print("选择", download_sources)
     # 更新Combobox选择框内容
     source_combobox_select["values"] = download_sources
     selected_source.set(default_selected_source)
@@ -1517,15 +1583,15 @@ def initialize_client_api():
     count_num = 0
     while count_num < 3:
         try:
-            response_client = requests.get(global_json["update_url"])
+            response_client = requests.get(global_json["latest_update_url"])
             if response_client.status_code == 200:
                 return
             else:
                 count_num += 1
-                time.sleep(1)
+                sleep(1)
         except:
             count_num += 1
-            time.sleep(1)
+            sleep(1)
 
 
 def initialize_api_str():
@@ -1534,15 +1600,15 @@ def initialize_api_str():
     count_num = 0
     while count_num < 3:
         try:
-            api_json_str = requests.get(global_json["api_url"]).text.strip()
+            api_json_str = requests.get(global_json["latest_api_url"]).text.strip()
             if response_client.status_code == 200:
                 return
             else:
                 count_num += 1
-                time.sleep(1)
+                sleep(1)
         except:
             count_num += 1
-            time.sleep(1)
+            sleep(1)
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
@@ -1588,7 +1654,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         initialize_api_str()
         try:
             def Check_Update_for_Updater():
-                if global_json["debug"] == "False":
+                if not global_json["debug"]:
                     if Version_Check_for_Updater(fetch_update_info()[0]):
                         # 如果有新版本，启动新线程执行更新操作
                         print("启动更新线程...")
