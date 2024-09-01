@@ -4,8 +4,8 @@
     "version_updater": "1.0.3.0",
     "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=ETXl96fhm6VCsTGswBj0HewBsrQ0goCs6yfQpFvE2ZwdGw",
     "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EZCVMvilPpFIhPnzrxLu3v8BP6DHL-Wfn-umd6GgGH1Wew",
-    "suya_announcement_message": "1.0.3.1版本已发布，欢迎您来体验",
-    "suya_announcement_message_zh_hant": "1.0.3.1版本已發佈，歡迎您來體驗",
-    "suya_announcement_message_en_us": "Version 1.0.3.1 has been released, and you are welcome to experience it",
+    "suya_announcement_message": "部分发行版的客户端版本检查存在问题，请查看色带上的版本和检查更新中版本比对确定是否需要更新",
+    "suya_announcement_message_zh_hant": "部分發行版的用戶端版本檢查存在問題，請查看色帶上的版本和檢查更新中版本比對確定是否需要更新",
+    "suya_announcement_message_en_us": "Some releases have problems checking for client versions, check the version on the ribbon and check the version comparison in Update to see if an update is needed",
     "suya_announcement_color": "#009900"
 }
