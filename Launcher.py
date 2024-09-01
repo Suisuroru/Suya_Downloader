@@ -7,14 +7,14 @@ import socket
 import sys
 import tempfile
 import threading
-from time import time, sleep
 import tkinter as tk
-from webbrowser import open as webopen
 import winreg
 import zipfile
 from getpass import getuser
 from queue import Queue
+from time import time, sleep
 from tkinter import messagebox, scrolledtext, ttk, filedialog
+from webbrowser import open as webopen
 
 import pygame
 import requests
@@ -71,7 +71,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",","")}")
+        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",", "")}")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
@@ -1250,7 +1250,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
     else:
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
     update_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
-                         get_text("suya_announcement") + suya_announcement)
+                 get_text("suya_announcement") + suya_announcement)
 
 
 def check_for_client_updates_and_create_version_strip(version_strip_frame, version_label,
@@ -1349,8 +1349,8 @@ def fetch_update_info():
         updater_upgrade_url = data["url_updater"]
         version = data["version_updater"]
         return version, updater_upgrade_url
-    except requests.RequestException as exp:
-        print(f"请求错误: {exp}")
+    except:
+        print(f"请求错误: {requests.RequestException}")
         return None, None
 
 
@@ -1641,7 +1641,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         except:
             print("客户端更新检查失败，错误代码：{e}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                                 get_text("check_error2"))
+                         get_text("check_error2"))
 
     client_api_thread_args = (strip_client, label_client, client_version, selected_source, source_combobox,
                               way_selected_source, source_combobox2)
@@ -1678,7 +1678,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         except:
             print("下载器更新检查失败，错误代码：{e}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
-                                 get_text("check_error1"))
+                         get_text("check_error1"))
         try:
             pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
             pull_suya_announcement_thread = threading.Thread(target=pull_suya_announcement,
@@ -1688,7 +1688,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         except:
             print("Suya公告拉取失败，错误代码：{e}")
             update_strip(strip_suya_announcement, label_suya_announcement,
-                                 "失败", "A00000", "check_error3")
+                         "失败", "A00000", "check_error3")
 
     api_function_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
                                 label_suya_announcement)
@@ -1792,8 +1792,9 @@ def create_gui():
         way_selected_source = tk.StringVar(value=get_text("way_wait"))  # 初始化方式选项
 
         # 创建Combobox选择框，指定宽度
-        source_way_combobox = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source, values=way_sources,
-                                        state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_way_combobox = ttk.Combobox(download_source_way_frame, textvariable=way_selected_source,
+                                           values=way_sources,
+                                           state="readonly", width=18)  # 设定Combobox宽度为18字符宽
         source_way_combobox.pack()
 
         # 在检查BC客户端更新按钮前，添加一个新的Frame来包含下载源选择框
@@ -1814,8 +1815,9 @@ def create_gui():
         selected_source = tk.StringVar(value=get_text("source_wait1"))  # 初始化下载源选项
 
         # 创建Combobox选择框，指定宽度
-        source_origin_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source, values=download_sources,
-                                       state="readonly", width=18)  # 设定Combobox宽度为18字符宽
+        source_origin_combobox = ttk.Combobox(download_source_frame, textvariable=selected_source,
+                                              values=download_sources,
+                                              state="readonly", width=18)  # 设定Combobox宽度为18字符宽
         source_origin_combobox.pack()
 
         # 检查BC客户端更新按钮
@@ -1894,9 +1896,10 @@ def create_gui():
         center_window(window_main)  # 居中窗口
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
-        initialize_args = (selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
-                           strip_client, label_client, strip_suya_announcement, label_suya_announcement,
-                           way_selected_source, source_way_combobox)
+        initialize_args = (
+        selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
+        strip_client, label_client, strip_suya_announcement, label_suya_announcement,
+        way_selected_source, source_way_combobox)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
         initialize_thread.daemon = True
