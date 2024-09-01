@@ -41,7 +41,7 @@ jobs:
         with:
           tag_name: newest-build
           release_name: 最新开发构建版本(自动创建的版本)
-          body: "此预发布版本由Github Action自动构建。"
+          body: "此预发布版本由Github Action自动构建。请注意，此版本为测试版，并不代表最终版本。"
           draft: false
           prerelease: true
 
