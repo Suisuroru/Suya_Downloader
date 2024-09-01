@@ -1,20 +1,20 @@
 import ctypes
-import errno
 import json
 import os
 import shutil
-import socket
 import sys
 import tempfile
 import threading
 import tkinter as tk
-import winreg
-import zipfile
+from errno import EEXIST
 from getpass import getuser
 from queue import Queue
+from socket import AF_INET
 from time import time, sleep
 from tkinter import messagebox, scrolledtext, ttk, filedialog
 from webbrowser import open as webopen
+from winreg import OpenKey, HKEY_CURRENT_USER, QueryValueEx
+from zipfile import ZipFile, BadZipFile
 
 import pygame
 import requests
@@ -122,7 +122,7 @@ def export_system_info(msg_box):
     for interface, addrs in psutil.net_if_addrs().items():
         msg_box.insert(tk.END, f"\n||||||||||||||{interface}||||||||||||||\n\n")
         for addr in addrs:
-            if addr.family == socket.AF_INET:
+            if addr.family == AF_INET:
                 msg_box.insert(tk.END, f"Interface: {interface}\n")
                 msg_box.insert(tk.END, f"IP Address: {addr.address}\n")
                 msg_box.insert(tk.END, f"Netmask: {addr.netmask}\n")
@@ -138,10 +138,10 @@ def write_to_file(text_box, file_name):
     if os.name == "nt":  # Windows
         def get_download_folder():
             try:
-                key = winreg.OpenKey(winreg.HKEY_CURRENT_USER,
-                                     r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders")
+                key = OpenKey(HKEY_CURRENT_USER,
+                              r"Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders")
                 print("从注册表获取到下载文件夹路径成功")
-                return winreg.QueryValueEx(key, "{374DE290-123F-4565-9164-39C4925E467B}")[0]
+                return QueryValueEx(key, "{374DE290-123F-4565-9164-39C4925E467B}")[0]
             except FileNotFoundError:
                 # 如果上述方法失败，回退到默认路径
                 return os.path.join(os.getenv("USERPROFILE"), "Downloads")
@@ -568,7 +568,7 @@ def ensure_directory_exists(directory_path):
     try:
         check_folder(directory_path)
     except OSError as e:
-        if e.errno != errno.EEXIST:
+        if e.errno != EEXIST:
             raise ValueError(get_text("cant_make_dir") + f"{directory_path}") from e
 
 
@@ -928,7 +928,7 @@ def start_download_in_new_window(download_link):
                 speed_text.set(get_text("unzip_tip"))
                 pull_dir = initialize_settings()
                 try:
-                    with zipfile.ZipFile(temp_file.name) as zip_file:
+                    with ZipFile(temp_file.name) as zip_file:
                         for member in zip_file.namelist():
                             member_path = os.path.abspath(os.path.join(pull_dir, member))
                             if member.endswith("/"):
@@ -943,7 +943,7 @@ def start_download_in_new_window(download_link):
                         speed_text.set(get_text("close_tip"))
                         messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
                         new_window.destroy()
-                except zipfile.BadZipFile as e:
+                except BadZipFile as e:
                     progress_text.set(get_text("error_unzip"))
                     speed_text.set(str(e))
                     print("导出文件出错，相关文件/目录：", str(member))
@@ -1368,7 +1368,7 @@ def download_and_install(update_url, version):
             shutil.copyfileobj(response.raw, f)
 
         # 创建ZipFile对象，从临时文件中读取
-        with zipfile.ZipFile(temp_zip_file) as zip_file:
+        with ZipFile(temp_zip_file) as zip_file:
             # 解压到目标目录
             for member in zip_file.namelist():
                 # 避免路径遍历攻击
@@ -1897,9 +1897,9 @@ def create_gui():
         initialize_settings()  # 初始化设置内容
         # 将部分操作移动至此处以减少启动时卡顿
         initialize_args = (
-        selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
-        strip_client, label_client, strip_suya_announcement, label_suya_announcement,
-        way_selected_source, source_way_combobox)
+            selected_source, source_origin_combobox, notice_text_area, strip_downloader, label_downloader,
+            strip_client, label_client, strip_suya_announcement, label_suya_announcement,
+            way_selected_source, source_way_combobox)
         # 启动线程
         initialize_thread = threading.Thread(target=initialize_api, args=initialize_args)
         initialize_thread.daemon = True

@@ -5,8 +5,8 @@ import shutil
 import sys
 import tempfile
 import threading
-import zipfile
 from tkinter import messagebox
+from zipfile import ZipFile
 
 import requests
 
@@ -187,7 +187,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         else:
             pull_dir = current_dir
         # 创建ZipFile对象，从临时文件中读取
-        with zipfile.ZipFile(temp_zip_file) as zip_file:
+        with ZipFile(temp_zip_file) as zip_file:
             # 解压到目标目录
             for member in zip_file.namelist():
                 # 避免路径遍历攻击
