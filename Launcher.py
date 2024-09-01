@@ -11,7 +11,7 @@ from getpass import getuser
 from queue import Queue
 from socket import AF_INET
 from time import time, sleep
-from tkinter import messagebox, scrolledtext, ttk, filedialog
+from tkinter import scrolledtext, ttk, filedialog, messagebox as msgbox
 from webbrowser import open as webopen
 from winreg import OpenKey, HKEY_CURRENT_USER, QueryValueEx
 from zipfile import ZipFile, BadZipFile
@@ -312,7 +312,7 @@ def get_config(Initialize_Tag):
                 final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
                 final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
     except:
-        messagebox.showinfo("错误", str(Exception))
+        msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
@@ -379,7 +379,7 @@ def Open_Updater(window):
         else:
             print("Updater未找到。")
     except:
-        messagebox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{Exception}")
+        msgbox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{Exception}")
 
 
 def Pull_Resources(window):
@@ -491,13 +491,13 @@ def export_info(event):
             try:
                 file_name = generate_current_time(0) + "_InfoExport"
                 file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
-                messagebox.showinfo(get_text("export_information"),
-                                    get_text("export_information_success") + f"{file_path}")
+                msgbox.showinfo(get_text("export_information"),
+                                get_text("export_information_success") + f"{file_path}")
                 # 打开文件所在目录
                 open_directory(file_path)
             except:
-                messagebox.showerror(get_text("export_information"),
-                                     get_text("export_information_error") + f"{Exception}")
+                msgbox.showerror(get_text("export_information"),
+                                 get_text("export_information_error") + f"{Exception}")
 
         # 创建一个新的顶级窗口
         export_info_window = tk.Toplevel()
@@ -831,7 +831,7 @@ def create_setting_window(event):
         lang_new = language_formated(lang_selected.get())
         initialize_languages(lang_new)
         if lang_new != language:
-            answer = messagebox.askyesno(get_text("tip"), get_text("reload_tip"))
+            answer = msgbox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
                 global_json["language"] = lang_new
                 with open(global_config_path, "w", encoding="utf-8") as file:
@@ -941,18 +941,18 @@ def start_download_in_new_window(download_link):
                                 print("成功写入文件", str(member_path))
                         progress_text.set(get_text("unzip_finished"))
                         speed_text.set(get_text("close_tip"))
-                        messagebox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
+                        msgbox.showinfo(get_text("tip"), get_text("unzip_finished_tip"))
                         new_window.destroy()
                 except BadZipFile as e:
                     progress_text.set(get_text("error_unzip"))
                     speed_text.set(str(e))
                     print("导出文件出错，相关文件/目录：", str(member))
-                    messagebox.showerror(get_text("error"), str(e))
+                    msgbox.showerror(get_text("error"), str(e))
                     return
                 except Exception as e:
                     progress_text.set(get_text("unknown_error"))
                     speed_text.set(str(e))
-                    messagebox.showerror(get_text("error"), str(e))
+                    msgbox.showerror(get_text("error"), str(e))
                     return
                 finally:
                     # 确保临时文件在操作完成后被删除
@@ -987,8 +987,8 @@ def direct_download_client(download_link):
         with open(global_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
-        if messagebox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
-                                                get_text("path_tip2")):
+        if msgbox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
+                                            get_text("path_tip2")):
             Confirm_tag = "Yes"
             global_json["Confirm_tag"] = Confirm_tag
             with open(global_config_path, "w", encoding="utf-8") as file:
@@ -1045,8 +1045,8 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
             # 比较版本号并决定是否提示用户更新
             if compare_client_versions(latest_version, current_version_inner) == 1:
                 # 如果有新版本，提示用户并提供下载链接
-                user_response = messagebox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
-                                                    latest_version + get_text("update_available_msg2"))
+                user_response = msgbox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
+                                                latest_version + get_text("update_available_msg2"))
                 if user_response:
                     if tag_download == "web":
                         webopen(download_link)  # 打开下载链接
@@ -1054,8 +1054,8 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             elif compare_client_versions(latest_version, current_version_inner) == 0:
-                user_response = messagebox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
-                                                    latest_version)
+                user_response = msgbox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
+                                                latest_version)
                 if user_response:
                     if tag_download == "web":
                         webopen(download_link)  # 打开下载链接
@@ -1063,8 +1063,8 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
             else:
-                user_response = messagebox.askyesno(get_text("update_dev"), get_text("update_dev_msg") +
-                                                    latest_version)
+                user_response = msgbox.askyesno(get_text("update_dev"), get_text("update_dev_msg") +
+                                                latest_version)
                 if user_response:
                     if tag_download == "web":
                         webopen(download_link)  # 打开下载链接
@@ -1073,10 +1073,10 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     update_version_info(latest_version)
         else:
             print(f"无法获取下载源信息: {response_client.status_code}")
-            messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
+            msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
         print("无法获取下载源信息")
-        messagebox.showinfo(get_text("error"), get_text("unable_to_get_source"))
+        msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
@@ -1169,20 +1169,20 @@ def check_for_updates_with_confirmation(current_version_inner, window):
             update_question = (get_text("update_question_available1") + latest_version +
                                get_text("update_question_available2") + current_version_inner +
                                get_text("update_question_available3"))
-            answer = messagebox.askyesno("更新可用", update_question)
+            answer = msgbox.askyesno("更新可用", update_question)
             Update(answer, window)
 
         elif comparison_result == -1:
             update_question = (get_text("update_question_dev1") + latest_version +
                                get_text("update_question_dev2") + current_version_inner +
                                get_text("update_question_dev3"))
-            answer = messagebox.askyesno("获取正式版", update_question)
+            answer = msgbox.askyesno("获取正式版", update_question)
             Update(answer, window)
 
         else:
-            messagebox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
+            msgbox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
     except:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
+        msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def compare_versions(version1, version2):
@@ -1204,7 +1204,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         update_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
+        msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def check_client_update():
@@ -1231,7 +1231,7 @@ def check_client_update():
                 print("Unzip_Debug已禁用")
                 return latest_version, newest_version_list, "NoDebug"
     except:
-        messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
+        msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
@@ -1433,11 +1433,11 @@ def get_important_notice():
             print("获取到以下内容", data)
         else:
             print(f"Failed to retrieve data: {response.status_code}")
-            messagebox.showerror("错误", get_text("unable_to_get_IN"))
+            msgbox.showerror("错误", get_text("unable_to_get_IN"))
             return
     except:
         print(f"无法获取重要公告:{Exception}")
-        messagebox.showerror(get_text("error"), get_text("unable_to_get_IN"))
+        msgbox.showerror(get_text("error"), get_text("unable_to_get_IN"))
         return
 
     important_announce_win = tk.Tk()
@@ -1619,7 +1619,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         global global_json
         global_json = get_config(False)
     except:
-        messagebox.showerror(get_text("warn"), get_text("config_fault"))
+        msgbox.showerror(get_text("warn"), get_text("config_fault"))
 
     def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
                             way_selected_source, source_combobox2):
