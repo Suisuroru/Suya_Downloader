@@ -10,7 +10,7 @@ from tkinter import messagebox
 
 import requests
 
-Suya_Updater_Version = "1.0.3.0"
+Suya_Updater_Version = "1.0.3.2"
 
 
 def is_admin():
@@ -174,7 +174,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         temp_dir = tempfile.mkdtemp()
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
         # 将响应内容写入临时文件
-        with open(temp_zip_file, "wb") as f:
+        with open(temp_zip_file, "wb", encoding="utf-8") as f:
             shutil.copyfileobj(response.raw, f)
         del_Resources()
         if update_partner_inner == "Resources":
@@ -197,7 +197,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
                 if member.endswith("/"):
                     os.makedirs(member_path, exist_ok=True)
                 else:
-                    with open(member_path, "wb") as f:
+                    with open(member_path, "wb", encoding="utf-8") as f:
                         f.write(zip_file.read(member))
 
         # 清理临时ZIP文件
