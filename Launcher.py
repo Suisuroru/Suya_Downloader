@@ -1122,8 +1122,8 @@ def compare_client_versions(version1, version2):
                 return 1
             elif part1 < part2:
                 return -1
-            else:
-                return 0
+        else:
+            return 0
     except:
         return 100
 
@@ -1201,7 +1201,7 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
         data = json.loads(api_json_str)
         latest_version = data["version_downloader"]
 
-        update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
+        update_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
         # 如果有其他基于版本状态的操作，可在此处添加
     except:
         messagebox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
@@ -1249,7 +1249,7 @@ def pull_suya_announcement(version_strip_frame, version_label):
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message_en_us")
     else:
         suya_announcement = try_to_get_suya_announcement("suya_announcement_message")
-    update_version_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
+    update_strip(version_strip_frame, version_label, "成功", data["suya_announcement_color"],
                          get_text("suya_announcement") + suya_announcement)
 
 
@@ -1257,7 +1257,7 @@ def check_for_client_updates_and_create_version_strip(version_strip_frame, versi
                                                       current_version_inner):
     """检查更新并创建版本状态色带"""
     latest_version = check_client_update()[0]
-    update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
+    update_strip(version_strip_frame, version_label, current_version_inner, latest_version, 1)
 
 
 def create_version_strip(color_code, message, window):
@@ -1270,7 +1270,7 @@ def create_version_strip(color_code, message, window):
     return version_strip, version_label
 
 
-def update_version_strip(version_strip_frame, version_label, current_version_inner, latest_version, type):
+def update_strip(version_strip_frame, version_label, current_version_inner, latest_version, type):
     """更新色带的背景颜色和内部标签的文本。"""
     if type == 0:
         status, color_code, message = get_version_status(current_version_inner, latest_version)
@@ -1640,7 +1640,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             client_update_thread.start()
         except:
             print("客户端更新检查失败，错误代码：{e}")
-            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+            update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                                  get_text("check_error2"))
 
     client_api_thread_args = (strip_client, label_client, client_version, selected_source, source_combobox,
@@ -1677,7 +1677,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             update_thread.start()
         except:
             print("下载器更新检查失败，错误代码：{e}")
-            update_version_strip(strip_downloader, label_downloader, "未知", "FF0000",
+            update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                                  get_text("check_error1"))
         try:
             pull_suya_announcement_args = (strip_suya_announcement, label_suya_announcement)
@@ -1687,7 +1687,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             pull_suya_announcement_thread.start()
         except:
             print("Suya公告拉取失败，错误代码：{e}")
-            update_version_strip(strip_suya_announcement, label_suya_announcement,
+            update_strip(strip_suya_announcement, label_suya_announcement,
                                  "失败", "A00000", "check_error3")
 
     api_function_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
