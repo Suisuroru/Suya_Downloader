@@ -1,0 +1,11 @@
+{
+    "version_downloader": "0.0.0.0",
+    "url_downloader": "downloader and resource(suya)",
+    "version_updater": "0.0.0.0",
+    "url_updater": "only updater",
+    "url_resource": "only resource(suya)",
+    "suya_announcement_message": "suya_announcement_message",
+    "suya_announcement_message_zh_hant": "suya_announcement_message_zh_hant",
+    "suya_announcement_message_en_us": "suya_announcement_message_en_us",
+    "suya_announcement_color": "#000000"
+}

@@ -7,5 +7,5 @@
     "suya_announcement_message": "部分发行版的客户端版本检查存在问题，请查看色带上的版本和检查更新中版本比对确定是否需要更新",
     "suya_announcement_message_zh_hant": "部分發行版的用戶端版本檢查存在問題，請查看色帶上的版本和檢查更新中版本比對確定是否需要更新",
     "suya_announcement_message_en_us": "Some releases have problems checking for client versions, check the version on the ribbon and check the version comparison in Update to see if an update is needed",
-    "suya_announcement_color": "#009900"
+    "suya_announcement_color": "#FF0000"
 }
