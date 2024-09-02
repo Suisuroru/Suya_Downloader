@@ -3,8 +3,8 @@ import json
 import os
 import shutil
 import sys
-import tempfile
 import threading
+from tempfile import mkdtemp
 from tkinter import messagebox as msgbox
 from zipfile import ZipFile
 
@@ -171,7 +171,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
         # 定义临时目录和临时文件
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = mkdtemp()
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:

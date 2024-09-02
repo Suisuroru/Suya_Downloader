@@ -3,13 +3,13 @@ import json
 import os
 import shutil
 import sys
-import tempfile
 import threading
 import tkinter as tk
 from errno import EEXIST
 from getpass import getuser
 from queue import Queue
 from socket import AF_INET
+from tempfile import mkdtemp, NamedTemporaryFile
 from time import time, sleep
 from tkinter import scrolledtext, ttk, filedialog, messagebox as msgbox
 from webbrowser import open as webopen
@@ -904,7 +904,7 @@ def start_download_in_new_window(download_link):
 
         download_start_time = time()  # 记录下载开始时间
         download_complete_event = threading.Event()
-        temp_file = tempfile.NamedTemporaryFile(delete=False)  # 创建临时文件，delete=False表示手动管理文件生命周期
+        temp_file = NamedTemporaryFile(delete=False)  # 创建临时文件，delete=False表示手动管理文件生命周期
 
         def start_download_client(download_link_client, file_zip):
             file_zip.close()  # 关闭文件，准备写入
@@ -1360,7 +1360,7 @@ def download_and_install(update_url, version):
         response.raise_for_status()
 
         # 定义临时目录和临时文件
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = mkdtemp()
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
 
         # 将响应内容写入临时文件
