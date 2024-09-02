@@ -5,7 +5,7 @@ import shutil
 import sys
 import tempfile
 import threading
-from tkinter import messagebox
+from tkinter import messagebox as msgbox
 from zipfile import ZipFile
 
 import requests
@@ -31,10 +31,10 @@ def show_message(partner, partner_en):
     """
     定义一个显示消息框的函数
     """
-    messagebox.showinfo("提示 / Tip",
-                        f"更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{partner}。\n"
-                        "The update has been started, after the update is finished, Suya Downloader will open "
-                        f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
+    msgbox.showinfo("提示 / Tip",
+                    f"更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{partner}。\n"
+                    "The update has been started, after the update is finished, Suya Downloader will open "
+                    f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
 # 当前工作目录
