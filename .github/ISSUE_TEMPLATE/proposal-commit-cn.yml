@@ -3,7 +3,7 @@ description: 如果你对下载器有什么建议，可以在这里使用中文�
 labels: ["enhancement"]
 body:
 - type: checkboxes
-  id: "yml-1"
+  id: "yml-0"
   attributes:
     label: "检查项"
     description: "请逐个检查下列项目，并勾选确认。"
@@ -15,19 +15,19 @@ body:
     - label: "如果你尝试过最新的dev版本的代码，请选择此选项"
     - label: "该功能在最新dev版本中仍然未制作"
 - type: textarea
-  id: "yml-2"
+  id: "yml-1"
   attributes:
     label: 你希望的功能
     placeholder: "-（请在这里回答）-"
   validations:
     required: true
 - type: textarea
-  id: "yml-3"
+  id: "yml-2"
   attributes:
     label: 您使用的下载器版本
     placeholder: "-（请在这里回答）-"
 - type: textarea
-  id: "yml-4"
+  id: "yml-3"
   attributes:
     label: 其他补充内容
     placeholder: "-（请在这里回答）-"

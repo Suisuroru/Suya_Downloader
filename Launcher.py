@@ -1109,8 +1109,8 @@ def new_compare_versions(versionlist, namelist):
 
 
 def compare_client_versions(version1, version2):
+    """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
     try:
-        """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
         v1_parts = list(map(int, version1.split(".")))
         v2_parts = list(map(int, version2.split(".")))
 

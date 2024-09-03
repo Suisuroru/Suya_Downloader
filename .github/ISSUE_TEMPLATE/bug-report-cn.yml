@@ -3,7 +3,7 @@ description: 如果你觉得下载器的某一部分工作异常，请使用中�
 labels: ["bug"]
 body:
 - type: checkboxes
-  id: "yml-1"
+  id: "yml-0"
   attributes:
     label: "检查项"
     description: "请逐个检查下列项目，并勾选确认。"
@@ -15,41 +15,41 @@ body:
     - label: "如果你尝试过最新的dev版本的代码，请选择此选项"
     - label: "该问题在最新dev版本中仍然存在"
 - type: textarea
-  id: "yml-2"
+  id: "yml-1"
   attributes:
     label: 提供问题的描述
     placeholder: "-（请在这里回答）-"
   validations:
     required: true
 - type: textarea
-  id: "yml-3"
+  id: "yml-2"
   attributes:
     label: 期望的结果
     placeholder: "-（请在这里回答）-"
   validations:
     required: true
 - type: textarea
-  id: "yml-4"
+  id: "yml-3"
   attributes:
     label: 如何重现（若知道）
     placeholder: "-（请在这里回答）-"
   validations:
 - type: textarea
-  id: "yml-5"
+  id: "yml-4"
   attributes:
     label: 系统环境 
     placeholder: "例如：Windows 7 64位 SP1、Windows 10 专业版 64位 1909、Windows 10 家庭版 32位 2002"
   validations:
     required: true
 - type: textarea
-  id: "yml-6"
+  id: "yml-5"
   attributes:
     label: 下载器版本
     placeholder: "-（请在这里回答）-"
   validations:
     required: true
 - type: textarea
-  id: "yml-7"
+  id: "yml-6"
   attributes:
     label: 其他补充内容
     placeholder: "-（请在这里回答）-"

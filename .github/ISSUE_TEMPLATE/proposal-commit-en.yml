@@ -3,7 +3,7 @@ description: If you have any suggestions for the downloader, you can submit them
 labels: ["enhancement"]
 body:
 - type: checkboxes
-  id: "yml-1"
+  id: "yml-0"
   attributes:
     label: "Checklist"
     description: "Please check the following items one by one and tick them to confirm."
@@ -15,19 +15,19 @@ body:
     - label: "If you have tried the latest dev version of the code, please select this option"
     - label: "the issue still persists in the latest dev version"
 - type: textarea
-  id: "yml-2"
+  id: "yml-1"
   attributes:
     label: Desired Feature
     placeholder: "- (Please answer here) -"
   validations:
     required: true
 - type: textarea
-  id: "yml-3"
+  id: "yml-2"
   attributes:
     label: Downloader Version You Are Using
     placeholder: "- (Please answer here) -"
 - type: textarea
-  id: "yml-4"
+  id: "yml-3"
   attributes:
     label: Other Supplementary Information
     placeholder: "- (Please answer here) -"
