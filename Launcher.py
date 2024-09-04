@@ -25,7 +25,7 @@ Suya_Downloader_Version = "1.0.3.2"
 # 获取运行目录
 current_working_dir = os.getcwd()
 settings_path = os.path.join("./Settings")
-global_config_path = os.path.join("./Settings", "global_config.json")
+global_config_path = os.path.join(settings_path, "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 

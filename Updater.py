@@ -42,7 +42,7 @@ current_dir = os.getcwd()
 
 # 指定路径
 settings_path = os.path.join("./Settings")
-global_config_path = os.path.join("./Settings", "global_config.json")
+global_config_path = os.path.join(settings_path, "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 # 确保设置的文件夹存在
