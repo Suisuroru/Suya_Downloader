@@ -37,6 +37,7 @@
     "important_notice": "Important Notice",
     "lost_key": "Text is missing, the missing text has a key value of ",
     "main_title": "Suya Downloader for ",
+    "no_api": "If you do not have an API address, please ask the publisher",
     "no_client": "No local client found, please download the client immediately",
     "old_client": "The client version you are currently running may be an outdated legacy version. Please update it in time. Current version : ",
     "old_downloader": "You are currently running a potentially outdated version of the downloader. Please update it promptly. Current version: ",

@@ -3,14 +3,14 @@ import json
 import os
 import shutil
 import sys
-import tempfile
 import threading
-import zipfile
-from tkinter import messagebox
+from tempfile import mkdtemp
+from tkinter import messagebox as msgbox
+from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.0"
+Suya_Updater_Version = "1.0.3.2"
 
 
 def is_admin():
@@ -31,10 +31,10 @@ def show_message(partner, partner_en):
     """
     定义一个显示消息框的函数
     """
-    messagebox.showinfo("提示 / Tip",
-                        f"更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{partner}。\n"
-                        "The update has been started, after the update is finished, Suya Downloader will open "
-                        f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
+    msgbox.showinfo("提示 / Tip",
+                    f"更新已开始，在更新完成后，Suya Downloader将会自动启动，请等待自动重启，本次更新类型为{partner}。\n"
+                    "The update has been started, after the update is finished, Suya Downloader will open "
+                    f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
 # 当前工作目录
@@ -42,7 +42,7 @@ current_dir = os.getcwd()
 
 # 指定路径
 settings_path = os.path.join("./Settings")
-global_config_path = os.path.join("./Settings", "global_config.json")
+global_config_path = os.path.join(settings_path, "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 # 确保设置的文件夹存在
@@ -73,7 +73,7 @@ def merge_jsons(default_json, file_path):
 
 def get_config():
     default_api_config = {
-        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json"
+        "server_api_url": ""
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -87,17 +87,29 @@ def get_config():
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
             sys.exit()
     try:
-        api_content = requests.get(default_global_config["server_api_url"]).json()
+        if default_global_config["cf_mirror_enabled"]:
+            default_global_config["latest_api_url"] = default_global_config["server_api_url"]
+        elif not default_global_config["cf_mirror_enabled"]:
+            default_global_config["latest_api_url"] = default_global_config["server_api_url_gh"]
+    except:
+        default_global_config["latest_api_url"] = default_global_config["server_api_url"]
+        default_global_config["cf_mirror_enabled"] = True
+    try:
+        api_content = requests.get(default_global_config["latest_api_url"]).json()
     except:
         api_content = default_api_config
     try:
         default_global_config = merge_jsons(default_global_config, api_content)
     except:
         print("出现异常：" + str(Exception))
-    final_global_config = merge_jsons(default_global_config, global_config_path)
+    default_global_config = merge_jsons(default_global_config, global_config_path)
     with open(global_config_path, "w", encoding="utf-8") as file:
-        json.dump(final_global_config, file, indent=4)
-    return final_global_config
+        json.dump(default_global_config, file, indent=4)
+    if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
+        msgbox.showinfo("Error",
+                        "未设置API地址，请询问发行方\nIf you do not have an API address, please ask the publisher")
+        sys.exit()
+    return default_global_config
 
 
 global_json = get_config()
@@ -171,10 +183,10 @@ def download_and_install(downloader_update_url, update_partner_inner):
         response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
         # 定义临时目录和临时文件
-        temp_dir = tempfile.mkdtemp()
+        temp_dir = mkdtemp()
         temp_zip_file = os.path.join(temp_dir, "temp.zip")
         # 将响应内容写入临时文件
-        with open(temp_zip_file, "wb") as f:
+        with open(temp_zip_file, "wb", encoding="utf-8") as f:
             shutil.copyfileobj(response.raw, f)
         del_Resources()
         if update_partner_inner == "Resources":
@@ -187,7 +199,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         else:
             pull_dir = current_dir
         # 创建ZipFile对象，从临时文件中读取
-        with zipfile.ZipFile(temp_zip_file) as zip_file:
+        with ZipFile(temp_zip_file) as zip_file:
             # 解压到目标目录
             for member in zip_file.namelist():
                 # 避免路径遍历攻击
@@ -197,7 +209,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
                 if member.endswith("/"):
                     os.makedirs(member_path, exist_ok=True)
                 else:
-                    with open(member_path, "wb") as f:
+                    with open(member_path, "wb", encoding="utf-8") as f:
                         f.write(zip_file.read(member))
 
         # 清理临时ZIP文件

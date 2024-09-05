@@ -16,4 +16,4 @@
 
 ### 文件中保留了部分默认的API，如果你需要使用自己部署的应用更新，请修改其中的[`Suya_Update_API.json`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/example_files/Suya_Update_API.json)并将其部署到互联网上
 
-### 修改时请注意遵守[`LICENSE-AGPL`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/LICENSE-AGPL)和[`LICENSE-APACHE`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/LICENSE-APACHE)，除本人允许外，其他分发方式的文件必须包含许可证文件
+### 修改时请注意遵守[`LICENSE-AGPL`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/LICENSE-AGPL)和[`LICENSE-APACHE`](https://github.com/Suisuroru/Suya_Downloader/tree/Suya/LICENSE-APACHE)，除经本人允许外，其他分发方式的文件必须包含许可证文件
