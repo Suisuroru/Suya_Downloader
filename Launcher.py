@@ -240,9 +240,9 @@ def merge_jsons(default_json_or_path, file_or_json):
 
 def get_config(Initialize_Tag):
     default_api_config = {
-        "server_api_url": "https://bluecraft-api.pages.dev/Python_Downloader_API/Get_API.json",
-        "server_api_url_gh": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json",
-        "Server_Name": "Bluecraft"
+        "server_api_url": "",
+        "server_api_url_gh": "",
+        "Server_Name": ""
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -316,6 +316,9 @@ def get_config(Initialize_Tag):
     print("最终全局配置：", final_global_config)
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
+    if final_global_config["server_api_url"] == "" and final_global_config["server_api_url_gh"] == "":
+        msgbox.showinfo("错误", "未设置API地址，请询问发行方")
+        dupe_crash_report()
     return final_global_config
 
 

@@ -73,7 +73,7 @@ def merge_jsons(default_json, file_path):
 
 def get_config():
     default_api_config = {
-        "server_api_url": "https://Bluecraft-Server.github.io/API/Python_Downloader_API/Get_API.json"
+        "server_api_url": ""
     }
     try:
         default_global_config = merge_jsons(default_api_config, default_api_setting_path)
@@ -87,17 +87,28 @@ def get_config():
             ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
             sys.exit()
     try:
-        api_content = requests.get(default_global_config["server_api_url"]).json()
+        if default_global_config["cf_mirror_enabled"]:
+            default_global_config["latest_api_url"] = default_global_config["server_api_url"]
+        elif not default_global_config["cf_mirror_enabled"]:
+            default_global_config["latest_api_url"] = default_global_config["server_api_url_gh"]
+    except:
+        default_global_config["latest_api_url"] = default_global_config["server_api_url"]
+        default_global_config["cf_mirror_enabled"] = True
+    try:
+        api_content = requests.get(default_global_config["latest_api_url"]).json()
     except:
         api_content = default_api_config
     try:
         default_global_config = merge_jsons(default_global_config, api_content)
     except:
         print("出现异常：" + str(Exception))
-    final_global_config = merge_jsons(default_global_config, global_config_path)
+    default_global_config = merge_jsons(default_global_config, global_config_path)
     with open(global_config_path, "w", encoding="utf-8") as file:
-        json.dump(final_global_config, file, indent=4)
-    return final_global_config
+        json.dump(default_global_config, file, indent=4)
+    if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
+        msgbox.showinfo("错误", "未设置API地址，请询问发行方")
+        sys.exit()
+    return default_global_config
 
 
 global_json = get_config()
