@@ -29,6 +29,27 @@ global_config_path = os.path.join(settings_path, "global_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 
+def get_text(key):
+    if key == "lost_key":
+        try:
+            text = lang_json[key]
+        except:
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = "文本已丢失，丢失的文本的键值为"
+        return text
+    else:
+        try:
+            text = lang_json[key]
+        except:
+            try:
+                text = spare_lang_json[key]
+            except:
+                text = get_text("lost_key") + key
+        return text
+
+
 def check_folder(path):
     if not os.path.exists(path):
         os.makedirs(path)
@@ -317,7 +338,7 @@ def get_config(Initialize_Tag):
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     if final_global_config["server_api_url"] == "" and final_global_config["server_api_url_gh"] == "":
-        msgbox.showinfo("错误", "未设置API地址，请询问发行方")
+        msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
     return final_global_config
 
@@ -463,27 +484,6 @@ def initialize_languages(tag):
             spare_lang_json = json.load(file)
     except:
         Pull_Resources(None)
-
-
-def get_text(key):
-    if key == "lost_key":
-        try:
-            text = lang_json[key]
-        except:
-            try:
-                text = spare_lang_json[key]
-            except:
-                text = "文本已丢失，丢失的文本的键值为"
-        return text
-    else:
-        try:
-            text = lang_json[key]
-        except:
-            try:
-                text = spare_lang_json[key]
-            except:
-                text = get_text("lost_key") + key
-        return text
 
 
 def export_info(event):

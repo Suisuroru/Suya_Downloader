@@ -106,7 +106,8 @@ def get_config():
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
     if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
-        msgbox.showinfo("错误", "未设置API地址，请询问发行方")
+        msgbox.showinfo("Error",
+                        "未设置API地址，请询问发行方\nIf you do not have an API address, please ask the publisher")
         sys.exit()
     return default_global_config
 
