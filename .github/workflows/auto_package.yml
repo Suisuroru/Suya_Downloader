@@ -112,7 +112,7 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pyinstaller-build
           path: ./dist/*
@@ -231,6 +231,11 @@ jobs:
           gh release upload newest-build ./dist/${LAUNCHER_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: pyinstaller-build
+          path: ./dist/*
 
   build-and-release-on-macos:
     needs: clear-old-pre-release
@@ -337,7 +342,7 @@ jobs:
           gh release upload newest-build "./${FULL_FILE_NAME}"
 
       - name: Upload artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: pyinstaller-build
           path: ./dist/*
