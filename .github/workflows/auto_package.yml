@@ -65,6 +65,7 @@ jobs:
 
       - name: Update Dev_Version in Launcher.py
         run: |
+          cd $(pwd)
           SHORT_SHA="${GITHUB_SHA:0:8}"
           sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
         shell: bash
