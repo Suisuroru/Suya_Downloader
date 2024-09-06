@@ -259,7 +259,7 @@ def merge_jsons(default_json_or_path, file_or_json):
     return {**default_json_loaded, **loaded_json}
 
 
-def get_config(Initialize_Tag):
+def get_config(initialize_tag):
     try:
         with open(default_api_setting_path, "r", encoding="utf-8") as file:
             default_api_config = json.load(file)
@@ -268,7 +268,7 @@ def get_config(Initialize_Tag):
     if os.name == "nt":
         try:
             default_api_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                        fr"{default_api_config["Server_Name"]}")
+                                                     fr"{default_api_config["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
         print("最终initialize_path：", default_api_config["initialize_path"])
@@ -277,7 +277,7 @@ def get_config(Initialize_Tag):
             default_api_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_api_config["Server_Name"]}"
         except:
             print("异常错误")
-    if Initialize_Tag:
+    if initialize_tag:
         api_content = default_api_config
     else:
         api_content = requests.get(default_api_config["server_api_url"]).json()
@@ -306,7 +306,7 @@ def get_config(Initialize_Tag):
     except:
         final_global_config["cf_mirror_enabled"] = True
     try:
-        if Initialize_Tag:
+        if initialize_tag:
             if final_global_config["cf_mirror_enabled"]:
                 final_global_config["latest_api_url"] = final_global_config["server_api_url"]
             elif not final_global_config["cf_mirror_enabled"]:
