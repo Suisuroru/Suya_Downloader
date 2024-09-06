@@ -25,8 +25,7 @@ Dev_Version = ""
 
 # 获取运行目录
 current_working_dir = os.getcwd()
-settings_path = os.path.join("./Settings")
-global_config_path = os.path.join(settings_path, "global_config.json")
+suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 
@@ -61,14 +60,6 @@ def get_admin():
     ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
     sys.exit()
 
-
-try:
-    # 确保设置的文件夹存在
-    check_folder(settings_path)
-except:
-    if os.name == "nt":
-        # 此处操作失败则说明此文件夹受保护，需要管理员权限
-        get_admin()
 
 # 打印运行目录以确认
 print("运行目录:", current_working_dir)
@@ -292,7 +283,7 @@ def get_config(initialize_tag):
         print("出现异常：" + str(Exception))
         dupe_crash_report()
     try:
-        final_global_config = merge_jsons(global_config_path, default_global_config)
+        final_global_config = merge_jsons(suya_config_path, default_global_config)
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
@@ -328,7 +319,7 @@ def get_config(initialize_tag):
     except:
         msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
-    with open(global_config_path, "w", encoding="utf-8") as file:
+    with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
     if final_global_config["server_api_url"] == "" and final_global_config["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
@@ -373,7 +364,7 @@ def get_language():
     except:
         language = set_lang(global_json)
         global_json["language"] = language
-        with open(global_config_path, "w", encoding="utf-8") as file_w:
+        with open(suya_config_path, "w", encoding="utf-8") as file_w:
             json.dump(global_json, file_w, ensure_ascii=False, indent=4)
 
 
@@ -406,7 +397,7 @@ def Pull_Resources(window):
             global_json["Pull_Resources_Count"] += 1
         except:
             global_json["Pull_Resources_Count"] = 1
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         Open_Updater(window)
 
@@ -468,8 +459,8 @@ def initialize_languages(tag):
     else:
         lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hans.json")
         global_json["language"] = "zh_hans"
-        with open(global_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_config_path, file, ensure_ascii=False, indent=4)
+        with open(suya_config_path, "w", encoding="utf-8") as file:
+            json.dump(suya_config_path, file, ensure_ascii=False, indent=4)
     try:
         with open(lang_path, "r", encoding="utf-8") as file:
             lang_json = json.load(file)
@@ -552,7 +543,7 @@ def initialize_settings():
         path_from_file = global_json["Client_dir"]
     except:
         global_json["Client_dir"] = path_from_file
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
     ensure_directory_exists(path_from_file)
     print("格式化处理后的路径：" + path_from_file)
@@ -758,7 +749,7 @@ def create_setting_window(event):
             else:
                 path_user = entry.get()
         global_json["Client_dir"] = path_user
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         ensure_directory_exists(path_user)
 
@@ -797,7 +788,7 @@ def create_setting_window(event):
     # 更新保存设置的逻辑，确保新的设置被保存
     def save_settings():
         global_json["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
 
     # 确保在关闭窗口前调用save_settings函数来保存所有设置
@@ -830,7 +821,7 @@ def create_setting_window(event):
             answer = msgbox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
                 global_json["language"] = lang_new
-                with open(global_config_path, "w", encoding="utf-8") as file:
+                with open(suya_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
             else:
@@ -980,14 +971,14 @@ def direct_download_client(download_link):
     except:
         Confirm_tag = "No"
         global_json["Confirm_tag"] = Confirm_tag
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
     if Confirm_tag == "No":
         if msgbox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                             get_text("path_tip2")):
             Confirm_tag = "Yes"
             global_json["Confirm_tag"] = Confirm_tag
-            with open(global_config_path, "w", encoding="utf-8") as file:
+            with open(suya_config_path, "w", encoding="utf-8") as file:
                 json.dump(global_json, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
@@ -1156,7 +1147,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         def Update(answer, window):
             if answer:  # 用户选择是
                 global_json["Update_Partner"] = "Full"
-                with open(global_config_path, "w", encoding="utf-8") as file:
+                with open(suya_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
                 Open_Updater(window)
 
@@ -1397,7 +1388,7 @@ def download_and_install(update_url, version):
 
         # 更新设置文件
         global_json["Updater_Version"] = version
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except:
