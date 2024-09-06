@@ -260,40 +260,30 @@ def merge_jsons(default_json_or_path, file_or_json):
 
 
 def get_config(Initialize_Tag):
-    default_api_config = {
-        "server_api_url": "",
-        "server_api_url_gh": "",
-        "Server_Name": ""
-    }
     try:
-        default_global_config = merge_jsons(default_api_config, default_api_setting_path)
+        with open(default_api_setting_path, "r", encoding="utf-8") as file:
+            default_api_config = json.load(file)
     except:
-        try:
-            default_global_config = default_api_config
-            with open(default_api_setting_path, "w", encoding="utf-8") as file:
-                json.dump(default_api_config, file, indent=4)
-                print("成功写入初始API参数")
-        except:
-            get_admin()
+        get_admin()
     if os.name == "nt":
         try:
-            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                        fr"{default_global_config["Server_Name"]}")
+            default_api_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                        fr"{default_api_config["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
-        print("最终initialize_path：", default_global_config["initialize_path"])
+        print("最终initialize_path：", default_api_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_global_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_global_config["Server_Name"]}"
+            default_api_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_api_config["Server_Name"]}"
         except:
             print("异常错误")
     if Initialize_Tag:
         api_content = default_api_config
     else:
-        api_content = requests.get(default_global_config["server_api_url"]).json()
+        api_content = requests.get(default_api_config["server_api_url"]).json()
         print("获取到API信息: ", api_content)
     try:
-        default_global_config = merge_jsons(default_global_config, api_content)
+        default_global_config = merge_jsons(default_api_config, api_content)
         print("合并全局配置：", default_global_config)
     except:
         print("出现异常：" + str(Exception))

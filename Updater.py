@@ -72,20 +72,21 @@ def merge_jsons(default_json, file_path):
 
 
 def get_config():
-    default_api_config = {
-        "server_api_url": ""
-    }
     try:
-        default_global_config = merge_jsons(default_api_config, default_api_setting_path)
+        with open(default_api_setting_path, "r", encoding="utf-8") as file:
+            default_api_config = json.load(file)
     except:
-        try:
-            default_global_config = default_api_config
-            with open(default_api_setting_path, "w", encoding="utf-8") as file:
-                json.dump(default_api_config, file, indent=4)
-                print("成功写入初始API参数")
-        except:
-            ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
-            sys.exit()
+        ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
+        sys.exit()
+    try:
+        api_content = requests.get(default_api_config["latest_api_url"]).json()
+    except:
+        api_content = default_api_config
+    try:
+        default_global_config = merge_jsons(default_api_config, api_content)
+    except:
+        print("出现异常：" + str(Exception))
+    default_global_config = merge_jsons(default_global_config, global_config_path)
     try:
         if default_global_config["cf_mirror_enabled"]:
             default_global_config["latest_api_url"] = default_global_config["server_api_url"]
@@ -94,15 +95,6 @@ def get_config():
     except:
         default_global_config["latest_api_url"] = default_global_config["server_api_url"]
         default_global_config["cf_mirror_enabled"] = True
-    try:
-        api_content = requests.get(default_global_config["latest_api_url"]).json()
-    except:
-        api_content = default_api_config
-    try:
-        default_global_config = merge_jsons(default_global_config, api_content)
-    except:
-        print("出现异常：" + str(Exception))
-    default_global_config = merge_jsons(default_global_config, global_config_path)
     with open(global_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
     if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
