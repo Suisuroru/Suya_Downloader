@@ -50,5 +50,10 @@ body:
   - type: textarea
     id: "yml-6"
     attributes:
+      label: If you are still able to open the downloader to export information or have already output crash information, please provide the relevant file here
+      placeholder: "-(Please upload files here)-"
+  - type: textarea
+    id: "yml-7"
+    attributes:
       label: Other additions
       placeholder: "-(Please answer here)-"

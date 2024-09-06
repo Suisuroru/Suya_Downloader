@@ -29,5 +29,10 @@ body:
   - type: textarea
     id: "yml-3"
     attributes:
+      label: 如果你仍然能打开下载器导出信息，请在此处提供相关文件
+      placeholder: "-（请在这里上传文件）-"
+  - type: textarea
+    id: "yml-4"
+    attributes:
       label: 其他补充内容
       placeholder: "-（请在这里回答）-"
