@@ -66,7 +66,7 @@ jobs:
       - name: Update Dev_Version in Launcher.py
         run: |
           SHORT_SHA="${GITHUB_SHA:0:8}"
-          sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
+          sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
         shell: bash
 
       - name: Build Launcher with PyInstaller
