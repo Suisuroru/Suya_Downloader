@@ -4,6 +4,10 @@
 
 ### 欢迎您使用Suya Downloader！
 
+###  这里是测试版的部署标签
+
+[![PyInstaller Build & Release](https://github.com/Suisuroru/Suya_Downloader/actions/workflows/auto_package.yml/badge.svg)](https://github.com/Suisuroru/Suya_Downloader/releases/tag/newest-build)
+
 ### 请注意，该软件目前除Windows版外均存在一定问题，将在未来进行修复
 
 ### 此项目暂时仍以Bluecraft定制版为模板发布，后续将提供可供自定义的模板。
