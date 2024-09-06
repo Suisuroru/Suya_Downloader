@@ -27,7 +27,12 @@ body:
       label: Downloader Version You Are Using
       placeholder: "- (Please answer here) -"
   - type: textarea
-    id: "yml-3"
+    id: "yml-6"
+    attributes:
+      label: If you are still able to open the downloader to export information, please provide the relevant file here
+      placeholder: "-(Please upload files here)-"
+  - type: textarea
+    id: "yml-4"
     attributes:
       label: Other Supplementary Information
       placeholder: "- (Please answer here) -"
