@@ -21,6 +21,7 @@ import requests
 from PIL import Image, ImageTk
 
 Suya_Downloader_Version = "1.0.3.3"
+Dev_Version = ""
 
 # 获取运行目录
 current_working_dir = os.getcwd()
@@ -88,7 +89,9 @@ def export_system_info(msg_box):
     import platform
     # 输出系统信息到文本框
     msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
-    msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}\n")
+    msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
+    if Dev_Version != "":
+        msg_box.insert(tk.END, f"-{Dev_Version}\n")
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
@@ -1166,9 +1169,14 @@ def check_for_updates_with_confirmation(current_version_inner, window):
             Update(answer, window)
 
         elif comparison_result == -1:
-            update_question = (get_text("update_question_dev1") + latest_version +
-                               get_text("update_question_dev2") + current_version_inner +
-                               get_text("update_question_dev3"))
+            if Dev_Version != "":
+                update_question = (get_text("update_question_dev1") + latest_version +
+                                   get_text("update_question_dev2") + current_version_inner + "-" + Dev_Version +
+                                   get_text("update_question_dev3"))
+            else:
+                update_question = (get_text("update_question_dev1") + latest_version +
+                                   get_text("update_question_dev2") + current_version_inner +
+                                   get_text("update_question_dev3"))
             answer = msgbox.askyesno("获取正式版", update_question)
             Update(answer, window)
 
@@ -1284,6 +1292,8 @@ def get_version_status(current_version_inner, latest_version):
 
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
+        if Dev_Version != "":
+            current_version_inner = current_version_inner + "-" + Dev_Version
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
         return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
