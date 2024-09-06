@@ -7,8 +7,6 @@ import threading
 import tkinter as tk
 from errno import EEXIST
 from getpass import getuser
-from http.client import responses
-from idlelib.rpc import response_queue
 from queue import Queue
 from socket import AF_INET
 from tempfile import mkdtemp, NamedTemporaryFile
@@ -1216,9 +1214,13 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        # 检查请求是否成功
         if response_client.status_code == 200:
-            info_json_str = response_client.text.strip()
+            response_client_new = response_client
+        else:
+            response_client_new = requests.get(global_json["latest_update_url"])
+        # 检查请求是否成功
+        if response_client_new.status_code == 200:
+            info_json_str = response_client_new.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             latest_version_123 = update_info["version_123"][1:]
