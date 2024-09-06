@@ -7,6 +7,8 @@ import threading
 import tkinter as tk
 from errno import EEXIST
 from getpass import getuser
+from http.client import responses
+from idlelib.rpc import response_queue
 from queue import Queue
 from socket import AF_INET
 from tempfile import mkdtemp, NamedTemporaryFile
@@ -1002,7 +1004,11 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
     try:
         # 检查请求是否成功
         if response_client.status_code == 200:
-            info_json_str = response_client.text.strip()
+            response_client_new = response_client
+        else:
+            response_client_new = requests.get(global_json["latest_update_url"])
+        if response_client_new.status_code == 200:
+            info_json_str = response_client_new.text.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -1068,7 +1074,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
         else:
-            print(f"无法获取下载源信息: {response_client.status_code}")
+            print(f"无法获取下载源信息: {response_client_new.status_code}")
             msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
         print("无法获取下载源信息")
