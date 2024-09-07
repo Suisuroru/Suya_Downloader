@@ -11,6 +11,7 @@ from zipfile import ZipFile
 import requests
 
 Suya_Updater_Version = "1.0.3.2"
+Dev_Version = ""
 
 
 def is_admin():
@@ -41,13 +42,8 @@ def show_message(partner, partner_en):
 current_dir = os.getcwd()
 
 # 指定路径
-settings_path = os.path.join("./Settings")
-global_config_path = os.path.join(settings_path, "global_config.json")
+suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
-
-# 确保设置的文件夹存在
-if not os.path.exists(settings_path):
-    os.makedirs(settings_path)
 
 
 def merge_jsons(default_json, file_path):
@@ -78,6 +74,14 @@ def get_config():
     except:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
+    if default_api_config["Updater_Partner"] == "read_version":
+        if Dev_Version != "":
+            default_api_config["Updater_Version"] = Suya_Updater_Version + "-" + Dev_Version
+        else:
+            default_api_config["Updater_Version"] = Suya_Updater_Version
+        with open(suya_config_path, "w", encoding="utf-8") as file:
+            json.dump(default_api_config, file, ensure_ascii=False, indent=4)
+            sys.exit()
     try:
         api_content = requests.get(default_api_config["latest_api_url"]).json()
     except:
@@ -86,7 +90,7 @@ def get_config():
         default_global_config = merge_jsons(default_api_config, api_content)
     except:
         print("出现异常：" + str(Exception))
-    default_global_config = merge_jsons(default_global_config, global_config_path)
+    default_global_config = merge_jsons(default_global_config, suya_config_path)
     try:
         if default_global_config["cf_mirror_enabled"]:
             default_global_config["latest_api_url"] = default_global_config["server_api_url"]
@@ -95,7 +99,7 @@ def get_config():
     except:
         default_global_config["latest_api_url"] = default_global_config["server_api_url"]
         default_global_config["cf_mirror_enabled"] = True
-    with open(global_config_path, "w", encoding="utf-8") as file:
+    with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
     if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
         msgbox.showinfo("Error",
@@ -109,11 +113,11 @@ api_url = global_json["api_url"]
 
 # 创建或覆盖版本文件
 global_json["Updater_Version"] = Suya_Updater_Version
-with open(global_config_path, "w", encoding="utf-8") as file:
+with open(suya_config_path, "w", encoding="utf-8") as file:
     json.dump(global_json, file, ensure_ascii=False, indent=4)
 
 
-def del_Resources():
+def del_resources():
     folder_path = "./Resources-Downloader"
     try:
         shutil.rmtree(folder_path)
@@ -132,7 +136,7 @@ def fetch_update_info():
                 Update_Partner = global_json["Update_Partner"]
             except:
                 global_json["Updater_Partner"] = "Full"
-                with open(global_config_path, "w", encoding="utf-8") as f:
+                with open(suya_config_path, "w", encoding="utf-8") as f:
                     json.dump(global_json, f, ensure_ascii=False, indent=4)
                 Update_Partner = "Full"
             try:
@@ -180,7 +184,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:
             shutil.copyfileobj(response.raw, f)
-        del_Resources()
+        del_resources()
         if update_partner_inner == "Resources":
             # 构建完整的目录路径，基于当前工作目录
             pull_dir = os.path.join(current_dir, "Resources-Downloader")
@@ -208,7 +212,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         os.remove(temp_zip_file)
 
         global_json["Pull_Resources_Count"] = 0
-        with open(global_config_path, "w", encoding="utf-8") as file:
+        with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
@@ -227,7 +231,7 @@ def download_and_install(downloader_update_url, update_partner_inner):
         print(f"下载或解压错误: {e}")
 
 
-def Update_Launcher():
+def update_launcher():
     version, downloader_update_url, Update_partner = fetch_update_info()
     if version and downloader_update_url:
         print(f"发现新版本: {version}，开始下载...")
@@ -240,4 +244,4 @@ def Update_Launcher():
 
 
 if __name__ == "__main__":
-    Update_Launcher()
+    update_launcher()
