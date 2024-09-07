@@ -368,7 +368,7 @@ def get_language():
             json.dump(global_json, file_w, ensure_ascii=False, indent=4)
 
 
-def Open_Updater(window):
+def open_updater(window):
     try:
         if os.name == "nt":
             launcher_path = os.path.join(current_working_dir, "Updater.exe")
@@ -390,16 +390,17 @@ def Open_Updater(window):
         msgbox.showerror(get_text("start_download_error"), get_text("start_download_error2") + f"{Exception}")
 
 
-def Pull_Resources(window):
+def pull_files(window, way):
     if os.name == "nt":
-        global_json["Update_Partner"] = "Resources"
-        try:
-            global_json["Pull_Resources_Count"] += 1
-        except:
-            global_json["Pull_Resources_Count"] = 1
+        global_json["Update_Partner"] = way
+        if way == "Resources":
+            try:
+                global_json["Pull_Resources_Count"] += 1
+            except:
+                global_json["Pull_Resources_Count"] = 1
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
-        Open_Updater(window)
+        open_updater(window)
 
 
 def choose_language():
@@ -467,7 +468,7 @@ def initialize_languages(tag):
         with open(os.path.join("./Resources-Downloader/Languages", "zh_hans.json"), "r", encoding="utf-8") as file:
             spare_lang_json = json.load(file)
     except:
-        Pull_Resources(None)
+        pull_files(None, "Resources")
 
 
 def export_info(event):
@@ -1144,12 +1145,12 @@ def check_for_updates_with_confirmation(current_version_inner, window):
         update_url = data["url_downloader"]
         latest_version = data["version_downloader"]
 
-        def Update(answer, window):
+        def update(answer, window):
             if answer:  # 用户选择是
                 global_json["Update_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
-                Open_Updater(window)
+                open_updater(window)
 
         if current_version_inner == "url":
             return update_url
@@ -1161,7 +1162,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
                                get_text("update_question_available2") + current_version_inner +
                                get_text("update_question_available3"))
             answer = msgbox.askyesno("更新可用", update_question)
-            Update(answer, window)
+            update(answer, window)
 
         elif comparison_result == -1:
             if Dev_Version != "":
@@ -1173,7 +1174,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
                                    get_text("update_question_dev2") + current_version_inner +
                                    get_text("update_question_dev3"))
             answer = msgbox.askyesno("获取正式版", update_question)
-            Update(answer, window)
+            update(answer, window)
 
         else:
             msgbox.showinfo(get_text("update_question_check"), get_text("update_question_release"))
@@ -1289,17 +1290,36 @@ def get_version_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
     comparison_result = compare_versions(current_version_inner, latest_version)
 
+    if comparison_result != 1:
+        try:
+            def check_update_for_updater():
+                if not global_json["debug"]:
+                    if version_check_for_updater(fetch_update_info()[0]):
+                        # 如果有新版本，启动新线程执行更新操作
+                        print("启动更新线程...")
+                        update_thread = threading.Thread(target=update_updater)
+                        update_thread.daemon = True
+                        update_thread.start()
+                    else:
+                        print("无需更新。")
+                else:
+                    print("跳过更新检查")
+
+            check_thread = threading.Thread(target=check_update_for_updater)
+            check_thread.start()
+        except requests.RequestException as e:
+            print("Updater更新拉取失败，错误代码：{e}")
+        if comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
+            return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
+        elif comparison_result == 0:
+            return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
+        else:
+            return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         if Dev_Version != "":
             current_version_inner = current_version_inner + "-" + Dev_Version
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
-    elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
-        return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
-    elif comparison_result == 0:
-        return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
-    else:
-        return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
 
 
 def update_notice_from_queue(queue, notice_text_area):
@@ -1395,9 +1415,9 @@ def download_and_install(update_url, version):
         print(f"下载或解压错误: {Exception}")
 
 
-def Update_Updater():
+def update_updater():
     version, update_url = fetch_update_info()
-    if Version_Check_for_Updater(version):
+    if version_check_for_updater(version):
         if version and update_url:
             print(f"发现新版本: {version}，开始下载...")
             download_and_install(update_url, version)
@@ -1473,7 +1493,7 @@ def get_important_notice():
     important_announce_win.mainloop()
 
 
-def Version_Check_for_Updater(online_version):
+def version_check_for_updater(online_version):
     # 版本文件所在目录
     try:
         print("Updater在线最新版：" + online_version)
@@ -1654,24 +1674,19 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
                      label_suya_announcement):
         initialize_api_str()
-        try:
-            def Check_Update_for_Updater():
-                if not global_json["debug"]:
-                    if Version_Check_for_Updater(fetch_update_info()[0]):
-                        # 如果有新版本，启动新线程执行更新操作
-                        print("启动更新线程...")
-                        update_thread = threading.Thread(target=Update_Updater)
-                        update_thread.daemon = True
-                        update_thread.start()
-                    else:
-                        print("无需更新。")
-                else:
-                    print("跳过更新检查")
+        if not global_json["debug"]:
+            try:
+                def read_version():
+                    read_version_thread = threading.Thread(target=pull_files(None, "read_version"))
+                    read_version_thread.daemon = True
+                    read_version_thread.start()
+                    sleep(10)
+                    get_config(True)
 
-            check_thread = threading.Thread(target=Check_Update_for_Updater)
-            check_thread.start()
-        except requests.RequestException as e:
-            print("更新拉取失败，错误代码：{e}")
+                read_thread = threading.Thread(target=read_version)
+                read_thread.start()
+            except requests.RequestException as e:
+                print("更新拉取失败，错误代码：{e}")
         try:
             update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
             update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
@@ -1889,7 +1904,7 @@ def create_gui():
             # 加载音乐并设置为循环播放
             pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
         except:
-            Pull_Resources(window_main)
+            pull_files(window_main, "Resources")
 
         toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
