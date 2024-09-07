@@ -70,6 +70,13 @@ jobs:
           sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
         shell: bash
 
+      - name: Update Dev_Version in Updater.py
+        run: |
+          cd $(pwd)
+          SHORT_SHA="${GITHUB_SHA:0:8}"
+          sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
+        shell: bash
+
       - name: Build Launcher with PyInstaller
         id: build-launcher
         run: |
@@ -142,6 +149,11 @@ jobs:
           (Get-Content Launcher.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Launcher.py
         shell: powershell
 
+      - name: Update Dev_Version in Launcher.py
+        run: |
+          $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
+          (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
+        shell: powershell
 
       - name: Build Launcher with PyInstaller
         id: build-launcher
@@ -165,7 +177,6 @@ jobs:
           move ./default_api_setting.json ./dist/default_api_setting.json
         shell: cmd
 
-
       - name: Zip the dist directory
         run: |
           # Navigate to the dist directory
@@ -177,7 +188,6 @@ jobs:
           # Return to the root directory
           cd ..
         shell: cmd
-
 
       - name: Set short commit SHA as environment variable
         run: |
@@ -225,7 +235,6 @@ jobs:
           ren app.zip %FULL_FILE_NAME%
         shell: cmd
 
-
       - name: Upload assets to latest pre-release
         id: upload-assets-to-pre-release
         env:
@@ -264,6 +273,11 @@ jobs:
           sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
         shell: bash
 
+      - name: Update Dev_Version in Updater.py
+        run: |
+          SHORT_SHA="${GITHUB_SHA:0:8}"
+          sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
+        shell: bash
 
       - name: Build Launcher with PyInstaller
         id: build-launcher
