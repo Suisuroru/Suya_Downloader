@@ -133,22 +133,22 @@ def fetch_update_info():
         """从API获取版本信息和下载链接"""
         try:
             try:
-                Update_Partner = global_json["Update_Partner"]
+                update_partner = global_json["Update_Partner"]
             except:
                 global_json["Updater_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as f:
                     json.dump(global_json, f, ensure_ascii=False, indent=4)
-                Update_Partner = "Full"
+                update_partner = "Full"
             try:
                 Count = global_json["Pull_Resources_Count"]
                 print("尝试拉取次数：" + str(Count))
             except:
                 Count = 1
             if Count >= 3:
-                Update_Partner = "Full"
+                update_partner = "Full"
             json_str = requests.get(api_url).text.strip()
             data = json.loads(json_str)
-            if Update_Partner == "Full":
+            if update_partner == "Full":
                 downloader_update_url = data["url_downloader"]
                 version = data["version_downloader"]
                 partner = "完整更新模式"
@@ -156,15 +156,15 @@ def fetch_update_info():
                 message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
                 # 启动线程
                 message_thread.start()
-                return version, downloader_update_url, Update_Partner
-            elif Update_Partner == "Resources":
+                return version, downloader_update_url, update_partner
+            elif update_partner == "Resources":
                 downloader_update_url = data["url_resource"]
                 partner = "重新拉取资源文件模式"
                 partner_en = "RESOURCES PULL MODE"
                 message_thread = threading.Thread(target=show_message, args=(partner, partner_en,))
                 # 启动线程
                 message_thread.start()
-                return None, downloader_update_url, Update_Partner
+                return None, downloader_update_url, update_partner
             else:
                 print("传入参数错误")
                 return None, None, None
@@ -212,8 +212,8 @@ def download_and_install(downloader_update_url, update_partner_inner):
         os.remove(temp_zip_file)
 
         global_json["Pull_Resources_Count"] = 0
-        with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+        with open(suya_config_path, "w", encoding="utf-8") as file_w:
+            json.dump(global_json, file_w, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
@@ -232,13 +232,13 @@ def download_and_install(downloader_update_url, update_partner_inner):
 
 
 def update_launcher():
-    version, downloader_update_url, Update_partner = fetch_update_info()
+    version, downloader_update_url, update_partner = fetch_update_info()
     if version and downloader_update_url:
         print(f"发现新版本: {version}，开始下载...")
-        download_and_install(downloader_update_url, Update_partner)
+        download_and_install(downloader_update_url, update_partner)
     elif downloader_update_url:
         print("正在重新拉取Resources")
-        download_and_install(downloader_update_url, Update_partner)
+        download_and_install(downloader_update_url, update_partner)
     else:
         print("没有找到新版本的信息。")
 

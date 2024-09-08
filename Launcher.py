@@ -1532,25 +1532,25 @@ def select_download_source(selected_source, source_combobox_select):
     namelist = date_update[1]
     print("选择输入", namelist)
     download_sources = []
-    Tag_123 = False
-    Tag_OneDrive = False
-    Tag_Alist = False
+    tag_123 = False
+    tag_one_drive = False
+    tag_alist = False
     for name in namelist:
         if name == "123":
             download_sources.append(get_text("123_pan"))
-            Tag_123 = True
+            tag_123 = True
         elif name == "onedrive":
             download_sources.append(get_text("OneDrive_pan"))
-            Tag_OneDrive = True
+            tag_one_drive = True
         elif name == "alist":
             download_sources.append(get_text("alist_pan"))
-            Tag_Alist = True
+            tag_alist = True
         print("选择过程", name)
-    if Tag_OneDrive:
+    if tag_one_drive:
         default_selected_source = get_text("OneDrive_pan")
-    elif Tag_123:
+    elif tag_123:
         default_selected_source = get_text("123_pan")
-    elif Tag_Alist:
+    elif tag_alist:
         default_selected_source = get_text("alist_pan")
     else:
         download_sources = [get_text("source_fault")]
