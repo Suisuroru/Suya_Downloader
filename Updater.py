@@ -10,7 +10,7 @@ from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.3"
+Suya_Updater_Version = "1.0.3.4"
 Dev_Version = ""
 
 
