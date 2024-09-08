@@ -1223,10 +1223,11 @@ def check_client_update():
             latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
             try:
                 debug_url = update_info["debug_url"]
-                print("Unzip_Debug已启用")
                 if update_info["debug_tag"] == "True":
+                    print("Unzip_Debug已启用")
                     return latest_version, newest_version_list, debug_url
                 else:
+                    print("Unzip_Debug已禁用")
                     return latest_version, newest_version_list, "NoDebug"
             except:
                 print("Unzip_Debug已禁用")
