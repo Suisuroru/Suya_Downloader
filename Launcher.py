@@ -968,23 +968,23 @@ def start_download_in_new_window(download_link):
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
-        Confirm_tag = global_json["Confirm_tag"]
+        confirm_tag = global_json["Confirm_tag"]
     except:
-        Confirm_tag = "No"
-        global_json["Confirm_tag"] = Confirm_tag
+        confirm_tag = "No"
+        global_json["Confirm_tag"] = confirm_tag
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
-    if Confirm_tag == "No":
+    if confirm_tag == "No":
         if msgbox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                             get_text("path_tip2")):
-            Confirm_tag = "Yes"
-            global_json["Confirm_tag"] = Confirm_tag
+            confirm_tag = "Yes"
+            global_json["Confirm_tag"] = confirm_tag
             with open(suya_config_path, "w", encoding="utf-8") as file:
                 json.dump(global_json, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
             pass
-    if Confirm_tag == "Yes":
+    if confirm_tag == "Yes":
         thread = threading.Thread(target=start_download_in_new_window(download_link))
         thread.daemon = True
         thread.start()
