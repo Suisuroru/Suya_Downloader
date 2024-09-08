@@ -1226,12 +1226,10 @@ def check_client_update():
                 if update_info["debug_tag"] == "True":
                     print("Unzip_Debug已启用")
                     return latest_version, newest_version_list, debug_url
-                else:
-                    print("Unzip_Debug已禁用")
-                    return latest_version, newest_version_list, "NoDebug"
             except:
-                print("Unzip_Debug已禁用")
-                return latest_version, newest_version_list, "NoDebug"
+                pass
+            print("Unzip_Debug已禁用")
+            return latest_version, newest_version_list, "NoDebug"
     except:
         msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
