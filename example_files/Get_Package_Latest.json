@@ -1,5 +1,5 @@
 {
-    "self_unzip_able": "True/False",
+    "self_unzip_able": false,
     "version_123": "v0.0.0.0",
     "url_123": "https://www.example.com/origin",
     "version_onedrive": "v0.0.0.0",
@@ -8,5 +8,5 @@
     "version_alist": "v0.0.0.0",
     "url_alist_origin": "https://www.example.com/origin",
     "url_alist_direct": "https://www.example.com/direct",
-    "debug_tag": "False"
+    "debug_tag": false
 }

@@ -1223,7 +1223,7 @@ def check_client_update():
             latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
             try:
                 debug_url = update_info["debug_url"]
-                if update_info["debug_tag"] == "True":
+                if update_info["debug_tag"]:
                     print("Unzip_Debug已启用")
                     return latest_version, newest_version_list, debug_url
             except:
@@ -1575,7 +1575,7 @@ def select_download_way_source(way_selected_source, source_combobox2):
         if response_client.status_code == 200:
             info_json_str = response_client.text.strip()
             update_info = json.loads(info_json_str)
-            if update_info["self_unzip_able"] == "False":
+            if not update_info["self_unzip_able"]:
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
                 default_way_selected_source = value = get_text("url_direct")
             else:
