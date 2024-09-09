@@ -108,13 +108,13 @@ def get_config():
     return default_global_config
 
 
-global_json = get_config()
-api_url = global_json["api_url"]
+global_config = get_config()
+api_url = global_config["api_url"]
 
 # 创建或覆盖版本文件
-global_json["Updater_Version"] = Suya_Updater_Version
+global_config["Updater_Version"] = Suya_Updater_Version
 with open(suya_config_path, "w", encoding="utf-8") as file:
-    json.dump(global_json, file, ensure_ascii=False, indent=4)
+    json.dump(global_config, file, ensure_ascii=False, indent=4)
 
 
 def del_resources():
@@ -133,14 +133,14 @@ def fetch_update_info():
         """从API获取版本信息和下载链接"""
         try:
             try:
-                update_partner = global_json["Update_Partner"]
+                update_partner = global_config["Update_Partner"]
             except:
-                global_json["Updater_Partner"] = "Full"
+                global_config["Updater_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as f:
-                    json.dump(global_json, f, ensure_ascii=False, indent=4)
+                    json.dump(global_config, f, ensure_ascii=False, indent=4)
                 update_partner = "Full"
             try:
-                Count = global_json["Pull_Resources_Count"]
+                Count = global_config["Pull_Resources_Count"]
                 print("尝试拉取次数：" + str(Count))
             except:
                 Count = 1
@@ -211,9 +211,9 @@ def download_and_install(downloader_update_url, update_partner_inner):
         # 清理临时ZIP文件
         os.remove(temp_zip_file)
 
-        global_json["Pull_Resources_Count"] = 0
+        global_config["Pull_Resources_Count"] = 0
         with open(suya_config_path, "w", encoding="utf-8") as file_w:
-            json.dump(global_json, file_w, ensure_ascii=False, indent=4)
+            json.dump(global_config, file_w, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
         # 确保Launcher.exe存在于当前目录下再尝试运行
