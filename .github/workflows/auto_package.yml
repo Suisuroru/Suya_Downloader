@@ -169,13 +169,10 @@ jobs:
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
-      - name: Move Resources folder and default_api_setting.json to dist
+      - name: Move needed files to dist
         run: |
-          # Move the Resources folder to the dist folder
           move ./Resources-Downloader ./dist/Resources-Downloader
           move ./Resources-Server ./dist/Resources-Server
-          
-          # Move some files to the dist folder
           move ./LICENSE-APACHE ./dist/LICENSE-APACHE
           move ./LICENSE-AGPL ./dist/LICENSE-AGPL
           move ./default_api_setting.json ./dist/default_api_setting.json
