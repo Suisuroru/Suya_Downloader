@@ -307,14 +307,14 @@ def get_config(initialize_tag):
             except:
                 final_global_config["Used_Server_url_get"] = {}
             if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
                 final_global_config["default_api_settings"]["server_api_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
                 final_global_config["default_api_settings"]["server_api_url_gh"]
         else:
             try:
-                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_api_url"]).json()
+                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
                 print("获取到API信息: ", api_content)
                 api_content_new = {"All_Server_url_get": api_content}
                 final_global_config = merge_jsons(final_global_config, api_content_new)
