@@ -86,7 +86,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",", "")}")
+        msg_box.insert(tk.END, f"{json.dumps(global_json, ensure_ascii=False, indent=4)}")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
@@ -239,6 +239,7 @@ def merge_jsons(default_json_or_path, file_or_json):
     :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
+
     def load_json(data):
         if isinstance(data, str):  # 如果是字符串，判断是文件路径还是JSON文本
             try:
@@ -271,13 +272,14 @@ def get_config(initialize_tag):
     if os.name == "nt":
         try:
             default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                     fr"{default_global_config["default_api_settings"]["Server_Name"]}")
+                                                        fr"{default_global_config["default_api_settings"]["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
         print("最终initialize_path：", default_global_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_global_config["initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
+            default_global_config[
+                "initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
         except:
             print("异常错误")
     try:
@@ -305,9 +307,11 @@ def get_config(initialize_tag):
             except:
                 final_global_config["Used_Server_url_get"] = {}
             if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["default_api_settings"]["server_api_url"]
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["default_api_settings"]["server_api_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["default_api_settings"]["server_api_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["default_api_settings"]["server_api_url_gh"]
         else:
             try:
                 api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_api_url"]).json()
@@ -323,21 +327,28 @@ def get_config(initialize_tag):
             except:
                 final_global_config["All_Server_url_get"] = {}
             if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["All_Server_url_get"]["api_url"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = final_global_config["All_Server_url_get"]["update_url"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = final_global_config["All_Server_url_get"]["announcement_url"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = final_global_config["All_Server_url_get"]["important_notice_url"]
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["All_Server_url_get"]["api_url"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
+                final_global_config["All_Server_url_get"]["update_url"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                final_global_config["All_Server_url_get"]["announcement_url"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                final_global_config["All_Server_url_get"]["important_notice_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
                 final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["api_url_gh"]
                 final_global_config["Used_Server_url_get"]["latest_update_url"] = final_global_config["update_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = final_global_config["announcement_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = final_global_config[
+                    "announcement_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = final_global_config[
+                    "important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
-    if final_global_config["default_api_settings"]["server_api_url"] == "" and final_global_config["default_api_settings"]["server_api_url_gh"] == "":
+    if final_global_config["default_api_settings"]["server_api_url"] == "" and \
+            final_global_config["default_api_settings"]["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
     return final_global_config
@@ -1744,7 +1755,8 @@ def create_gui():
 
     music_playing = False
     window_main = tk.Tk()
-    window_main.title(get_text("main_title") + global_json["default_api_settings"]["Server_Name"] + get_text("sub_title"))
+    window_main.title(
+        get_text("main_title") + global_json["default_api_settings"]["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
@@ -1889,13 +1901,15 @@ def create_gui():
 
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip,
-                                 text=get_text("welcome1") + global_json["default_api_settings"]["Server_Name"] + get_text("welcome2"),
+                                 text=get_text("welcome1") + global_json["default_api_settings"][
+                                     "Server_Name"] + get_text("welcome2"),
                                  font=("Microsoft YaHei", 30, "bold"), fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
         # 第二行文字
         second_line_label = tk.Label(blue_strip,
-                                     text=get_text("description1") + global_json["default_api_settings"]["Server_Name"] + get_text(
+                                     text=get_text("description1") + global_json["default_api_settings"][
+                                         "Server_Name"] + get_text(
                                          "description2"),
                                      font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")
         second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
