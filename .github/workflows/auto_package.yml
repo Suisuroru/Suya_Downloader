@@ -87,13 +87,13 @@ jobs:
         run: |
           pyinstaller --onefile --distpath=./dist Updater.py
 
-      - name: Copy needed files to dist
+      - name: Move needed files to dist
         run: |
-          cp -r Resources-Downloader ./dist/
-          cp -r Resources-Server ./dist/
-          cp LICENSE-APACHE ./dist/
-          cp LICENSE-AGPL ./dist/
-          cp default_api_setting.json ./dist/
+          mv Resources-Downloader ./dist/
+          mv Resources-Server ./dist/
+          mv LICENSE-APACHE ./dist/
+          mv LICENSE-AGPL ./dist/
+          mv default_api_setting.json ./dist/
 
       - name: Compress dist folder into app.zip
         run: |
