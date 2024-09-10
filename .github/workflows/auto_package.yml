@@ -87,10 +87,12 @@ jobs:
         run: |
           pyinstaller --onefile --distpath=./dist Updater.py
 
-      - name: Copy Resources folder and default_api_setting.json to dist
+      - name: Copy needed files to dist
         run: |
           cp -r Resources-Downloader ./dist/
           cp -r Resources-Server ./dist/
+          cp LICENSE-APACHE ./dist/
+          cp LICENSE-AGPL ./dist/
           cp default_api_setting.json ./dist/
 
       - name: Compress dist folder into app.zip
@@ -167,13 +169,12 @@ jobs:
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
-      - name: Move Resources folder and default_api_setting.json to dist
+      - name: Move needed files to dist
         run: |
-          # Move the Resources folder to the dist folder
           move ./Resources-Downloader ./dist/Resources-Downloader
           move ./Resources-Server ./dist/Resources-Server
-          
-          # Move the default_api_setting.json file to the dist folder
+          move ./LICENSE-APACHE ./dist/LICENSE-APACHE
+          move ./LICENSE-AGPL ./dist/LICENSE-AGPL
           move ./default_api_setting.json ./dist/default_api_setting.json
         shell: cmd
 
@@ -291,13 +292,12 @@ jobs:
           # Build the macOS app bundle
           pyinstaller --onefile --windowed --distpath=./dist Updater.py
 
-      - name: Move Resources folder and default_api_setting.json to dist
+      - name: Move needed files to dist
         run: |
-          # Move the Resources folder to the dist folder
           mv ./Resources-Downloader ./dist/Resources-Downloader
           mv ./Resources-Server ./dist/Resources-Server
-          
-          # Move the default_api_setting.json file to the dist folder
+          mv ./LICENSE-APACHE ./dist/LICENSE-APACHE
+          mv ./LICENSE-AGPL ./dist/LICENSE-AGPL
           mv ./default_api_setting.json ./dist/default_api_setting.json
 
       - name: Package dist files into a zip archive

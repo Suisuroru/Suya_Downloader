@@ -20,7 +20,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.3.3"
+Suya_Downloader_Version = "1.0.3.4"
 Dev_Version = ""
 
 # 获取运行目录
