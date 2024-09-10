@@ -46,25 +46,34 @@ suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 
-def merge_jsons(default_json, file_path):
+def merge_jsons(default_json_or_path, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
-    :param file_path: 文件路径
+    :param default_json_or_path: 默认的 JSON 字典或对应文件路径
+    :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
+
+    def load_json(data):
+        if isinstance(data, str):  # 如果是字符串，判断是文件路径还是JSON文本
+            try:
+                with open(data, "r", encoding="utf-8") as file:
+                    return json.load(file)
+            except FileNotFoundError:
+                try:
+                    return json.loads(data)  # 尝试将字符串作为JSON文本解析
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Invalid JSON format: {e}")
+        elif isinstance(data, dict):
+            return data
+        else:
+            raise TypeError("Unsupported type for JSON input")
+
+    loaded_json = load_json(file_or_json)
+    default_json_loaded = load_json(default_json_or_path)
+
+    # 使用文件中的数据覆盖默认值
+    return {**default_json_loaded, **loaded_json}
 
 
 def get_config():
@@ -83,7 +92,7 @@ def get_config():
             json.dump(default_api_config, file, ensure_ascii=False, indent=4)
             sys.exit()
     try:
-        api_content = requests.get(default_api_config["latest_api_url"]).json()
+        api_content = requests.get(default_api_config["Used_Server_url_get"]["latest_api_url"]).json()
     except:
         api_content = default_api_config
     try:
@@ -92,16 +101,16 @@ def get_config():
         print("出现异常：" + str(Exception))
     default_global_config = merge_jsons(default_global_config, suya_config_path)
     try:
-        if default_global_config["cf_mirror_enabled"]:
-            default_global_config["latest_api_url"] = default_global_config["server_api_url"]
-        elif not default_global_config["cf_mirror_enabled"]:
-            default_global_config["latest_api_url"] = default_global_config["server_api_url_gh"]
+        if default_global_config["default_api_settings"]["cf_mirror_enabled"]:
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url"]
+        elif not default_global_config["default_api_settings"]["cf_mirror_enabled"]:
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url_gh"]
     except:
-        default_global_config["latest_api_url"] = default_global_config["server_api_url"]
-        default_global_config["cf_mirror_enabled"] = True
+        default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url"]
+        default_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
-    if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
+    if default_global_config["All_Server_url_get"]["server_api_url"] == "" and default_global_config["All_Server_url_get"]["server_api_url_gh"] == "":
         msgbox.showinfo("Error",
                         "未设置API地址，请询问发行方\nIf you do not have an API address, please ask the publisher")
         sys.exit()
@@ -109,7 +118,7 @@ def get_config():
 
 
 global_json = get_config()
-api_url = global_json["api_url"]
+api_url = global_json["Used_Server_url_get"]["latest_api_url"]
 
 # 创建或覆盖版本文件
 global_json["Updater_Version"] = Suya_Updater_Version

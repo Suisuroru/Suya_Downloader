@@ -86,7 +86,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",", "")}")
+        msg_box.insert(tk.END, f"{json.dumps(global_json, ensure_ascii=False, indent=4)}")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
@@ -239,16 +239,25 @@ def merge_jsons(default_json_or_path, file_or_json):
     :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_or_json, "r", encoding="utf-8") as file:
-            loaded_json = json.load(file)
-    except:
-        loaded_json = file_or_json
-    try:
-        with open(default_json_or_path, "r", encoding="utf-8") as file:
-            default_json_loaded = json.load(file)
-    except:
-        default_json_loaded = default_json_or_path
+
+    def load_json(data):
+        if isinstance(data, str):  # 如果是字符串，判断是文件路径还是JSON文本
+            try:
+                with open(data, "r", encoding="utf-8") as file:
+                    return json.load(file)
+            except FileNotFoundError:
+                try:
+                    return json.loads(data)  # 尝试将字符串作为JSON文本解析
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Invalid JSON format: {e}")
+        elif isinstance(data, dict):
+            return data
+        else:
+            raise TypeError("Unsupported type for JSON input")
+
+    loaded_json = load_json(file_or_json)
+    default_json_loaded = load_json(default_json_or_path)
+
     # 使用文件中的数据覆盖默认值
     return {**default_json_loaded, **loaded_json}
 
@@ -256,34 +265,26 @@ def merge_jsons(default_json_or_path, file_or_json):
 def get_config(initialize_tag):
     try:
         with open(default_api_setting_path, "r", encoding="utf-8") as file:
-            default_api_config = json.load(file)
+            default_global_config = {"default_api_settings": json.load(file)}
+        print("读取到初始参数：", default_global_config)
     except:
         get_admin()
     if os.name == "nt":
         try:
-            default_api_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                     fr"{default_api_config["Server_Name"]}")
+            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                        fr"{default_global_config["default_api_settings"]["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
-        print("最终initialize_path：", default_api_config["initialize_path"])
+        print("最终initialize_path：", default_global_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_api_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_api_config["Server_Name"]}"
+            default_global_config[
+                "initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
         except:
             print("异常错误")
-    if initialize_tag:
-        api_content = default_api_config
-    else:
-        api_content = requests.get(default_api_config["server_api_url"]).json()
-        print("获取到API信息: ", api_content)
-    try:
-        default_global_config = merge_jsons(default_api_config, api_content)
-        print("合并全局配置：", default_global_config)
-    except:
-        print("出现异常：" + str(Exception))
-        dupe_crash_report()
     try:
         final_global_config = merge_jsons(suya_config_path, default_global_config)
+        print("初次合并结果:", final_global_config)
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
@@ -293,35 +294,61 @@ def get_config(initialize_tag):
     except:
         final_global_config["debug"] = False
     try:
-        if final_global_config["cf_mirror_enabled"]:
+        if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
             print("使用CF镜像")
         else:
             print("使用Github镜像")
     except:
-        final_global_config["cf_mirror_enabled"] = True
+        final_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     try:
         if initialize_tag:
-            if final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["server_api_url"]
-            elif not final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["server_api_url_gh"]
+            try:
+                final_global_config["Used_Server_url_get"]
+            except:
+                final_global_config["Used_Server_url_get"] = {}
+            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                final_global_config["default_api_settings"]["server_api_url"]
+            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                final_global_config["default_api_settings"]["server_api_url_gh"]
         else:
-            if final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url"]
-                final_global_config["latest_update_url"] = final_global_config["update_url"]
-                final_global_config["latest_announcement_url"] = final_global_config["announcement_url"]
-                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url"]
-            elif not final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
-                final_global_config["latest_update_url"] = final_global_config["update_url_gh"]
-                final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
-                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
+            try:
+                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
+                print("获取到API信息: ", api_content)
+                api_content_new = {"All_Server_url_get": api_content}
+                final_global_config = merge_jsons(final_global_config, api_content_new)
+                print("合并全局配置：", final_global_config)
+            except:
+                print("出现异常：" + str(Exception))
+                dupe_crash_report()
+            try:
+                final_global_config["All_Server_url_get"]
+            except:
+                final_global_config["All_Server_url_get"] = {}
+            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                final_global_config["All_Server_url_get"]["api_url"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
+                final_global_config["All_Server_url_get"]["update_url"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                final_global_config["All_Server_url_get"]["announcement_url"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                final_global_config["All_Server_url_get"]["important_notice_url"]
+            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["api_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = final_global_config["update_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = final_global_config[
+                    "announcement_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = final_global_config[
+                    "important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
-    if final_global_config["server_api_url"] == "" and final_global_config["server_api_url_gh"] == "":
+    if final_global_config["default_api_settings"]["server_api_url"] == "" and \
+            final_global_config["default_api_settings"]["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
     return final_global_config
@@ -776,7 +803,7 @@ def create_setting_window(event):
     choose_button.pack(pady=10)
 
     # 定义一个变量来追踪复选框的状态
-    cf_mirror_enabled = tk.BooleanVar(value=global_json.get("cf_mirror_enabled", True))
+    cf_mirror_enabled = tk.BooleanVar(value=global_json["default_api_settings"]["cf_mirror_enabled"])
 
     # 添加描述性标签
     description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
@@ -788,7 +815,7 @@ def create_setting_window(event):
 
     # 更新保存设置的逻辑，确保新的设置被保存
     def save_settings():
-        global_json["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        global_json["default_api_settings"]["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
 
@@ -996,7 +1023,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
         if response_client.status_code == 200:
             response_client_new = response_client
         else:
-            response_client_new = requests.get(global_json["latest_update_url"])
+            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
         if response_client_new.status_code == 200:
             info_json_str = response_client_new.text.strip()
             update_info = json.loads(info_json_str)
@@ -1209,7 +1236,7 @@ def check_client_update():
         if response_client.status_code == 200:
             response_client_new = response_client
         else:
-            response_client_new = requests.get(global_json["latest_update_url"])
+            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
         # 检查请求是否成功
         if response_client_new.status_code == 200:
             info_json_str = response_client_new.text.strip()
@@ -1334,7 +1361,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(global_json["latest_announcement_url"])
+        response = requests.get(global_json["Used_Server_url_get"]["latest_announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1440,7 +1467,7 @@ def rgb_to_hex(rgb_string):
 
 
 def get_important_notice():
-    important_notice_url = global_json["latest_important_notice_url"]
+    important_notice_url = global_json["Used_Server_url_get"]["latest_important_notice_url"]
     try:
         # 发送GET请求
         response = requests.get(important_notice_url)
@@ -1604,7 +1631,7 @@ def initialize_client_api():
     count_num = 0
     while count_num < 3:
         try:
-            response_client = requests.get(global_json["latest_update_url"])
+            response_client = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
             if response_client.status_code == 200:
                 return
             else:
@@ -1621,7 +1648,7 @@ def initialize_api_str():
     count_num = 0
     while count_num < 3:
         try:
-            api_json_str = requests.get(global_json["latest_api_url"]).text.strip()
+            api_json_str = requests.get(global_json["Used_Server_url_get"]["latest_api_url"]).text.strip()
             if response_client.status_code == 200:
                 return
             else:
@@ -1728,7 +1755,8 @@ def create_gui():
 
     music_playing = False
     window_main = tk.Tk()
-    window_main.title(get_text("main_title") + global_json["Server_Name"] + get_text("sub_title"))
+    window_main.title(
+        get_text("main_title") + global_json["default_api_settings"]["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
@@ -1873,13 +1901,15 @@ def create_gui():
 
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip,
-                                 text=get_text("welcome1") + global_json["Server_Name"] + get_text("welcome2"),
+                                 text=get_text("welcome1") + global_json["default_api_settings"][
+                                     "Server_Name"] + get_text("welcome2"),
                                  font=("Microsoft YaHei", 30, "bold"), fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
         # 第二行文字
         second_line_label = tk.Label(blue_strip,
-                                     text=get_text("description1") + global_json["Server_Name"] + get_text(
+                                     text=get_text("description1") + global_json["default_api_settings"][
+                                         "Server_Name"] + get_text(
                                          "description2"),
                                      font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")
         second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
