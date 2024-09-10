@@ -83,7 +83,7 @@ def get_config():
     except:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
-    if default_api_config["Updater_Partner"] == "read_version":
+    if default_api_config["Update_Partner"] == "read_version":
         if Dev_Version != "":
             default_api_config["Updater_Version"] = Suya_Updater_Version + "-" + Dev_Version
         else:
@@ -148,7 +148,7 @@ def fetch_update_info():
             try:
                 update_partner = global_json["Update_Partner"]
             except:
-                global_json["Updater_Partner"] = "Full"
+                global_json["Update_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as f:
                     json.dump(global_json, f, ensure_ascii=False, indent=4)
                 update_partner = "Full"
