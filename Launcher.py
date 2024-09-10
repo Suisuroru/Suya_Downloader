@@ -308,10 +308,10 @@ def get_config(initialize_tag):
                 final_global_config["Used_Server_url_get"] = {}
             if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
                 final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                final_global_config["default_api_settings"]["server_api_url"]
+                    final_global_config["default_api_settings"]["server_api_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
                 final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                final_global_config["default_api_settings"]["server_api_url_gh"]
+                    final_global_config["default_api_settings"]["server_api_url_gh"]
         else:
             try:
                 api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
@@ -328,13 +328,13 @@ def get_config(initialize_tag):
                 final_global_config["All_Server_url_get"] = {}
             if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
                 final_global_config["Used_Server_url_get"]["latest_api_url"] = \
-                final_global_config["All_Server_url_get"]["api_url"]
+                    final_global_config["All_Server_url_get"]["api_url"]
                 final_global_config["Used_Server_url_get"]["latest_update_url"] = \
-                final_global_config["All_Server_url_get"]["update_url"]
+                    final_global_config["All_Server_url_get"]["update_url"]
                 final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
-                final_global_config["All_Server_url_get"]["announcement_url"]
+                    final_global_config["All_Server_url_get"]["announcement_url"]
                 final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
-                final_global_config["All_Server_url_get"]["important_notice_url"]
+                    final_global_config["All_Server_url_get"]["important_notice_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
                 final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["api_url_gh"]
                 final_global_config["Used_Server_url_get"]["latest_update_url"] = final_global_config["update_url_gh"]

@@ -102,15 +102,19 @@ def get_config():
     default_global_config = merge_jsons(default_global_config, suya_config_path)
     try:
         if default_global_config["default_api_settings"]["cf_mirror_enabled"]:
-            default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url"]
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+            default_global_config["All_Server_url_get"]["server_api_url"]
         elif not default_global_config["default_api_settings"]["cf_mirror_enabled"]:
-            default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url_gh"]
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+            default_global_config["All_Server_url_get"]["server_api_url_gh"]
     except:
-        default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"]["server_api_url"]
+        default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"][
+            "server_api_url"]
         default_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
-    if default_global_config["All_Server_url_get"]["server_api_url"] == "" and default_global_config["All_Server_url_get"]["server_api_url_gh"] == "":
+    if default_global_config["All_Server_url_get"]["server_api_url"] == "" and \
+            default_global_config["All_Server_url_get"]["server_api_url_gh"] == "":
         msgbox.showinfo("Error",
                         "未设置API地址，请询问发行方\nIf you do not have an API address, please ask the publisher")
         sys.exit()
