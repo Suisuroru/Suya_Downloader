@@ -86,7 +86,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"{json.dumps(global_json, ensure_ascii=False, indent=4)}")
+        msg_box.insert(tk.END, f"\n{json.dumps(global_json, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
