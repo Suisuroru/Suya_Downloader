@@ -199,6 +199,7 @@ def dupe_crash_report(error_message=None):
     try:
         window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     except:
+        window_main.iconbitmap(ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="gold")))
         print("丢失窗口图标")
 
     # 创建一个滚动条和文本框
