@@ -1150,12 +1150,12 @@ def compare_client_versions(version1, version2):
 
 def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
-    comparison_result = compare_client_versions(current_version_inner, latest_version)
     if current_version_inner == "0.0.0.0":
         # 当前版本号为"0.0.0.0"即未发现本地客户端版本，提示用户需要下载客户端
         print("未发现客户端")
         return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
-    elif comparison_result == 1:
+    comparison_result = compare_client_versions(current_version_inner, latest_version)
+    if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 蓝色
     elif comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
@@ -1163,7 +1163,7 @@ def get_client_status(current_version_inner, latest_version):
     elif comparison_result == 0:
         return "最新正式版", "#009900", get_text("release_client") + current_version_inner  # 绿色
     else:
-        return "未知状态", "#808080", get_text("unknown_client")
+        return "未知状态", "#808080", get_text("unknown_client")  # 灰色
 
 
 def check_for_updates_with_confirmation(current_version_inner, window):
