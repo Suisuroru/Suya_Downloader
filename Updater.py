@@ -109,8 +109,8 @@ def get_config():
             default_global_config["Used_Server_url_get"]["latest_api_url"] = \
                 default_global_config["All_Server_url_get"]["server_api_url_gh"]
     except:
-        default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"][
-            "server_api_url"]
+        default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+            default_global_config["All_Server_url_get"]["server_api_url"]
         default_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)

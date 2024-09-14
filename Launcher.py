@@ -338,12 +338,14 @@ def get_config(initialize_tag):
                 final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
                     final_global_config["All_Server_url_get"]["important_notice_url"]
             elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = final_global_config["api_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = final_global_config["update_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = final_global_config[
-                    "announcement_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = final_global_config[
-                    "important_notice_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_global_config["api_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_global_config["update_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_global_config["announcement_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_global_config["important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
