@@ -815,6 +815,17 @@ def create_setting_window(event):
                                  state="readonly", width=20)  # 设定Combobox宽度为20字符宽
     lang_combobox.pack(side=tk.LEFT, pady=(0, 5), fill=tk.X)  # 增加上下pad以保持间距，fill=tk.X填充水平空间
 
+    # 添加按钮打开开源库地址
+    button_frame = tk.Frame(setting_win)  # 创建新的框架存放按钮
+    button_frame.pack(side=tk.LEFT, padx=(5, 0), fill=tk.Y)
+
+    def open_repo():
+        """ 打开开源库的GitHub页面 """
+        webopen("https://github.com/Suisuroru/Suya_Downloader")  # 替换为实际的GitHub仓库URL
+
+    open_repo_button = tk.Button(button_frame, text=get_text("open_repo"), command=open_repo)
+    open_repo_button.pack(pady=(0, 5), fill=tk.X)  # 按钮填充水平空间并设置上下间距
+
     def reload_with_confirm():
         lang_old = language
         lang_new = language_formated(lang_selected.get())
