@@ -188,7 +188,7 @@ def fetch_update_info():
 
 
 def download_and_install(downloader_update_url, update_partner_inner):
-    """下载ZIP文件并覆盖安装，完成后运行Launcher"""
+    """下载ZIP文件并覆盖安装，完成后运行Suya_Downloader"""
     try:
         response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
@@ -232,22 +232,22 @@ def download_and_install(downloader_update_url, update_partner_inner):
             json.dump(global_json, file_w, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
-        # 确保Launcher.exe存在于当前目录下再尝试运行
+        # 确保Suya_Downloader.exe存在于当前目录下再尝试运行
         if os.name == "nt":
-            launcher_path = os.path.join(current_dir, "Launcher.exe")
+            Suya_Downloader_path = os.path.join(current_dir, "Suya_Downloader.exe")
         else:
-            launcher_path = os.path.join(current_dir, "Launcher")
-        if os.path.isfile(launcher_path):
+            Suya_Downloader_path = os.path.join(current_dir, "Suya_Downloader")
+        if os.path.isfile(Suya_Downloader_path):
             import subprocess
-            subprocess.Popen([launcher_path])
-            print("Launcher已启动。")
+            subprocess.Popen([Suya_Downloader_path])
+            print("Suya_Downloader已启动。")
         else:
-            print("Launcher未找到。")
+            print("Suya_Downloader未找到。")
     except Exception as e:
         print(f"下载或解压错误: {e}")
 
 
-def update_launcher():
+def update_suya_downloader():
     version, downloader_update_url, update_partner = fetch_update_info()
     if version and downloader_update_url:
         print(f"发现新版本: {version}，开始下载...")
@@ -260,4 +260,4 @@ def update_launcher():
 
 
 if __name__ == "__main__":
-    update_launcher()
+    update_suya_downloader()

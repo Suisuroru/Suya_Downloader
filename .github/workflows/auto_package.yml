@@ -63,11 +63,11 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
 
-      - name: Update Dev_Version in Launcher.py
+      - name: Update Dev_Version in Suya_Downloader.py
         run: |
           cd $(pwd)
           SHORT_SHA="${GITHUB_SHA:0:8}"
-          sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
+          sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Suya_Downloader.py
         shell: bash
 
       - name: Update Dev_Version in Updater.py
@@ -77,10 +77,10 @@ jobs:
           sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
         shell: bash
 
-      - name: Build Launcher with PyInstaller
-        id: build-launcher
+      - name: Build Suya_Downloader with PyInstaller
+        id: build-Suya_Downloader
         run: |
-          pyinstaller --onefile --distpath=./dist Launcher.py
+          pyinstaller --onefile --distpath=./dist Suya_Downloader.py
 
       - name: Build Updater with PyInstaller
         id: build-updater
@@ -106,24 +106,24 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
-          # Extract the version number from Launcher.py
-          LAUNCHER_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Launcher.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          # Extract the version number from Suya_Downloader.py
+          Suya_Downloader_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           # Extract the version number from Updater.py
           UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           # Extract the first 8 characters of the commit SHA
           COMMIT_SHA_SHORT=$(echo ${{ github.sha }} | cut -c1-8)
           # Build the file names
-          LAUNCHER_FILE_NAME=Launcher-linux-${LAUNCHER_VERSION}-${COMMIT_SHA_SHORT}
+          Suya_Downloader_FILE_NAME=Suya_Downloader-linux-${Suya_Downloader_VERSION}-${COMMIT_SHA_SHORT}
           UPDATER_FILE_NAME=Updater-linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
-          FULL_FILE_NAME=Suya-Downloader-linux-${LAUNCHER_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
+          FULL_FILE_NAME=Suya-Downloader-linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           
           # Rename the files
-          mv ./dist/Launcher ./dist/${LAUNCHER_FILE_NAME}
+          mv ./dist/Suya_Downloader ./dist/${Suya_Downloader_FILE_NAME}
           mv ./dist/Updater ./dist/${UPDATER_FILE_NAME}
           mv ./app.zip ./${FULL_FILE_NAME}.zip
           
           # Upload the files
-          gh release upload newest-build ./dist/${LAUNCHER_FILE_NAME}
+          gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
@@ -145,23 +145,23 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
 
-      - name: Update Dev_Version in Launcher.py
+      - name: Update Dev_Version in Suya_Downloader.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
-          (Get-Content Launcher.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Launcher.py
+          (Get-Content Suya_Downloader.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Suya_Downloader.py
         shell: powershell
 
-      - name: Update Dev_Version in Launcher.py
+      - name: Update Dev_Version in Suya_Downloader.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
         shell: powershell
 
-      - name: Build Launcher with PyInstaller
-        id: build-launcher
+      - name: Build Suya_Downloader with PyInstaller
+        id: build-Suya_Downloader
         run: |
           # Build the executable
-          pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Launcher.py
+          pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Suya_Downloader.py
 
       - name: Build Updater with PyInstaller
         id: build-updater
@@ -196,15 +196,15 @@ jobs:
           echo "SHA_SHORT=$Env:SHA_SHORT" >> $env:GITHUB_ENV
         shell: powershell
 
-      - name: Extract Launcher version
-        id: extract_launcher_version
+      - name: Extract Suya_Downloader version
+        id: extract_Suya_Downloader_version
         run: |
-          $content = Get-Content .\Launcher.py
+          $content = Get-Content .\Suya_Downloader.py
           foreach ($line in $content) {
               if ($line.StartsWith("Suya_Downloader_Version")) {
                   $version = $line.Split('=')[1].Trim().Trim('"')
-                  Write-Host "Launcher version: $version"
-                  echo "LAUNCHER_VERSION=$version" >> $env:GITHUB_ENV
+                  Write-Host "Suya_Downloader version: $version"
+                  echo "Suya_Downloader_VERSION=$version" >> $env:GITHUB_ENV
                   break
               }
           }
@@ -224,13 +224,13 @@ jobs:
           }
         shell: powershell
 
-      - name: Rename Launcher and Updater Executables
+      - name: Rename Suya_Downloader and Updater Executables
         run: |
-          set LAUNCHER_FILE_NAME=Launcher-windows-%LAUNCHER_VERSION%-%SHA_SHORT%.exe
+          set Suya_Downloader_FILE_NAME=Suya_Downloader-windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
-          set FULL_FILE_NAME=Suya-Downloader-windows-%LAUNCHER_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+          set FULL_FILE_NAME=Suya-Downloader-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
           cd dist
-          ren Launcher.exe %LAUNCHER_FILE_NAME%
+          ren Suya_Downloader.exe %Suya_Downloader_FILE_NAME%
           ren Updater.exe %UPDATER_FILE_NAME%
           cd ..
           ren app.zip %FULL_FILE_NAME%
@@ -242,11 +242,11 @@ jobs:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Build the file names
-          $LAUNCHER_FILE_NAME="Launcher-windows-${env:LAUNCHER_VERSION}-${env:SHA_SHORT}.exe"
+          $Suya_Downloader_FILE_NAME="Suya_Downloader-windows-${env:Suya_Downloader_VERSION}-${env:SHA_SHORT}.exe"
           $UPDATER_FILE_NAME="Updater-windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe"
-          $FULL_FILE_NAME="Suya-Downloader-windows-${env:LAUNCHER_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
+          $FULL_FILE_NAME="Suya-Downloader-windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
           # Upload the files
-          gh release upload newest-build ./dist/${LAUNCHER_FILE_NAME}
+          gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
@@ -268,10 +268,10 @@ jobs:
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
 
-      - name: Update Dev_Version in Launcher.py
+      - name: Update Dev_Version in Suya_Downloader.py
         run: |
           SHORT_SHA="${GITHUB_SHA:0:8}"
-          sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Launcher.py
+          sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Suya_Downloader.py
         shell: bash
 
       - name: Update Dev_Version in Updater.py
@@ -280,11 +280,11 @@ jobs:
           sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
         shell: bash
 
-      - name: Build Launcher with PyInstaller
-        id: build-launcher
+      - name: Build Suya_Downloader with PyInstaller
+        id: build-Suya_Downloader
         run: |
           # Build the macOS app bundle
-          pyinstaller --onefile --windowed --distpath=./dist Launcher.py
+          pyinstaller --onefile --windowed --distpath=./dist Suya_Downloader.py
 
       - name: Build Updater with PyInstaller
         id: build-updater
@@ -309,13 +309,13 @@ jobs:
           zip -r ../app.zip .
 
 
-      - name: Package Launcher.app into a zip archive
-        id: package-launcher
+      - name: Package Suya_Downloader.app into a zip archive
+        id: package-Suya_Downloader
         run: |          # Navigate to the dist directory
           cd ./dist
           
-          # Create a zip archive for Launcher.app
-          zip -r ../Launcher.zip Launcher.app
+          # Create a zip archive for Suya_Downloader.app
+          zip -r ../Suya_Downloader.zip Suya_Downloader.app
 
       - name: Package Updater.app into a zip archive
         id: package-updater
@@ -325,11 +325,11 @@ jobs:
           # Create a zip archive for Updater.app
           zip -r ../Updater.zip Updater.app
 
-      - name: Extract Launcher version
-        id: extract_launcher_version
+      - name: Extract Suya_Downloader version
+        id: extract_Suya_Downloader_version
         run: |
-          VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Launcher.py').read()); print(match.group(1) if match else 'UNKNOWN')")
-          echo "LAUNCHER_VERSION=$VERSION" >> $GITHUB_ENV
+          VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          echo "Suya_Downloader_VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
 
       - name: Extract Updater version
@@ -351,16 +351,16 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_TOKEN }}
         run: |
           # Build the file names
-          LAUNCHER_FILE_NAME=Launcher-macos-${LAUNCHER_VERSION}-${SHORT_SHA}
+          Suya_Downloader_FILE_NAME=Suya_Downloader-macos-${Suya_Downloader_VERSION}-${SHORT_SHA}
           UPDATER_FILE_NAME=Updater-macos-${UPDATER_VERSION}-${SHORT_SHA}
-          FULL_FILE_NAME=Suya-Downloader-macos-${LAUNCHER_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
+          FULL_FILE_NAME=Suya-Downloader-macos-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
           
           # Rename the files
-          mv "./Launcher.zip" "./${LAUNCHER_FILE_NAME}.zip"
+          mv "./Suya_Downloader.zip" "./${Suya_Downloader_FILE_NAME}.zip"
           mv "./Updater.zip" "./${UPDATER_FILE_NAME}.zip"
           mv "./app.zip" "./${FULL_FILE_NAME}"
           
           # Upload the files
-          gh release upload newest-build "./${LAUNCHER_FILE_NAME}.zip"
+          gh release upload newest-build "./${Suya_Downloader_FILE_NAME}.zip"
           gh release upload newest-build "./${UPDATER_FILE_NAME}.zip"
           gh release upload newest-build "./${FULL_FILE_NAME}"
