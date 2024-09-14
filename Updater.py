@@ -103,10 +103,10 @@ def get_config():
     try:
         if default_global_config["default_api_settings"]["cf_mirror_enabled"]:
             default_global_config["Used_Server_url_get"]["latest_api_url"] = \
-            default_global_config["All_Server_url_get"]["server_api_url"]
+                default_global_config["All_Server_url_get"]["server_api_url"]
         elif not default_global_config["default_api_settings"]["cf_mirror_enabled"]:
             default_global_config["Used_Server_url_get"]["latest_api_url"] = \
-            default_global_config["All_Server_url_get"]["server_api_url_gh"]
+                default_global_config["All_Server_url_get"]["server_api_url_gh"]
     except:
         default_global_config["Used_Server_url_get"]["latest_api_url"] = default_global_config["All_Server_url_get"][
             "server_api_url"]
