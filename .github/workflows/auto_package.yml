@@ -228,7 +228,7 @@ jobs:
         run: |
           set Suya_Downloader_FILE_NAME=Suya_Downloader-windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
-          set FULL_FILE_NAME=Suya-Downloader-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+          set FULL_FILE_NAME=Suya-Downloader-FULL-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
           cd dist
           ren Suya_Downloader.exe %Suya_Downloader_FILE_NAME%
           ren Updater.exe %UPDATER_FILE_NAME%
