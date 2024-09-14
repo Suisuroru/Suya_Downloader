@@ -24,7 +24,7 @@ from PIL import Image, ImageTk
 Suya_Downloader_Version = "1.0.3.4"
 Dev_Version = ""
 
-# 获取运行目录
+# 获取运行目录并配置初始参数
 current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
@@ -1902,7 +1902,8 @@ def create_gui():
                                                    command=lambda: update_downloader(window_main))
         check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
         # 音乐切换按钮及其容器之后，添加创建者信息的Label
-        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru\nSuya developers.", font=("Microsoft YaHei", 7),
+        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru\nSuya developers.",
+                                 font=("Microsoft YaHei", 7),
                                  fg="gray")
         creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 

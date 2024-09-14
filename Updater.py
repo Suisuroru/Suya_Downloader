@@ -39,10 +39,8 @@ def show_message(partner, partner_en):
                     f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
-# 当前工作目录
-current_dir = os.getcwd()
-
-# 指定路径
+# 获取运行目录并配置初始参数
+current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
