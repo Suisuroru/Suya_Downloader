@@ -6,7 +6,7 @@ on:
       - '*'
 
 jobs:
-  clear-old-pre-release:
+  clear-old-pre-release-and-create-new-pre-release:
     runs-on: ubuntu-latest
 
     steps:
@@ -46,7 +46,7 @@ jobs:
           prerelease: true
 
   build-and-release-on-linux:
-    needs: clear-old-pre-release
+    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: ubuntu-latest
 
     steps:
@@ -128,7 +128,7 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
   build-and-release-on-windows:
-    needs: clear-old-pre-release
+    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: windows-latest
 
     steps:
@@ -251,7 +251,7 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
   build-and-release-on-macos:
-    needs: clear-old-pre-release
+    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: macos-latest
 
     steps:
