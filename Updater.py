@@ -201,13 +201,13 @@ def download_and_install(downloader_update_url, update_partner_inner):
         del_resources()
         if update_partner_inner == "Resources":
             # 构建完整的目录路径，基于当前工作目录
-            pull_dir = os.path.join(current_dir, "Resources-Downloader")
+            pull_dir = os.path.join(current_working_dir, "Resources-Downloader")
             # 确保"Resource"目录存在，如果不存在则创建
             if not os.path.exists(pull_dir):
                 print(f"Resources目录不存在，将进行重新创建")
                 os.makedirs(pull_dir, exist_ok=True)
         else:
-            pull_dir = current_dir
+            pull_dir = current_working_dir
         # 创建ZipFile对象，从临时文件中读取
         with ZipFile(temp_zip_file) as zip_file:
             # 解压到目标目录
@@ -232,9 +232,9 @@ def download_and_install(downloader_update_url, update_partner_inner):
 
         # 确保Suya_Downloader.exe存在于当前目录下再尝试运行
         if os.name == "nt":
-            Suya_Downloader_path = os.path.join(current_dir, "Suya_Downloader.exe")
+            Suya_Downloader_path = os.path.join(current_working_dir, "Suya_Downloader.exe")
         else:
-            Suya_Downloader_path = os.path.join(current_dir, "Suya_Downloader")
+            Suya_Downloader_path = os.path.join(current_working_dir, "Suya_Downloader")
         if os.path.isfile(Suya_Downloader_path):
             import subprocess
             subprocess.Popen([Suya_Downloader_path])
