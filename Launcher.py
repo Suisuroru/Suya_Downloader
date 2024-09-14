@@ -1892,7 +1892,7 @@ def create_gui():
                                                    command=lambda: update_downloader(window_main))
         check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
         # 音乐切换按钮及其容器之后，添加创建者信息的Label
-        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
+        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru\nSuya developers.", font=("Microsoft YaHei", 7),
                                  fg="gray")
         creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
