@@ -5,6 +5,7 @@ import shutil
 import sys
 import threading
 import tkinter as tk
+import uuid
 from errno import EEXIST
 from getpass import getuser
 from queue import Queue
@@ -1380,7 +1381,10 @@ def download_and_install(update_url, version):
 
         # 定义临时目录和临时文件
         temp_dir = mkdtemp()
-        temp_zip_file = os.path.join(temp_dir, "temp.zip")
+
+        # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
+        random_filename = str(uuid.uuid4()) + ".zip"
+        temp_zip_file = os.path.join(temp_dir, random_filename)
 
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:
