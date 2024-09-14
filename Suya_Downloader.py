@@ -402,12 +402,12 @@ def get_language():
 def open_updater(window):
     try:
         if os.name == "nt":
-            launcher_path = os.path.join(current_working_dir, "Updater.exe")
+            updater_path = os.path.join(current_working_dir, "Updater.exe")
         if os.name == "posix":
-            launcher_path = os.path.join(current_working_dir, "Updater")
-        if os.path.isfile(launcher_path):
+            updater_path = os.path.join(current_working_dir, "Updater")
+        if os.path.isfile(updater_path):
             import subprocess
-            subprocess.Popen([launcher_path])
+            subprocess.Popen([updater_path])
             print("Updater已启动。")
             if window is not None:
                 try:
