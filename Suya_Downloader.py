@@ -423,7 +423,7 @@ def open_updater(window):
 
 def pull_files(window, way):
     if os.name == "nt":
-        global_json["Update_Partner"] = way
+        global_json["Updater_Partner"] = way
         if way == "Resources":
             try:
                 global_json["Pull_Resources_Count"] += 1
@@ -1158,7 +1158,7 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
         def update(answer, window):
             if answer:  # 用户选择是
-                global_json["Update_Partner"] = "Full"
+                global_json["Updater_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as file:
                     json.dump(global_json, file, ensure_ascii=False, indent=4)
                 open_updater(window)
