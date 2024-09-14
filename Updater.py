@@ -4,13 +4,14 @@ import os
 import shutil
 import sys
 import threading
+import uuid
 from tempfile import mkdtemp
 from tkinter import messagebox as msgbox
 from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.3"
+Suya_Updater_Version = "1.0.3.4"
 Dev_Version = ""
 
 
@@ -38,33 +39,40 @@ def show_message(partner, partner_en):
                     f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
-# 当前工作目录
-current_dir = os.getcwd()
-
-# 指定路径
+# 获取运行目录并配置初始参数
+current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
 
-def merge_jsons(default_json, file_path):
+def merge_jsons(default_json_or_path, file_or_json):
     """
     合并两个 JSON 对象，优先使用文件中的数据。
-    :param default_json: 默认的 JSON 字典
-    :param file_path: 文件路径
+    :param default_json_or_path: 默认的 JSON 字典或对应文件路径
+    :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_path, "r", encoding="utf-8") as file:
-            loaded_json = json.load(file)
-            # 使用文件中的数据覆盖默认值
-            return {**default_json, **loaded_json}
-    except FileNotFoundError:
-        # 如果文件不存在，直接返回默认值
-        return default_json
-    except Exception as e:
-        # 如果发生其他错误，打印错误信息并返回默认值
-        print(f"Error loading JSON from {file_path}: {e}")
-        return default_json
+
+    def load_json(data):
+        if isinstance(data, str):  # 如果是字符串，判断是文件路径还是JSON文本
+            try:
+                with open(data, "r", encoding="utf-8") as file:
+                    return json.load(file)
+            except FileNotFoundError:
+                try:
+                    return json.loads(data)  # 尝试将字符串作为JSON文本解析
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Invalid JSON format: {e}")
+        elif isinstance(data, dict):
+            return data
+        else:
+            raise TypeError("Unsupported type for JSON input")
+
+    loaded_json = load_json(file_or_json)
+    default_json_loaded = load_json(default_json_or_path)
+
+    # 使用文件中的数据覆盖默认值
+    return {**default_json_loaded, **loaded_json}
 
 
 def get_config():
@@ -74,7 +82,7 @@ def get_config():
     except:
         ctypes.windll.shell32.ShellExecuteW(None, "runas", sys.executable, " ".join(sys.argv), None, 1)
         sys.exit()
-    if default_api_config["Updater_Partner"] == "read_version":
+    if default_api_config["Update_Partner"] == "read_version":
         if Dev_Version != "":
             default_api_config["Updater_Version"] = Suya_Updater_Version + "-" + Dev_Version
         else:
@@ -83,7 +91,7 @@ def get_config():
             json.dump(default_api_config, file, ensure_ascii=False, indent=4)
             sys.exit()
     try:
-        api_content = requests.get(default_api_config["latest_api_url"]).json()
+        api_content = requests.get(default_api_config["Used_Server_url_get"]["latest_api_url"]).json()
     except:
         api_content = default_api_config
     try:
@@ -92,16 +100,20 @@ def get_config():
         print("出现异常：" + str(Exception))
     default_global_config = merge_jsons(default_global_config, suya_config_path)
     try:
-        if default_global_config["cf_mirror_enabled"]:
-            default_global_config["latest_api_url"] = default_global_config["server_api_url"]
-        elif not default_global_config["cf_mirror_enabled"]:
-            default_global_config["latest_api_url"] = default_global_config["server_api_url_gh"]
+        if default_global_config["default_api_settings"]["cf_mirror_enabled"]:
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                default_global_config["All_Server_url_get"]["server_api_url"]
+        elif not default_global_config["default_api_settings"]["cf_mirror_enabled"]:
+            default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                default_global_config["All_Server_url_get"]["server_api_url_gh"]
     except:
-        default_global_config["latest_api_url"] = default_global_config["server_api_url"]
-        default_global_config["cf_mirror_enabled"] = True
+        default_global_config["Used_Server_url_get"]["latest_api_url"] = \
+            default_global_config["All_Server_url_get"]["server_api_url"]
+        default_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(default_global_config, file, indent=4)
-    if default_global_config["server_api_url"] == "" and default_global_config["server_api_url_gh"] == "":
+    if default_global_config["All_Server_url_get"]["server_api_url"] == "" and \
+            default_global_config["All_Server_url_get"]["server_api_url_gh"] == "":
         msgbox.showinfo("Error",
                         "未设置API地址，请询问发行方\nIf you do not have an API address, please ask the publisher")
         sys.exit()
@@ -109,7 +121,7 @@ def get_config():
 
 
 global_json = get_config()
-api_url = global_json["api_url"]
+api_url = global_json["Used_Server_url_get"]["latest_api_url"]
 
 # 创建或覆盖版本文件
 global_json["Updater_Version"] = Suya_Updater_Version
@@ -135,7 +147,7 @@ def fetch_update_info():
             try:
                 update_partner = global_json["Update_Partner"]
             except:
-                global_json["Updater_Partner"] = "Full"
+                global_json["Update_Partner"] = "Full"
                 with open(suya_config_path, "w", encoding="utf-8") as f:
                     json.dump(global_json, f, ensure_ascii=False, indent=4)
                 update_partner = "Full"
@@ -174,26 +186,28 @@ def fetch_update_info():
 
 
 def download_and_install(downloader_update_url, update_partner_inner):
-    """下载ZIP文件并覆盖安装，完成后运行Launcher"""
+    """下载ZIP文件并覆盖安装，完成后运行Suya_Downloader"""
     try:
         response = requests.get(downloader_update_url, stream=True)
         response.raise_for_status()
         # 定义临时目录和临时文件
         temp_dir = mkdtemp()
-        temp_zip_file = os.path.join(temp_dir, "temp.zip")
+        # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
+        random_filename = str(uuid.uuid4()) + ".zip"
+        temp_zip_file = os.path.join(temp_dir, random_filename)
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:
             shutil.copyfileobj(response.raw, f)
         del_resources()
         if update_partner_inner == "Resources":
             # 构建完整的目录路径，基于当前工作目录
-            pull_dir = os.path.join(current_dir, "Resources-Downloader")
+            pull_dir = os.path.join(current_working_dir, "Resources-Downloader")
             # 确保"Resource"目录存在，如果不存在则创建
             if not os.path.exists(pull_dir):
                 print(f"Resources目录不存在，将进行重新创建")
                 os.makedirs(pull_dir, exist_ok=True)
         else:
-            pull_dir = current_dir
+            pull_dir = current_working_dir
         # 创建ZipFile对象，从临时文件中读取
         with ZipFile(temp_zip_file) as zip_file:
             # 解压到目标目录
@@ -216,22 +230,22 @@ def download_and_install(downloader_update_url, update_partner_inner):
             json.dump(global_json, file_w, ensure_ascii=False, indent=4)
         print("更新安装完成")
 
-        # 确保Launcher.exe存在于当前目录下再尝试运行
+        # 确保Suya_Downloader.exe存在于当前目录下再尝试运行
         if os.name == "nt":
-            launcher_path = os.path.join(current_dir, "Launcher.exe")
+            Suya_Downloader_path = os.path.join(current_working_dir, "Suya_Downloader.exe")
         else:
-            launcher_path = os.path.join(current_dir, "Launcher")
-        if os.path.isfile(launcher_path):
+            Suya_Downloader_path = os.path.join(current_working_dir, "Suya_Downloader")
+        if os.path.isfile(Suya_Downloader_path):
             import subprocess
-            subprocess.Popen([launcher_path])
-            print("Launcher已启动。")
+            subprocess.Popen([Suya_Downloader_path])
+            print("Suya_Downloader已启动。")
         else:
-            print("Launcher未找到。")
+            print("Suya_Downloader未找到。")
     except Exception as e:
         print(f"下载或解压错误: {e}")
 
 
-def update_launcher():
+def update_suya_downloader():
     version, downloader_update_url, update_partner = fetch_update_info()
     if version and downloader_update_url:
         print(f"发现新版本: {version}，开始下载...")
@@ -244,4 +258,4 @@ def update_launcher():
 
 
 if __name__ == "__main__":
-    update_launcher()
+    update_suya_downloader()

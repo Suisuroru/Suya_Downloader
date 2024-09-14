@@ -41,6 +41,7 @@
     "no_client": "No local client found, please download the client immediately",
     "old_client": "The client version you are currently running may be an outdated legacy version. Please update it in time. Current version : ",
     "old_downloader": "You are currently running a potentially outdated version of the downloader. Please update it promptly. Current version: ",
+    "open_repo": "Open Source Repo",
     "path_tip1": "Please confirm from the settings whether this directory is the directory you want to install",
     "path_tip2": "Clicking Cancel will automatically open the settings. This window will not pop up again after the first confirmation",
     "pull_resources": "Resource Acquisition Method: ",

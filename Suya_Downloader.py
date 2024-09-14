@@ -5,6 +5,7 @@ import shutil
 import sys
 import threading
 import tkinter as tk
+import uuid
 from errno import EEXIST
 from getpass import getuser
 from queue import Queue
@@ -20,10 +21,10 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.3.3"
+Suya_Downloader_Version = "1.0.3.4"
 Dev_Version = ""
 
-# 获取运行目录
+# 获取运行目录并配置初始参数
 current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
@@ -86,7 +87,7 @@ def export_system_info(msg_box):
     msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
         msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"{json.dumps(global_json, indent=0)[1:-1].replace('"', "").replace(",", "")}")
+        msg_box.insert(tk.END, f"\n{json.dumps(global_json, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
@@ -199,6 +200,7 @@ def dupe_crash_report(error_message=None):
     try:
         window_main.iconbitmap("./Resources-Downloader/Pictures/Suya.ico")  # 使用Suya作为窗口图标
     except:
+        window_main.iconbitmap(ImageTk.PhotoImage(Image.new("RGB", (24, 24), color="red")))
         print("丢失窗口图标")
 
     # 创建一个滚动条和文本框
@@ -239,16 +241,25 @@ def merge_jsons(default_json_or_path, file_or_json):
     :param file_or_json: 文件路径或优先使用的 JSON 字典
     :return: 合并后的 JSON 字典
     """
-    try:
-        with open(file_or_json, "r", encoding="utf-8") as file:
-            loaded_json = json.load(file)
-    except:
-        loaded_json = file_or_json
-    try:
-        with open(default_json_or_path, "r", encoding="utf-8") as file:
-            default_json_loaded = json.load(file)
-    except:
-        default_json_loaded = default_json_or_path
+
+    def load_json(data):
+        if isinstance(data, str):  # 如果是字符串，判断是文件路径还是JSON文本
+            try:
+                with open(data, "r", encoding="utf-8") as file:
+                    return json.load(file)
+            except FileNotFoundError:
+                try:
+                    return json.loads(data)  # 尝试将字符串作为JSON文本解析
+                except json.JSONDecodeError as e:
+                    raise ValueError(f"Invalid JSON format: {e}")
+        elif isinstance(data, dict):
+            return data
+        else:
+            raise TypeError("Unsupported type for JSON input")
+
+    loaded_json = load_json(file_or_json)
+    default_json_loaded = load_json(default_json_or_path)
+
     # 使用文件中的数据覆盖默认值
     return {**default_json_loaded, **loaded_json}
 
@@ -256,34 +267,26 @@ def merge_jsons(default_json_or_path, file_or_json):
 def get_config(initialize_tag):
     try:
         with open(default_api_setting_path, "r", encoding="utf-8") as file:
-            default_api_config = json.load(file)
+            default_global_config = {"default_api_settings": json.load(file)}
+        print("读取到初始参数：", default_global_config)
     except:
         get_admin()
     if os.name == "nt":
         try:
-            default_api_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                     fr"{default_api_config["Server_Name"]}")
+            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                        fr"{default_global_config["default_api_settings"]["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
-        print("最终initialize_path：", default_api_config["initialize_path"])
+        print("最终initialize_path：", default_global_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_api_config["initialize_path_posix"] = fr"{os.getcwd()}\{default_api_config["Server_Name"]}"
+            default_global_config[
+                "initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
         except:
             print("异常错误")
-    if initialize_tag:
-        api_content = default_api_config
-    else:
-        api_content = requests.get(default_api_config["server_api_url"]).json()
-        print("获取到API信息: ", api_content)
-    try:
-        default_global_config = merge_jsons(default_api_config, api_content)
-        print("合并全局配置：", default_global_config)
-    except:
-        print("出现异常：" + str(Exception))
-        dupe_crash_report()
     try:
         final_global_config = merge_jsons(suya_config_path, default_global_config)
+        print("初次合并结果:", final_global_config)
     except:
         final_global_config = default_global_config
         print("出现异常：" + str(Exception))
@@ -293,35 +296,63 @@ def get_config(initialize_tag):
     except:
         final_global_config["debug"] = False
     try:
-        if final_global_config["cf_mirror_enabled"]:
+        if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
             print("使用CF镜像")
         else:
             print("使用Github镜像")
     except:
-        final_global_config["cf_mirror_enabled"] = True
+        final_global_config["default_api_settings"]["cf_mirror_enabled"] = True
     try:
         if initialize_tag:
-            if final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["server_api_url"]
-            elif not final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["server_api_url_gh"]
+            try:
+                final_global_config["Used_Server_url_get"]
+            except:
+                final_global_config["Used_Server_url_get"] = {}
+            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_global_config["default_api_settings"]["server_api_url"]
+            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_global_config["default_api_settings"]["server_api_url_gh"]
         else:
-            if final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url"]
-                final_global_config["latest_update_url"] = final_global_config["update_url"]
-                final_global_config["latest_announcement_url"] = final_global_config["announcement_url"]
-                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url"]
-            elif not final_global_config["cf_mirror_enabled"]:
-                final_global_config["latest_api_url"] = final_global_config["api_url_gh"]
-                final_global_config["latest_update_url"] = final_global_config["update_url_gh"]
-                final_global_config["latest_announcement_url"] = final_global_config["announcement_url_gh"]
-                final_global_config["latest_important_notice_url"] = final_global_config["important_notice_url_gh"]
+            try:
+                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
+                print("获取到API信息: ", api_content)
+                api_content_new = {"All_Server_url_get": api_content}
+                final_global_config = merge_jsons(final_global_config, api_content_new)
+                print("合并全局配置：", final_global_config)
+            except:
+                print("出现异常：" + str(Exception))
+                dupe_crash_report()
+            try:
+                final_global_config["All_Server_url_get"]
+            except:
+                final_global_config["All_Server_url_get"] = {}
+            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_global_config["All_Server_url_get"]["api_url"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_global_config["All_Server_url_get"]["update_url"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_global_config["All_Server_url_get"]["announcement_url"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_global_config["All_Server_url_get"]["important_notice_url"]
+            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_global_config["api_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_global_config["update_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_global_config["announcement_url_gh"]
+                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_global_config["important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
     print("最终全局配置：", final_global_config)
     with open(suya_config_path, "w", encoding="utf-8") as file:
         json.dump(final_global_config, file, indent=4)
-    if final_global_config["server_api_url"] == "" and final_global_config["server_api_url_gh"] == "":
+    if final_global_config["default_api_settings"]["server_api_url"] == "" and \
+            final_global_config["default_api_settings"]["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
     return final_global_config
@@ -371,12 +402,12 @@ def get_language():
 def open_updater(window):
     try:
         if os.name == "nt":
-            launcher_path = os.path.join(current_working_dir, "Updater.exe")
+            updater_path = os.path.join(current_working_dir, "Updater.exe")
         if os.name == "posix":
-            launcher_path = os.path.join(current_working_dir, "Updater")
-        if os.path.isfile(launcher_path):
+            updater_path = os.path.join(current_working_dir, "Updater")
+        if os.path.isfile(updater_path):
             import subprocess
-            subprocess.Popen([launcher_path])
+            subprocess.Popen([updater_path])
             print("Updater已启动。")
             if window is not None:
                 try:
@@ -683,36 +714,6 @@ class TkTransparentSplashScreen:
         create_gui()
 
 
-# 初始化pygame音乐模块
-pygame.mixer.init()
-
-# 设置音乐结束事件
-MUSIC_END_EVENT = pygame.USEREVENT + 1  # 创建一个自定义事件类型
-pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
-
-
-# 修改toggle_music函数以处理音乐循环
-def toggle_music(icon_label):
-    """切换音乐播放状态并更新图标，同时处理音乐循环"""
-    global music_playing
-    if not music_playing:
-        pygame.mixer.music.play(loops=-1)  # 设置为循环播放
-        music_playing = True
-        icon_label.config(image=play_icon_image)
-    else:
-        pygame.mixer.music.stop()
-        music_playing = False
-        icon_label.config(image=stop_icon_image)
-
-
-# 在Tkinter的主循环中添加对音乐结束事件的监听
-def handle_events():
-    for event in pygame.event.get():  # 获取所有pygame事件
-        if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
-            if music_playing:  # 只有当音乐应该是播放状态时才重新开始
-                pygame.mixer.music.play(loops=-1)  # 循环播放音乐
-
-
 def language_unformatted():
     if language == "zh_hans":
         return "简体中文"
@@ -776,7 +777,7 @@ def create_setting_window(event):
     choose_button.pack(pady=10)
 
     # 定义一个变量来追踪复选框的状态
-    cf_mirror_enabled = tk.BooleanVar(value=global_json.get("cf_mirror_enabled", True))
+    cf_mirror_enabled = tk.BooleanVar(value=global_json["default_api_settings"]["cf_mirror_enabled"])
 
     # 添加描述性标签
     description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
@@ -788,7 +789,7 @@ def create_setting_window(event):
 
     # 更新保存设置的逻辑，确保新的设置被保存
     def save_settings():
-        global_json["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        global_json["default_api_settings"]["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(global_json, file, ensure_ascii=False, indent=4)
 
@@ -813,6 +814,16 @@ def create_setting_window(event):
     lang_combobox = ttk.Combobox(inner_frame, textvariable=lang_selected, values=lang_choice,
                                  state="readonly", width=20)  # 设定Combobox宽度为20字符宽
     lang_combobox.pack(side=tk.LEFT, pady=(0, 5), fill=tk.X)  # 增加上下pad以保持间距，fill=tk.X填充水平空间
+
+    # 添加按钮打开开源库地址
+    button_frame = tk.Frame(setting_win)
+    button_frame.pack(side=tk.LEFT, padx=(5, 0), fill=tk.Y)
+
+    def open_repo():
+        webopen("https://github.com/Suisuroru/Suya_Downloader")
+
+    open_repo_button = tk.Button(button_frame, text=get_text("open_repo"), command=open_repo)
+    open_repo_button.pack(pady=(0, 5), fill=tk.X)
 
     def reload_with_confirm():
         lang_old = language
@@ -996,7 +1007,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
         if response_client.status_code == 200:
             response_client_new = response_client
         else:
-            response_client_new = requests.get(global_json["latest_update_url"])
+            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
         if response_client_new.status_code == 200:
             info_json_str = response_client_new.text.strip()
             update_info = json.loads(info_json_str)
@@ -1209,7 +1220,7 @@ def check_client_update():
         if response_client.status_code == 200:
             response_client_new = response_client
         else:
-            response_client_new = requests.get(global_json["latest_update_url"])
+            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
         # 检查请求是否成功
         if response_client_new.status_code == 200:
             info_json_str = response_client_new.text.strip()
@@ -1334,7 +1345,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(global_json["latest_announcement_url"])
+        response = requests.get(global_json["Used_Server_url_get"]["latest_announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1382,7 +1393,10 @@ def download_and_install(update_url, version):
 
         # 定义临时目录和临时文件
         temp_dir = mkdtemp()
-        temp_zip_file = os.path.join(temp_dir, "temp.zip")
+
+        # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
+        random_filename = str(uuid.uuid4()) + ".zip"
+        temp_zip_file = os.path.join(temp_dir, random_filename)
 
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:
@@ -1440,7 +1454,7 @@ def rgb_to_hex(rgb_string):
 
 
 def get_important_notice():
-    important_notice_url = global_json["latest_important_notice_url"]
+    important_notice_url = global_json["Used_Server_url_get"]["latest_important_notice_url"]
     try:
         # 发送GET请求
         response = requests.get(important_notice_url)
@@ -1604,7 +1618,7 @@ def initialize_client_api():
     count_num = 0
     while count_num < 3:
         try:
-            response_client = requests.get(global_json["latest_update_url"])
+            response_client = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
             if response_client.status_code == 200:
                 return
             else:
@@ -1621,7 +1635,7 @@ def initialize_api_str():
     count_num = 0
     while count_num < 3:
         try:
-            api_json_str = requests.get(global_json["latest_api_url"]).text.strip()
+            api_json_str = requests.get(global_json["Used_Server_url_get"]["latest_api_url"]).text.strip()
             if response_client.status_code == 200:
                 return
             else:
@@ -1723,12 +1737,43 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         print(f"公告拉取失败，错误代码：{Exception}")
 
 
+# 初始化pygame音乐模块
+pygame.mixer.init()
+
+# 设置音乐结束事件
+MUSIC_END_EVENT = pygame.USEREVENT + 1  # 创建一个自定义事件类型
+pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
+
+
+# 修改toggle_music函数以处理音乐循环
+def toggle_music(icon_label):
+    """切换音乐播放状态并更新图标，同时处理音乐循环"""
+    global music_playing
+    if not music_playing:
+        pygame.mixer.music.play(loops=-1)  # 设置为循环播放
+        music_playing = True
+        icon_label.config(image=play_icon_image)
+    else:
+        pygame.mixer.music.stop()
+        music_playing = False
+        icon_label.config(image=stop_icon_image)
+
+
+# 在Tkinter的主循环中添加对音乐结束事件的监听
+def handle_events():
+    for event in pygame.event.get():  # 获取所有pygame事件
+        if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
+            if music_playing:  # 只有当音乐应该是播放状态时才重新开始
+                pygame.mixer.music.play(loops=-1)  # 循环播放音乐
+
+
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image, window_main
 
     music_playing = False
     window_main = tk.Tk()
-    window_main.title(get_text("main_title") + global_json["Server_Name"] + get_text("sub_title"))
+    window_main.title(
+        get_text("main_title") + global_json["default_api_settings"]["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
@@ -1761,13 +1806,22 @@ def create_gui():
         # 创建一个容器Frame来对齐公告和检查更新按钮
         bottom_frame = tk.Frame(window_main)
         bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        try:
+            try:
+                # 加载音乐并设置为循环播放
+                pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
+            except:
+                pygame.mixer.music.load("./Resources-Downloader/Sounds/BGM.mp3")
 
-        # 音乐切换按钮及其容器
-        music_frame = tk.Frame(bottom_frame)
-        music_frame.pack(side=tk.LEFT, pady=10)
-        icon_label = tk.Label(music_frame, image=play_icon_image)
-        icon_label.pack()
-        icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+            # 音乐切换按钮及其容器
+            music_frame = tk.Frame(bottom_frame)
+            music_frame.pack(side=tk.LEFT, pady=10)
+            icon_label = tk.Label(music_frame, image=play_icon_image)
+            icon_label.pack()
+            icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+            toggle_music(icon_label)  # 添加这一行来启动音乐播放
+        except:
+            print("无音乐文件，已禁用音乐模块")
 
         # 设置按钮及其容器
         settings_frame = tk.Frame(bottom_frame)
@@ -1848,7 +1902,8 @@ def create_gui():
                                                    command=lambda: update_downloader(window_main))
         check_downloader_update_button.pack(side=tk.LEFT)  # 右侧放置下载器更新按钮
         # 音乐切换按钮及其容器之后，添加创建者信息的Label
-        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru", font=("Microsoft YaHei", 7),
+        creator_label = tk.Label(update_buttons_frame, text="Developed by Suisuroru\nSuya developers.",
+                                 font=("Microsoft YaHei", 7),
                                  fg="gray")
         creator_label.pack(side=tk.LEFT, padx=(10, 0))  # 根据需要调整padx以保持美观的间距
 
@@ -1873,13 +1928,15 @@ def create_gui():
 
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip,
-                                 text=get_text("welcome1") + global_json["Server_Name"] + get_text("welcome2"),
+                                 text=get_text("welcome1") + global_json["default_api_settings"][
+                                     "Server_Name"] + get_text("welcome2"),
                                  font=("Microsoft YaHei", 30, "bold"), fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
         # 第二行文字
         second_line_label = tk.Label(blue_strip,
-                                     text=get_text("description1") + global_json["Server_Name"] + get_text(
+                                     text=get_text("description1") + global_json["default_api_settings"][
+                                         "Server_Name"] + get_text(
                                          "description2"),
                                      font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")
         second_line_label.pack(pady=(0, 20))  # 调整pady以控制间距
@@ -1898,14 +1955,6 @@ def create_gui():
 
         # 初始化pygame音乐模块并设置音乐循环播放
         pygame.mixer.init()
-
-        try:
-            # 加载音乐并设置为循环播放
-            pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
-        except:
-            pull_files(window_main, "Resources")
-
-        toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
         # 确保在所有窗口部件布局完成后调用center_window
         window_main.update_idletasks()  # 更新窗口状态以获取准确的尺寸
