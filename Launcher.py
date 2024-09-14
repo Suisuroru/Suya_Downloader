@@ -711,36 +711,6 @@ class TkTransparentSplashScreen:
         create_gui()
 
 
-# 初始化pygame音乐模块
-pygame.mixer.init()
-
-# 设置音乐结束事件
-MUSIC_END_EVENT = pygame.USEREVENT + 1  # 创建一个自定义事件类型
-pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
-
-
-# 修改toggle_music函数以处理音乐循环
-def toggle_music(icon_label):
-    """切换音乐播放状态并更新图标，同时处理音乐循环"""
-    global music_playing
-    if not music_playing:
-        pygame.mixer.music.play(loops=-1)  # 设置为循环播放
-        music_playing = True
-        icon_label.config(image=play_icon_image)
-    else:
-        pygame.mixer.music.stop()
-        music_playing = False
-        icon_label.config(image=stop_icon_image)
-
-
-# 在Tkinter的主循环中添加对音乐结束事件的监听
-def handle_events():
-    for event in pygame.event.get():  # 获取所有pygame事件
-        if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
-            if music_playing:  # 只有当音乐应该是播放状态时才重新开始
-                pygame.mixer.music.play(loops=-1)  # 循环播放音乐
-
-
 def language_unformatted():
     if language == "zh_hans":
         return "简体中文"
@@ -1751,6 +1721,36 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         print(f"公告拉取失败，错误代码：{Exception}")
 
 
+# 初始化pygame音乐模块
+pygame.mixer.init()
+
+# 设置音乐结束事件
+MUSIC_END_EVENT = pygame.USEREVENT + 1  # 创建一个自定义事件类型
+pygame.mixer.music.set_endevent(MUSIC_END_EVENT)
+
+
+# 修改toggle_music函数以处理音乐循环
+def toggle_music(icon_label):
+    """切换音乐播放状态并更新图标，同时处理音乐循环"""
+    global music_playing
+    if not music_playing:
+        pygame.mixer.music.play(loops=-1)  # 设置为循环播放
+        music_playing = True
+        icon_label.config(image=play_icon_image)
+    else:
+        pygame.mixer.music.stop()
+        music_playing = False
+        icon_label.config(image=stop_icon_image)
+
+
+# 在Tkinter的主循环中添加对音乐结束事件的监听
+def handle_events():
+    for event in pygame.event.get():  # 获取所有pygame事件
+        if event.type == MUSIC_END_EVENT:  # 如果是音乐结束事件
+            if music_playing:  # 只有当音乐应该是播放状态时才重新开始
+                pygame.mixer.music.play(loops=-1)  # 循环播放音乐
+
+
 def create_gui():
     global music_playing, play_icon_image, stop_icon_image, window_main
 
@@ -1790,13 +1790,22 @@ def create_gui():
         # 创建一个容器Frame来对齐公告和检查更新按钮
         bottom_frame = tk.Frame(window_main)
         bottom_frame.pack(side=tk.BOTTOM, fill=tk.X)
+        try:
+            try:
+                # 加载音乐并设置为循环播放
+                pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
+            except:
+                pygame.mixer.music.load("./Resources-Downloader/Sounds/BGM.mp3")
 
-        # 音乐切换按钮及其容器
-        music_frame = tk.Frame(bottom_frame)
-        music_frame.pack(side=tk.LEFT, pady=10)
-        icon_label = tk.Label(music_frame, image=play_icon_image)
-        icon_label.pack()
-        icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+            # 音乐切换按钮及其容器
+            music_frame = tk.Frame(bottom_frame)
+            music_frame.pack(side=tk.LEFT, pady=10)
+            icon_label = tk.Label(music_frame, image=play_icon_image)
+            icon_label.pack()
+            icon_label.bind("<Button-1>", lambda event: toggle_music(icon_label))
+            toggle_music(icon_label)  # 添加这一行来启动音乐播放
+        except:
+            print("无音乐文件，已禁用音乐模块")
 
         # 设置按钮及其容器
         settings_frame = tk.Frame(bottom_frame)
@@ -1929,14 +1938,6 @@ def create_gui():
 
         # 初始化pygame音乐模块并设置音乐循环播放
         pygame.mixer.init()
-
-        try:
-            # 加载音乐并设置为循环播放
-            pygame.mixer.music.load("./Resources-Server/Sounds/BGM.mp3")
-        except:
-            pull_files(window_main, "Resources")
-
-        toggle_music(icon_label)  # 添加这一行来启动音乐播放
 
         # 确保在所有窗口部件布局完成后调用center_window
         window_main.update_idletasks()  # 更新窗口状态以获取准确的尺寸
