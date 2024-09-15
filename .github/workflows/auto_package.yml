@@ -135,6 +135,11 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Clone other repository
+        run: |
+          git clone https://${{ secrets.GH_TOKEN }}@github.com/Suisuroru/sign.git
+        shell: cmd
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -168,6 +173,27 @@ jobs:
         run: |
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
+
+      - name: Install signtool
+        run: |
+          choco install signtool
+        shell: cmd
+
+      - name: Read signing key from secrets
+        id: read-sign-key
+        run: |
+          echo "SIGN_KEY=$(echo ${{ secrets.SIGN_KEY }})" >> $env:GITHUB_ENV
+        shell: cmd
+
+      - name: Sign Suya_Downloader executable
+        run: |
+          signtool sign /f sign/root.cer /p ${{ secrets.SignKey }} /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 dist/Suya_Downloader.exe
+        shell: cmd
+
+      - name: Sign Updater executable
+        run: |
+          signtool sign /f sign/root.cer /p ${{ secrets.SignKey }} /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 dist/Updater.exe
+        shell: cmd
 
       - name: Move needed files to dist
         run: |
