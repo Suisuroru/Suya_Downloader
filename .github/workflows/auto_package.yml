@@ -204,6 +204,14 @@ jobs:
 
           # Convert .cer and .pvk to .pfx
           C:\OpenSSL-Win64\bin\openssl.exe pkcs12 -export -out "%GITHUB_WORKSPACE%\sign\root.pfx" -in "%GITHUB_WORKSPACE%\sign\root.cer" -inkey "%GITHUB_WORKSPACE%\sign\root.pvk" -passout pass:$env:SIGN_KEY
+
+          # Check if the .pfx file exists
+          if not exist "%GITHUB_WORKSPACE%\sign\root.pfx" (
+            echo "Error: .pfx file not created."
+            exit 1
+          )
+
+          echo "Certificate file 'root.pfx' created successfully."
         shell: cmd
 
       - name: Install certificate
