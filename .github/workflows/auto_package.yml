@@ -128,7 +128,6 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
   build-and-release-on-windows:
-    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: windows-latest
 
     steps:
@@ -197,19 +196,27 @@ jobs:
         run: |
           # Ensure OpenSSL is installed
           choco install openssl
-          
+
           # Add OpenSSL bin directory to PATH
           refreshenv
-          
+
+          # Refresh environment variables
+          refreshenv
+
           # Convert .cer and .pvk to .pfx
-          openssl pkcs12 -export -out "%GITHUB_WORKSPACE%\sign\root.pfx" -in "%GITHUB_WORKSPACE%\sign\root.cer" -inkey "%GITHUB_WORKSPACE%\sign\root.pvk" -passout pass:$env:SIGN_KEY
+          C:\OpenSSL-Win64\bin\openssl.exe pkcs12 -export -out "%GITHUB_WORKSPACE%\sign\root.pfx" -in "%GITHUB_WORKSPACE%\sign\root.cer" -inkey "%GITHUB_WORKSPACE%\sign\root.pvk" -passout pass:$env:SIGN_KEY
         shell: cmd
 
       - name: Install certificate
         run: |
           $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pfx'
           $PASSWORD = ConvertTo-SecureString -String $env:SIGN_KEY -AsPlainText -Force
-          Import-PfxCertificate -FilePath $CERTIFICATE_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
+          if (Test-Path $CERTIFICATE_PATH) {
+            Import-PfxCertificate -FilePath $CERTIFICATE_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
+          } else {
+            Write-Host "Error: Certificate file 'root.pfx' not found."
+            exit 1
+          }
         shell: powershell
 
       - name: Sign Suya_Downloader executable
