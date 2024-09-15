@@ -182,12 +182,18 @@ jobs:
 
       - name: Sign Suya_Downloader executable
         run: |
-          sign\signtool.exe sign /f sign\root.cer /p ${{ env.SIGN_KEY }} /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 dist\Suya_Downloader.exe
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\sign\signtool.exe
+          set CERTIFICATE_PATH=%GITHUB_WORKSPACE%\sign\root.cer
+          set PRIVATE_KEY_PATH=%GITHUB_WORKSPACE%\sign\root.pvk
+          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p ${{ env.SIGN_KEY }} /k %PRIVATE_KEY_PATH% /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Suya_Downloader.exe
         shell: cmd
 
       - name: Sign Updater executable
         run: |
-          sign\signtool.exe sign /f sign\root.cer /p ${{ env.SIGN_KEY }} /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 dist\Updater.exe
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\sign\signtool.exe
+          set CERTIFICATE_PATH=%GITHUB_WORKSPACE%\sign\root.cer
+          set PRIVATE_KEY_PATH=%GITHUB_WORKSPACE%\sign\root.pvk
+          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p ${{ env.SIGN_KEY }} /k %PRIVATE_KEY_PATH% /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Updater.exe
         shell: cmd
 
       - name: Move needed files to dist
