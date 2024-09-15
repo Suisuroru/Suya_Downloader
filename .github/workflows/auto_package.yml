@@ -195,7 +195,6 @@ jobs:
         run: |
           $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.cer'
           $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pvk'
-          $PASSWORD = ConvertTo-SecureString -String $env:SIGN_KEY -AsPlainText -Force
           if (Test-Path $CERTIFICATE_PATH) {
             Import-Certificate -FilePath $CERTIFICATE_PATH -CertStoreLocation Cert:\CurrentUser\My
           } else {
@@ -203,7 +202,7 @@ jobs:
             exit 1
           }
           if (Test-Path $PRIVATE_KEY_PATH) {
-            Import-PfxCertificate -FilePath $PRIVATE_KEY_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
+            Import-PfxCertificate -FilePath $PRIVATE_KEY_PATH -Password (ConvertTo-SecureString -String $env:SIGN_KEY -AsPlainText -Force) -CertStoreLocation Cert:\CurrentUser\My
           } else {
             Write-Host "Error: Private key file 'root.pvk' not found."
             exit 1
