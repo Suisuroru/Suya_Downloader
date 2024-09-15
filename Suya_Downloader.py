@@ -285,77 +285,77 @@ def get_config(initialize_tag):
         except:
             print("异常错误")
     try:
-        final_global_config = merge_jsons(suya_config_path, default_global_config)
-        print("初次合并结果:", final_global_config)
+        final_suya_config = merge_jsons(suya_config_path, default_global_config)
+        print("初次合并结果:", final_suya_config)
     except:
-        final_global_config = default_global_config
+        final_suya_config = default_global_config
         print("出现异常：" + str(Exception))
     try:
-        if final_global_config["debug"]:
+        if final_suya_config["debug"]:
             pass
     except:
-        final_global_config["debug"] = False
+        final_suya_config["debug"] = False
     try:
-        if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+        if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
             print("使用CF镜像")
         else:
             print("使用Github镜像")
     except:
-        final_global_config["default_api_settings"]["cf_mirror_enabled"] = True
+        final_suya_config["default_api_settings"]["cf_mirror_enabled"] = True
     try:
         if initialize_tag:
             try:
-                final_global_config["Used_Server_url_get"]
+                final_suya_config["Used_Server_url_get"]
             except:
-                final_global_config["Used_Server_url_get"] = {}
-            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                    final_global_config["default_api_settings"]["server_api_url"]
-            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                    final_global_config["default_api_settings"]["server_api_url_gh"]
+                final_suya_config["Used_Server_url_get"] = {}
+            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_suya_config["default_api_settings"]["server_api_url"]
+            elif not final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_suya_config["default_api_settings"]["server_api_url_gh"]
         else:
             try:
-                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
+                api_content = requests.get(final_suya_config["Used_Server_url_get"]["latest_server_api_url"]).json()
                 print("获取到API信息: ", api_content)
                 api_content_new = {"All_Server_url_get": api_content}
-                final_global_config = merge_jsons(final_global_config, api_content_new)
-                print("合并全局配置：", final_global_config)
+                final_suya_config = merge_jsons(final_suya_config, api_content_new)
+                print("合并全局配置：", final_suya_config)
             except:
                 print("出现异常：" + str(Exception))
                 dupe_crash_report()
             try:
-                final_global_config["All_Server_url_get"]
+                final_suya_config["All_Server_url_get"]
             except:
-                final_global_config["All_Server_url_get"] = {}
-            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
-                    final_global_config["All_Server_url_get"]["api_url"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
-                    final_global_config["All_Server_url_get"]["update_url"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
-                    final_global_config["All_Server_url_get"]["announcement_url"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
-                    final_global_config["All_Server_url_get"]["important_notice_url"]
-            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
-                    final_global_config["api_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
-                    final_global_config["update_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
-                    final_global_config["announcement_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
-                    final_global_config["important_notice_url_gh"]
+                final_suya_config["All_Server_url_get"] = {}
+            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_suya_config["All_Server_url_get"]["api_url"]
+                final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_suya_config["All_Server_url_get"]["update_url"]
+                final_suya_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_suya_config["All_Server_url_get"]["announcement_url"]
+                final_suya_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_suya_config["All_Server_url_get"]["important_notice_url"]
+            elif not final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_suya_config["api_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_suya_config["update_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_suya_config["announcement_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_suya_config["important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
-    print("最终全局配置：", final_global_config)
+    print("最终全局配置：", final_suya_config)
     with open(suya_config_path, "w", encoding="utf-8") as file:
-        json.dump(final_global_config, file, indent=4)
-    if final_global_config["default_api_settings"]["server_api_url"] == "" and \
-            final_global_config["default_api_settings"]["server_api_url_gh"] == "":
+        json.dump(final_suya_config, file, indent=4)
+    if final_suya_config["default_api_settings"]["server_api_url"] == "" and \
+            final_suya_config["default_api_settings"]["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
-    return final_global_config
+    return final_suya_config
 
 
 try:
