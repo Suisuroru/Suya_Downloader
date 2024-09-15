@@ -178,41 +178,6 @@ jobs:
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
-      - name: Verify certificate and private key files exist
-        run: |
-          if not exist "%GITHUB_WORKSPACE%\root.cer" (
-            echo "Warning: Certificate file 'root.cer' not found. Skipping signing."
-            exit 0
-          )
-          if not exist "%GITHUB_WORKSPACE%\root.pvk" (
-            echo "Warning: Private key file 'root.pvk' not found. Skipping signing."
-            exit 0
-          )
-        shell: cmd
-
-      - name: Install certificate
-        run: |
-          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'root.cer'
-          $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'root.pvk'
-          
-          if (Test-Path $CERTIFICATE_PATH) {
-            Import-Certificate -FilePath $CERTIFICATE_PATH -CertStoreLocation Cert:\CurrentUser\My
-          } else {
-            Write-Host "Error: Certificate file 'root.cer' not found."
-            exit 1
-          }
-      
-          # Assuming root.pvk is a private key file, you might need to handle it differently
-          if (Test-Path $PRIVATE_KEY_PATH) {
-            # Example of handling a private key file (this part depends on how you manage the private key)
-            # This is just a placeholder and should be replaced with actual logic to import the private key
-            Write-Host "Handling private key file..."
-          } else {
-            Write-Host "Error: Private key file 'root.pvk' not found."
-            exit 1
-          }
-        shell: powershell
-
       - name: Sign Suya_Downloader executable
         run: |
           @echo off
