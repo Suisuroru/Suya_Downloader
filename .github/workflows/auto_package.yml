@@ -182,12 +182,12 @@ jobs:
 
       - name: Sign Suya_Downloader executable
         run: |
-          ./sign/signtool.exe sign /f ./sign/root.cer /p ${{ env.SIGN_KEY }} /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 dist/Suya_Downloader.exe
+          sign\signtool.exe sign /f sign\root.cer /p ${{ env.SIGN_KEY }} /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 dist\Suya_Downloader.exe
         shell: cmd
 
       - name: Sign Updater executable
         run: |
-          ./sign/signtool.exe sign /f ./sign/root.cer /p ${{ env.SIGN_KEY }} /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 dist/Updater.exe
+          sign\signtool.exe sign /f sign\root.cer /p ${{ env.SIGN_KEY }} /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 dist\Updater.exe
         shell: cmd
 
       - name: Move needed files to dist
