@@ -226,7 +226,7 @@ jobs:
               exit /b 1
           )
 
-          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /n "MY" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Suya_Downloader.exe"
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Suya_Downloader.exe"
         shell: cmd
 
       - name: Sign Updater executable
@@ -242,7 +242,7 @@ jobs:
               exit /b 1
           )
 
-          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Updater.exe"
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Updater.exe"
         shell: cmd
 
       - name: Zip the dist directory
