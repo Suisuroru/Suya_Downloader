@@ -237,7 +237,7 @@ jobs:
       - name: Sign Updater executable
         run: |
           $SIGN_TOOL_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\signtool.exe'
-          $CERTIFICATE_PATH = 'C:\sign\root.pfx'
+          $CERTIFICATE_PATH = Join-Path 'C:\' 'sign\signtool.exe'
           Write-Host "Certificate Path: $CERTIFICATE_PATH"
           & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
         shell: powershell
