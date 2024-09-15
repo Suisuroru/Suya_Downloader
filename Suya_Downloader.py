@@ -81,12 +81,13 @@ def export_system_info(msg_box):
     import platform
     # 输出系统信息到文本框
     msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
+    msg_box.insert(tk.END, f"Running Directory: {current_working_dir}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
     if Dev_Version != "":
         msg_box.insert(tk.END, f"-{Dev_Version}\n")
-    msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
+        msg_box.insert(tk.END, f"Updater Version: {suya_config["Updater_Version"]}\n")
+        msg_box.insert(tk.END, "\n\n-------------Used Config Information-------------\n")
         msg_box.insert(tk.END, f"\n{json.dumps(suya_config, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
