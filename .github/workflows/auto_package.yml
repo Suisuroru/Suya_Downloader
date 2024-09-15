@@ -198,15 +198,7 @@ jobs:
           set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\sign\signtool.exe
           set CERTIFICATE_PATH=%GITHUB_WORKSPACE%\sign\root.cer
           set PRIVATE_KEY_PATH=%GITHUB_WORKSPACE%\sign\root.pvk
-          if not exist "%CERTIFICATE_PATH%" (
-            echo "Warning: Certificate file 'root.cer' not found. Skipping signing."
-            exit 0
-          )
-          if not exist "%PRIVATE_KEY_PATH%" (
-            echo "Warning: Private key file 'root.pvk' not found. Skipping signing."
-            exit 0
-          )
-          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p ${{ env.SIGN_KEY }} /k %PRIVATE_KEY_PATH% /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Suya_Downloader.exe
+          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p %SIGN_KEY% /k %PRIVATE_KEY_PATH% /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Suya_Downloader.exe
         shell: cmd
 
       - name: Sign Updater executable
@@ -215,24 +207,7 @@ jobs:
           set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\sign\signtool.exe
           set CERTIFICATE_PATH=%GITHUB_WORKSPACE%\sign\root.cer
           set PRIVATE_KEY_PATH=%GITHUB_WORKSPACE%\sign\root.pvk
-          if not exist "%CERTIFICATE_PATH%" (
-            echo "Warning: Certificate file 'root.cer' not found. Skipping signing."
-            exit 0
-          )
-          if not exist "%PRIVATE_KEY_PATH%" (
-            echo "Warning: Private key file 'root.pvk' not found. Skipping signing."
-            exit 0
-          )
-          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p ${{ env.SIGN_KEY }} /k %PRIVATE_KEY_PATH% /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Updater.exe
-        shell: cmd
-
-      - name: Move needed files to dist
-        run: |
-          move ./Resources-Downloader ./dist/Resources-Downloader
-          move ./Resources-Server ./dist/Resources-Server
-          move ./LICENSE-APACHE ./dist/LICENSE-APACHE
-          move ./LICENSE-AGPL ./dist/LICENSE-AGPL
-          move ./default_api_setting.json ./dist/default_api_setting.json
+          %SIGN_TOOL_PATH% sign /f %CERTIFICATE_PATH% /p %SIGN_KEY% /k %PRIVATE_KEY_PATH% /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 %GITHUB_WORKSPACE%\dist\Updater.exe
         shell: cmd
 
       - name: Zip the dist directory
