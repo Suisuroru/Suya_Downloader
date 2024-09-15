@@ -267,28 +267,28 @@ def merge_jsons(default_json_or_path, file_or_json):
 def get_config(initialize_tag):
     try:
         with open(default_api_setting_path, "r", encoding="utf-8") as file:
-            default_global_config = {"default_api_settings": json.load(file)}
-        print("读取到初始参数：", default_global_config)
+            default_suya_config = {"default_api_settings": json.load(file)}
+        print("读取到初始参数：", default_suya_config)
     except:
         get_admin()
     if os.name == "nt":
         try:
-            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                        fr"{default_global_config["default_api_settings"]["Server_Name"]}")
+            default_suya_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
+                                                        fr"{default_suya_config["default_api_settings"]["Server_Name"]}")
         except:
             print("出现异常：" + str(Exception))
-        print("最终initialize_path：", default_global_config["initialize_path"])
+        print("最终initialize_path：", default_suya_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_global_config[
-                "initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
+            default_suya_config[
+                "initialize_path"] = fr"{os.getcwd()}\{default_suya_config["default_api_settings"]["Server_Name"]}"
         except:
             print("异常错误")
     try:
-        final_suya_config = merge_jsons(suya_config_path, default_global_config)
+        final_suya_config = merge_jsons(suya_config_path, default_suya_config)
         print("初次合并结果:", final_suya_config)
     except:
-        final_suya_config = default_global_config
+        final_suya_config = default_suya_config
         print("出现异常：" + str(Exception))
     try:
         if final_suya_config["debug"]:
