@@ -46,7 +46,6 @@ jobs:
           prerelease: true
 
   build-and-release-on-linux:
-    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: ubuntu-latest
 
     steps:
@@ -128,12 +127,22 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
   build-and-release-on-windows:
-    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: windows-latest
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+
+      - name: Clone other repository
+        run: |
+          git clone --depth=1 https://${{ secrets.GH_TOKEN }}@github.com/Suisuroru/sign.git
+          move .\sign\* .
+          rmdir /s /q .\sign
+        shell: cmd
+
+      - name: Display file structure
+        run: dir /s /b
+        shell: cmd
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -151,7 +160,7 @@ jobs:
           (Get-Content Suya_Downloader.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Suya_Downloader.py
         shell: powershell
 
-      - name: Update Dev_Version in Suya_Downloader.py
+      - name: Update Dev_Version in Updater.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
@@ -169,13 +178,36 @@ jobs:
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
-      - name: Move needed files to dist
+      - name: Sign Suya_Downloader executable
         run: |
-          move ./Resources-Downloader ./dist/Resources-Downloader
-          move ./Resources-Server ./dist/Resources-Server
-          move ./LICENSE-APACHE ./dist/LICENSE-APACHE
-          move ./LICENSE-AGPL ./dist/LICENSE-AGPL
-          move ./default_api_setting.json ./dist/default_api_setting.json
+          @echo off
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\signtool.exe
+          set PFX_PATH=%GITHUB_WORKSPACE%\sign.pfx
+
+          echo PFX Path: %PFX_PATH%
+
+          if not exist "%PFX_PATH%" (
+              echo Error: PFX file not found at path '%PFX_PATH%'.
+              exit /b 1
+          )
+
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Suya_Downloader.exe"
+        shell: cmd
+
+      - name: Sign Updater executable
+        run: |
+          @echo off
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\signtool.exe
+          set PFX_PATH=%GITHUB_WORKSPACE%\sign.pfx
+
+          echo PFX Path: %PFX_PATH%
+
+          if not exist "%PFX_PATH%" (
+              echo Error: PFX file not found at path '%PFX_PATH%'.
+              exit /b 1
+          )
+
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Updater.exe"
         shell: cmd
 
       - name: Zip the dist directory
@@ -251,7 +283,6 @@ jobs:
           gh release upload newest-build ./${FULL_FILE_NAME}.zip
 
   build-and-release-on-macos:
-    needs: clear-old-pre-release-and-create-new-pre-release
     runs-on: macos-latest
 
     steps:
