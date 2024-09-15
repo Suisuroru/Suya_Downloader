@@ -202,6 +202,13 @@ jobs:
           # Refresh environment variables
           refreshenv
 
+          # Check if OpenSSL is available
+          where openssl
+          if %ERRORLEVEL% NEQ 0 (
+            echo "Error: OpenSSL not found in PATH."
+            exit 1
+          )
+
           # Convert .cer and .pvk to .pfx
           C:\OpenSSL-Win64\bin\openssl.exe pkcs12 -export -out "%GITHUB_WORKSPACE%\sign\root.pfx" -in "%GITHUB_WORKSPACE%\sign\root.cer" -inkey "%GITHUB_WORKSPACE%\sign\root.pvk" -passout pass:$env:SIGN_KEY
 
@@ -241,6 +248,7 @@ jobs:
           Write-Host "Certificate Path: $CERTIFICATE_PATH"
           & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
         shell: powershell
+
 
       - name: Zip the dist directory
         run: |
