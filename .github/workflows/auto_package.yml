@@ -191,14 +191,17 @@ jobs:
           )
         shell: cmd
 
-      - name: Merge certificate and private key into PFX
+      - name: Install Openssl
         run: |
           # Ensure OpenSSL is installed
           choco install openssl
 
           # Add OpenSSL bin directory to PATH
           refreshenv
+        shell: cmd
 
+      - name: Merge certificate and private key into PFX
+        run: |
           # Refresh environment variables
           refreshenv
 
