@@ -193,12 +193,20 @@ jobs:
           )
         shell: cmd
 
+      - name: Merge certificate and private key into PFX
+        run: |
+          # Ensure OpenSSL is installed
+          choco install openssl
+          
+          # Convert .cer and .pvk to .pfx
+          openssl pkcs12 -export -out sign\root.pfx -in sign\root.cer -inkey sign\root.pvk -passout pass:$env:SIGN_KEY
+        shell: cmd
+
       - name: Install certificate
         run: |
-          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.cer'
-          $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pvk'
+          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pfx'
           $PASSWORD = ConvertTo-SecureString -String $env:SIGN_KEY -AsPlainText -Force
-          Import-PfxCertificate -FilePath $PRIVATE_KEY_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
+          Import-PfxCertificate -FilePath $CERTIFICATE_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
         shell: powershell
 
       - name: Sign Suya_Downloader executable
