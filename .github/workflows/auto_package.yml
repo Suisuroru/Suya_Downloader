@@ -219,7 +219,7 @@ jobs:
           $SIGN_TOOL_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\signtool.exe'
           $PFX_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\sign.pfx'
           Write-Host "PFX Path: $PFX_PATH"
-          & $SIGN_TOOL_PATH sign /f $PFX_PATH /p "" /n "MY" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Suya_Downloader.exe')
+          & $SIGN_TOOL_PATH sign /f $PFX_PATH /n "MY" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Suya_Downloader.exe')
         shell: powershell
 
       - name: Sign Updater executable
@@ -227,8 +227,9 @@ jobs:
           $SIGN_TOOL_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\signtool.exe'
           $PFX_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\sign.pfx'
           Write-Host "PFX Path: $PFX_PATH"
-          & $SIGN_TOOL_PATH sign /f $PFX_PATH /p "" /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
+          & $SIGN_TOOL_PATH sign /f $PFX_PATH /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
         shell: powershell
+
 
       - name: Zip the dist directory
         run: |
