@@ -156,7 +156,7 @@ jobs:
           (Get-Content Suya_Downloader.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Suya_Downloader.py
         shell: powershell
 
-      - name: Update Dev_Version in Suya_Downloader.py
+      - name: Update Dev_Version in Updater.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
@@ -198,8 +198,11 @@ jobs:
           # Ensure OpenSSL is installed
           choco install openssl
           
+          # Add OpenSSL bin directory to PATH
+          refreshenv
+          
           # Convert .cer and .pvk to .pfx
-          openssl pkcs12 -export -out sign\root.pfx -in sign\root.cer -inkey sign\root.pvk -passout pass:$env:SIGN_KEY
+          openssl pkcs12 -export -out "%GITHUB_WORKSPACE%\sign\root.pfx" -in "%GITHUB_WORKSPACE%\sign\root.cer" -inkey "%GITHUB_WORKSPACE%\sign\root.pvk" -passout pass:$env:SIGN_KEY
         shell: cmd
 
       - name: Install certificate
@@ -212,21 +215,17 @@ jobs:
       - name: Sign Suya_Downloader executable
         run: |
           $SIGN_TOOL_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\signtool.exe'
-          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.cer'
-          $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pvk'
+          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pfx'
           Write-Host "Certificate Path: $CERTIFICATE_PATH"
-          Write-Host "Private Key Path: $PRIVATE_KEY_PATH"
-          & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /k $PRIVATE_KEY_PATH /n "MY" /r $PRIVATE_KEY_PATH /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Suya_Downloader.exe')
+          & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /n "MY" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Suya_Downloader.exe')
         shell: powershell
 
       - name: Sign Updater executable
         run: |
           $SIGN_TOOL_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\signtool.exe'
-          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.cer'
-          $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pvk'
+          $CERTIFICATE_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pfx'
           Write-Host "Certificate Path: $CERTIFICATE_PATH"
-          Write-Host "Private Key Path: $PRIVATE_KEY_PATH"
-          & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /k $PRIVATE_KEY_PATH /n "MY" /r $PRIVATE_KEY_PATH /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
+          & $SIGN_TOOL_PATH sign /f $CERTIFICATE_PATH /p $env:SIGN_KEY /n "MY" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 (Join-Path $env:GITHUB_WORKSPACE 'dist\Updater.exe')
         shell: powershell
 
       - name: Zip the dist directory
