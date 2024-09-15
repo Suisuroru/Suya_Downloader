@@ -177,8 +177,9 @@ jobs:
       - name: Read signing key from secrets
         id: read-sign-key
         run: |
-          echo "SIGN_KEY=$(echo ${{ secrets.SIGN_KEY }})" >> $env:GITHUB_ENV
-        shell: cmd
+          $Env:SIGN_KEY = "${{ secrets.SIGN_KEY }}"
+          echo "SIGN_KEY=$Env:SIGN_KEY" >> $env:GITHUB_ENV
+        shell: powershell
 
       - name: Verify certificate and private key files exist
         run: |
@@ -198,7 +199,7 @@ jobs:
           $PRIVATE_KEY_PATH = Join-Path $env:GITHUB_WORKSPACE 'sign\root.pvk'
           $PASSWORD = ConvertTo-SecureString -String $env:SIGN_KEY -AsPlainText -Force
           Import-PfxCertificate -FilePath $PRIVATE_KEY_PATH -Password $PASSWORD -CertStoreLocation Cert:\CurrentUser\My
-        shell: pwsh
+        shell: powershell
 
       - name: Sign Suya_Downloader executable
         run: |
