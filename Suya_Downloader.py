@@ -29,6 +29,9 @@ current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
+global gate_str
+gate_str = {}
+
 
 def get_text(key):
     if key == "lost_key":
@@ -1219,30 +1222,24 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        if gate_str["response_client"].status_code == 200:
-            response_client_new = gate_str["response_client"]
-        else:
-            response_client_new = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
-        # 检查请求是否成功
-        if response_client_new.status_code == 200:
-            info_json_str = response_client_new.text.strip()
-            update_info = json.loads(info_json_str)
-            print("获取到相关信息:" + str(update_info))
-            latest_version_123 = update_info["version_123"][1:]
-            latest_version_onedrive = update_info["version_onedrive"][1:]
-            latest_version_alist = update_info["version_alist"][1:]
-            versionlist = [latest_version_123, latest_version_onedrive, latest_version_alist]
-            name_list = ["123", "onedrive", "alist"]
-            latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
-            try:
-                debug_url = update_info["debug_url"]
-                if update_info["debug_tag"]:
-                    print("Unzip_Debug已启用")
-                    return latest_version, newest_version_list, debug_url
-            except:
-                pass
-            print("Unzip_Debug已禁用")
-            return latest_version, newest_version_list, "NoDebug"
+        info_json_str = gate_str["response_client"]
+        update_info = json.loads(info_json_str)
+        print("获取到相关信息:" + str(update_info))
+        latest_version_123 = update_info["version_123"][1:]
+        latest_version_onedrive = update_info["version_onedrive"][1:]
+        latest_version_alist = update_info["version_alist"][1:]
+        versionlist = [latest_version_123, latest_version_onedrive, latest_version_alist]
+        name_list = ["123", "onedrive", "alist"]
+        latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
+        try:
+            debug_url = update_info["debug_url"]
+            if update_info["debug_tag"]:
+                print("Unzip_Debug已启用")
+                return latest_version, newest_version_list, debug_url
+        except:
+            pass
+        print("Unzip_Debug已禁用")
+        return latest_version, newest_version_list, "NoDebug"
     except:
         msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
@@ -1615,24 +1612,32 @@ def start_select_way_thread(way_selected_source, source_combobox2):
 
 
 def get_response_infinite(url_from, name):
-    """初始化Suya API"""
+    """初始化API"""
     global gate_str
     while True:
         try:
-            response = requests.get(suya_config["Used_Server_url_get"][url_from]).text.strip()
+            # 发起GET请求
+            response = requests.get(suya_config["Used_Server_url_get"][url_from])
+
+            # 检查HTTP状态码
             if response.status_code == 200:
-                gate_str[name] = response
+                gate_str[name] = response.text.strip()
+                print(f"已获取的全部信息: {gate_str}")
                 return
-        except:
-            sleep(1)
+            else:
+                print(f"失败，{name}的响应状态码: {response.status_code}")
+                sleep(1)  # 等待1秒后重试
+        except Exception as e:
+            print(f"失败，{name}的请求发生异常: {type(e)} - {e}")
+            sleep(1)  # 等待1秒后重试
+
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
                    label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
                    source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
-    global suya_config, gate_str
-    gate_str = {}
+    global suya_config
     try:
         suya_config = get_config(False)
     except:
