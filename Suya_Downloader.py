@@ -298,22 +298,30 @@ def get_config(initialize_tag):
     except:
         final_suya_config["debug"] = False
     try:
-        if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+        if final_suya_config["cf_mirror_enabled"]:
             print("使用CF镜像")
         else:
             print("使用Github镜像")
     except:
-        final_suya_config["default_api_settings"]["cf_mirror_enabled"] = True
+        try:
+            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["cf_mirror_enabled"] = final_suya_config["default_api_settings"]["cf_mirror_enabled"]
+                print("使用CF镜像")
+            else:
+                final_suya_config["cf_mirror_enabled"] = final_suya_config["default_api_settings"]["cf_mirror_enabled"]
+                print("使用Github镜像")
+        except:
+            final_suya_config["cf_mirror_enabled"] = True
     try:
         if initialize_tag:
             try:
                 final_suya_config["Used_Server_url_get"]
             except:
                 final_suya_config["Used_Server_url_get"] = {}
-            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+            if final_suya_config["cf_mirror_enabled"]:
                 final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
                     final_suya_config["default_api_settings"]["server_api_url"]
-            elif not final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+            elif not final_suya_config["cf_mirror_enabled"]:
                 final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
                     final_suya_config["default_api_settings"]["server_api_url_gh"]
         else:
@@ -330,7 +338,7 @@ def get_config(initialize_tag):
                 final_suya_config["All_Server_url_get"]
             except:
                 final_suya_config["All_Server_url_get"] = {}
-            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+            if final_suya_config["cf_mirror_enabled"]:
                 final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
                     final_suya_config["All_Server_url_get"]["api_url"]
                 final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
@@ -339,7 +347,7 @@ def get_config(initialize_tag):
                     final_suya_config["All_Server_url_get"]["announcement_url"]
                 final_suya_config["Used_Server_url_get"]["latest_important_notice_url"] = \
                     final_suya_config["All_Server_url_get"]["important_notice_url"]
-            elif not final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+            elif not final_suya_config["cf_mirror_enabled"]:
                 final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
                     final_suya_config["api_url_gh"]
                 final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
@@ -780,7 +788,7 @@ def create_setting_window(event):
     choose_button.pack(pady=10)
 
     # 定义一个变量来追踪复选框的状态
-    cf_mirror_enabled = tk.BooleanVar(value=suya_config["default_api_settings"]["cf_mirror_enabled"])
+    cf_mirror_enabled = tk.BooleanVar(value=suya_config["cf_mirror_enabled"])
 
     # 添加描述性标签
     description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
@@ -792,7 +800,7 @@ def create_setting_window(event):
 
     # 更新保存设置的逻辑，确保新的设置被保存
     def save_settings():
-        suya_config["default_api_settings"]["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        suya_config["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(suya_config, file, ensure_ascii=False, indent=4)
 
