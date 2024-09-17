@@ -1321,11 +1321,13 @@ def get_version_status(current_version_inner, latest_version):
             return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
         else:
             return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
-    if comparison_result == 1:
+    elif comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         if Dev_Version != "":
             current_version_inner = current_version_inner + "-" + Dev_Version
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
+    elif comparison_result == 100:
+        return "无法检查版本信息", "#CC6600", get_text("check_error4") + current_version_inner  # 橙色
 
 
 def update_notice_from_queue(queue, notice_text_area):
