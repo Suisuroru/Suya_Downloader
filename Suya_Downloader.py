@@ -1614,24 +1614,19 @@ def initialize_client_api():
             if response_client.status_code == 200:
                 return
         except:
-            sleep(1)
+            pass
 
 
 def initialize_api_str():
     """初始化Suya API"""
     global api_json_str
-    count_num = 0
-    while count_num < 3:
+    while True:
         try:
             api_json_str = requests.get(suya_config["Used_Server_url_get"]["latest_api_url"]).text.strip()
             if response_client.status_code == 200:
                 return
-            else:
-                count_num += 1
-                sleep(1)
         except:
-            count_num += 1
-            sleep(1)
+            pass
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
