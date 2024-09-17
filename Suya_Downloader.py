@@ -1048,7 +1048,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     latest_version = update_info["version_alist"][1:]
 
             # 比较版本号并决定是否提示用户更新
-            if compare_client_versions(latest_version, current_version_inner) == 1:
+            if compare_versions(latest_version, current_version_inner) == 1:
                 # 如果有新版本，提示用户并提供下载链接
                 user_response = msgbox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
                                                 latest_version + get_text("update_available_msg2"))
@@ -1058,7 +1058,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
-            elif compare_client_versions(latest_version, current_version_inner) == 0:
+            elif compare_versions(latest_version, current_version_inner) == 0:
                 user_response = msgbox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
                                                 latest_version)
                 if user_response:
@@ -1113,33 +1113,13 @@ def new_compare_versions(versionlist, namelist):
     return newest_version, namelist_new
 
 
-def compare_client_versions(version1, version2):
-    """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
-    try:
-        v1_parts = list(map(int, version1.split(".")))
-        v2_parts = list(map(int, version2.split(".")))
-
-        for i in range(max(len(v1_parts), len(v2_parts))):
-            part1 = v1_parts[i] if i < len(v1_parts) else 0
-            part2 = v2_parts[i] if i < len(v2_parts) else 0
-
-            if part1 > part2:
-                return 1
-            elif part1 < part2:
-                return -1
-        else:
-            return 0
-    except:
-        return 100
-
-
 def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
     if current_version_inner == "0.0.0.0":
         # 当前版本号为"0.0.0.0"即未发现本地客户端版本，提示用户需要下载客户端
         print("未发现客户端")
         return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
-    comparison_result = compare_client_versions(current_version_inner, latest_version)
+    comparison_result = compare_versions(current_version_inner, latest_version)
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 蓝色
@@ -1195,12 +1175,25 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    if [int(v) for v in version1.split(".")] > [int(v) for v in version2.split(".")]:
-        return 1
-    elif [int(v) for v in version1.split(".")] < [int(v) for v in version2.split(".")]:
-        return -1
-    else:
-        return 0
+    try:
+        # 将版本号字符串按'.'分割并转换为整数列表
+        v1_parts = [int(v) for v in version1.split(".")]
+        v2_parts = [int(v) for v in version2.split(".")]
+
+        # 补齐较短的版本号列表，使其长度与较长的一致
+        max_length = max(len(v1_parts), len(v2_parts))
+        v1_parts += [0] * (max_length - len(v1_parts))
+        v2_parts += [0] * (max_length - len(v2_parts))
+
+        # 比较两个版本号列表
+        if v1_parts > v2_parts:
+            return 1
+        elif v1_parts < v2_parts:
+            return -1
+        else:
+            return 0
+    except:
+        return 100
 
 
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
@@ -1615,17 +1608,12 @@ def start_select_way_thread(way_selected_source, source_combobox2):
 def initialize_client_api():
     """初始化客户端地址API"""
     global response_client
-    count_num = 0
-    while count_num < 3:
+    while True:
         try:
             response_client = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
             if response_client.status_code == 200:
                 return
-            else:
-                count_num += 1
-                sleep(1)
         except:
-            count_num += 1
             sleep(1)
 
 
