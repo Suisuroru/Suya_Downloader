@@ -1318,7 +1318,7 @@ def get_version_status(current_version_inner, latest_version):
             check_thread = threading.Thread(target=check_update_for_updater)
             check_thread.start()
         except requests.RequestException as e:
-            print("Updater更新拉取失败，错误代码：{e}")
+            print(f"Updater更新拉取失败，错误代码：{e}")
         if comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
             return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
         elif comparison_result == 0:
