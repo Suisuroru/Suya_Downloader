@@ -1605,27 +1605,14 @@ def start_select_way_thread(way_selected_source, source_combobox2):
     thread.start()
 
 
-def initialize_client_api():
-    """初始化客户端地址API"""
-    global gate_str
-    while True:
-        try:
-            response_client = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
-            if response_client.status_code == 200:
-                gate_str["response_client"] = response_client
-                return
-        except:
-            pass
-
-
-def initialize_api_str():
+def get_response_infinite(url_from, name):
     """初始化Suya API"""
     global gate_str
     while True:
         try:
-            api_json_str = requests.get(suya_config["Used_Server_url_get"]["latest_api_url"]).text.strip()
-            if api_json_str.status_code == 200:
-                gate_str["api_json_str"] = api_json_str
+            response = requests.get(suya_config["Used_Server_url_get"][url_from]).text.strip()
+            if response.status_code == 200:
+                gate_str[name] = response
                 return
         except:
             pass
@@ -1644,7 +1631,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
 
     def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
                             way_selected_source, source_combobox2):
-        initialize_client_api()
+        get_response_infinite("latest_update_url", "response_client")
         try:
             start_select_way_thread(way_selected_source, source_combobox2)
         except:
@@ -1680,7 +1667,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
 
     def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
                      label_suya_announcement):
-        initialize_api_str()
+        get_response_infinite("latest_api_url", "api_json_str")
         try:
             update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
             update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
