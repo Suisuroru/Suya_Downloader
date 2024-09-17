@@ -10,6 +10,7 @@
     "check_error1": "Downloader update check failed",
     "check_error2": "Client update check failed",
     "check_error3": "Failed to retrieve Suya Downloader announcement",
+    "check_error4": "Failed to check the version information, the current version information: ",
     "checking_client_update": "Checking Bluecraft Client update...",
     "checking_downloader_update": "Checking downloader update...",
     "choose_folders": "Select Folders",
