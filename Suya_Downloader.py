@@ -1080,7 +1080,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
             print(f"无法获取下载源信息: {response_client_new.status_code}")
             msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
-        print("无法获取下载源信息")
+        print(f"无法获取下载源信息: {Exception}")
         msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
@@ -1657,7 +1657,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             client_update_thread.daemon = True
             client_update_thread.start()
         except:
-            print("客户端更新检查失败，错误代码：{e}")
+            print(f"客户端更新检查失败，错误代码：{Exception}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                          get_text("check_error2"))
 
@@ -1671,7 +1671,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
         try:
             pull_files(None, "read_version")
         except requests.RequestException as e:
-            print("更新拉取失败，错误代码：{e}")
+            print(f"更新拉取失败，错误代码：{e}")
         sleep(10)
         suya_config = get_config(True)
 
@@ -1684,7 +1684,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             update_thread.daemon = True
             update_thread.start()
         except:
-            print("下载器更新检查失败，错误代码：{e}")
+            print(f"下载器更新检查失败，错误代码：{Exception}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                          get_text("check_error1"))
         try:
@@ -1694,7 +1694,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             pull_suya_announcement_thread.daemon = True
             pull_suya_announcement_thread.start()
         except:
-            print("Suya公告拉取失败，错误代码：{e}")
+            print(f"Suya公告拉取失败，错误代码：{Exception}")
             update_strip(strip_suya_announcement, label_suya_announcement,
                          "失败", "A00000", "check_error3")
 
