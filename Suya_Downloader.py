@@ -574,7 +574,6 @@ def export_info(event):
 
 def initialize_settings():
     path_from_file = os.path.join(suya_config["initialize_path"], "Downloaded")
-    ensure_directory_exists(path_from_file)
     try:
         path_from_file = suya_config["Client_dir"]
     except:
