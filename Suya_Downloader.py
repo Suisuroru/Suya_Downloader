@@ -1616,7 +1616,7 @@ def get_response_infinite(url_from, name):
                 gate_str[name] = response
                 return
         except:
-            pass
+            sleep(1)
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
