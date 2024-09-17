@@ -274,8 +274,9 @@ def get_config(initialize_tag):
         get_admin()
     if os.name == "nt":
         try:
-            default_suya_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                      fr"{default_suya_config["default_api_settings"]["Server_Name"]}")
+            default_suya_config["initialize_path"] = os.path.join(
+                f"C:\\Users\\{getuser()}\\AppData\\Local\\Suya_Downloader",
+                default_suya_config["default_api_settings"]["Server_Name"])
         except:
             print("出现异常：" + str(Exception))
         print("最终initialize_path：", default_suya_config["initialize_path"])
