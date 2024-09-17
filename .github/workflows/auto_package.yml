@@ -116,7 +116,7 @@ jobs:
           # Build the file names
           Suya_Downloader_FILE_NAME=Suya_Downloader-linux-${Suya_Downloader_VERSION}-${COMMIT_SHA_SHORT}
           UPDATER_FILE_NAME=Updater-linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
-          FULL_FILE_NAME=Suya-Downloader-FULL-FILE-linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
+          FULL_FILE_NAME=Suya-Downloader-FULL-FILES-linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           
           # Rename the files
           mv ./dist/Suya_Downloader ./dist/${Suya_Downloader_FILE_NAME}
@@ -263,7 +263,7 @@ jobs:
         run: |
           set Suya_Downloader_FILE_NAME=Suya_Downloader-windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
-          set FULL_FILE_NAME=Suya-Downloader-FULL-FILE-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+          set FULL_FILE_NAME=Suya-Downloader-FULL-FILES-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
           cd dist
           ren Suya_Downloader.exe %Suya_Downloader_FILE_NAME%
           ren Updater.exe %UPDATER_FILE_NAME%
@@ -279,7 +279,7 @@ jobs:
           # Build the file names
           $Suya_Downloader_FILE_NAME="Suya_Downloader-windows-${env:Suya_Downloader_VERSION}-${env:SHA_SHORT}.exe"
           $UPDATER_FILE_NAME="Updater-windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe"
-          $FULL_FILE_NAME="Suya-Downloader-FULL-FILE-windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
+          $FULL_FILE_NAME="Suya-Downloader-FULL-FILES-windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
           # Upload the files
           gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
@@ -388,7 +388,7 @@ jobs:
           # Build the file names
           Suya_Downloader_FILE_NAME=Suya_Downloader-macos-${Suya_Downloader_VERSION}-${SHORT_SHA}
           UPDATER_FILE_NAME=Updater-macos-${UPDATER_VERSION}-${SHORT_SHA}
-          FULL_FILE_NAME=Suya-Downloader-FULL-FILE-macos-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
+          FULL_FILE_NAME=Suya-Downloader-FULL-FILES-macos-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
           
           # Rename the files
           mv "./Suya_Downloader.zip" "./${Suya_Downloader_FILE_NAME}.zip"
