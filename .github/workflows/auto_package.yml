@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - '*'
+  workflow_dispatch:
 
 jobs:
   clear-old-pre-release-and-create-new-pre-release:
