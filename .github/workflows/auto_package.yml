@@ -4,6 +4,13 @@ on:
   push:
     branches:
       - '*'
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: '手动触发构建工作流'
+        required: true
+        default: 'main'
+
 
 jobs:
   clear-old-pre-release-and-create-new-pre-release:
@@ -115,7 +122,7 @@ jobs:
           # Build the file names
           Suya_Downloader_FILE_NAME=Suya_Downloader-linux-${Suya_Downloader_VERSION}-${COMMIT_SHA_SHORT}
           UPDATER_FILE_NAME=Updater-linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
-          FULL_FILE_NAME=Suya-Downloader-FULL-linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
+          FULL_FILE_NAME=Suya-Downloader-FULL-FILE-linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           
           # Rename the files
           mv ./dist/Suya_Downloader ./dist/${Suya_Downloader_FILE_NAME}
@@ -135,6 +142,17 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Clone other repository
+        run: |
+          git clone --depth=1 https://${{ secrets.GH_TOKEN }}@github.com/Suisuroru/sign.git
+          move .\sign\* .
+          rmdir /s /q .\sign
+        shell: cmd
+
+      - name: Display file structure
+        run: dir /s /b
+        shell: cmd
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
@@ -151,7 +169,7 @@ jobs:
           (Get-Content Suya_Downloader.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Suya_Downloader.py
         shell: powershell
 
-      - name: Update Dev_Version in Suya_Downloader.py
+      - name: Update Dev_Version in Updater.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
@@ -169,13 +187,36 @@ jobs:
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
 
-      - name: Move needed files to dist
+      - name: Sign Suya_Downloader executable
         run: |
-          move ./Resources-Downloader ./dist/Resources-Downloader
-          move ./Resources-Server ./dist/Resources-Server
-          move ./LICENSE-APACHE ./dist/LICENSE-APACHE
-          move ./LICENSE-AGPL ./dist/LICENSE-AGPL
-          move ./default_api_setting.json ./dist/default_api_setting.json
+          @echo off
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\signtool.exe
+          set PFX_PATH=%GITHUB_WORKSPACE%\sign.pfx
+
+          echo PFX Path: %PFX_PATH%
+
+          if not exist "%PFX_PATH%" (
+              echo Error: PFX file not found at path '%PFX_PATH%'.
+              exit /b 1
+          )
+
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Suya_Downloader.exe"
+        shell: cmd
+
+      - name: Sign Updater executable
+        run: |
+          @echo off
+          set SIGN_TOOL_PATH=%GITHUB_WORKSPACE%\signtool.exe
+          set PFX_PATH=%GITHUB_WORKSPACE%\sign.pfx
+
+          echo PFX Path: %PFX_PATH%
+
+          if not exist "%PFX_PATH%" (
+              echo Error: PFX file not found at path '%PFX_PATH%'.
+              exit /b 1
+          )
+
+          "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Updater.exe"
         shell: cmd
 
       - name: Zip the dist directory
@@ -228,7 +269,7 @@ jobs:
         run: |
           set Suya_Downloader_FILE_NAME=Suya_Downloader-windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
-          set FULL_FILE_NAME=Suya-Downloader-FULL-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+          set FULL_FILE_NAME=Suya-Downloader-FULL-FILE-windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
           cd dist
           ren Suya_Downloader.exe %Suya_Downloader_FILE_NAME%
           ren Updater.exe %UPDATER_FILE_NAME%
@@ -244,7 +285,7 @@ jobs:
           # Build the file names
           $Suya_Downloader_FILE_NAME="Suya_Downloader-windows-${env:Suya_Downloader_VERSION}-${env:SHA_SHORT}.exe"
           $UPDATER_FILE_NAME="Updater-windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe"
-          $FULL_FILE_NAME="Suya-Downloader-FULL-windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
+          $FULL_FILE_NAME="Suya-Downloader-FULL-FILE-windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
           # Upload the files
           gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
@@ -353,7 +394,7 @@ jobs:
           # Build the file names
           Suya_Downloader_FILE_NAME=Suya_Downloader-macos-${Suya_Downloader_VERSION}-${SHORT_SHA}
           UPDATER_FILE_NAME=Updater-macos-${UPDATER_VERSION}-${SHORT_SHA}
-          FULL_FILE_NAME=Suya-Downloader-FULL-macos-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
+          FULL_FILE_NAME=Suya-Downloader-FULL-FILE-macos-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
           
           # Rename the files
           mv "./Suya_Downloader.zip" "./${Suya_Downloader_FILE_NAME}.zip"
