@@ -1006,8 +1006,8 @@ def direct_download_client(download_link):
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
         # 检查请求是否成功
-        if response_client.status_code == 200:
-            response_client_new = response_client
+        if gate_str["response_client"].status_code == 200:
+            response_client_new = gate_str["response_client"]
         else:
             response_client_new = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
         if response_client_new.status_code == 200:
@@ -1134,7 +1134,7 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         update_url = data["url_downloader"]
         latest_version = data["version_downloader"]
 
@@ -1199,7 +1199,7 @@ def compare_versions(version1, version2):
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         latest_version = data["version_downloader"]
 
         update_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
@@ -1210,8 +1210,8 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        if response_client.status_code == 200:
-            response_client_new = response_client
+        if gate_str["response_client"].status_code == 200:
+            response_client_new = gate_str["response_client"]
         else:
             response_client_new = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
         # 检查请求是否成功
@@ -1239,7 +1239,7 @@ def check_client_update():
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    data = json.loads(api_json_str)
+    data = json.loads(gate_str["api_json_str"])
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1370,7 +1370,7 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         updater_upgrade_url = data["url_updater"]
         version = data["version_updater"]
         return version, updater_upgrade_url
@@ -1579,8 +1579,8 @@ def start_select_thread(selected_source, source_combobox_select):
 def select_download_way_source(way_selected_source, source_combobox2):
     # 检查请求是否成功
     try:
-        if response_client.status_code == 200:
-            info_json_str = response_client.text.strip()
+        if gate_str["response_client"].status_code == 200:
+            info_json_str = gate_str["response_client"].text.strip()
             update_info = json.loads(info_json_str)
             if not update_info["self_unzip_able"]:
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
@@ -1607,11 +1607,12 @@ def start_select_way_thread(way_selected_source, source_combobox2):
 
 def initialize_client_api():
     """初始化客户端地址API"""
-    global response_client
+    global gate_str
     while True:
         try:
             response_client = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
             if response_client.status_code == 200:
+                gate_str["response_client"] = response_client
                 return
         except:
             pass
@@ -1619,11 +1620,12 @@ def initialize_client_api():
 
 def initialize_api_str():
     """初始化Suya API"""
-    global api_json_str
+    global gate_str
     while True:
         try:
             api_json_str = requests.get(suya_config["Used_Server_url_get"]["latest_api_url"]).text.strip()
-            if response_client.status_code == 200:
+            if api_json_str.status_code == 200:
+                gate_str["api_json_str"] = api_json_str
                 return
         except:
             pass
@@ -1633,7 +1635,8 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
                    label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
                    source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
-    global suya_config
+    global suya_config, gate_str
+    gate_str = {}
     try:
         suya_config = get_config(False)
     except:
