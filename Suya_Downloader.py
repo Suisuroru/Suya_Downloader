@@ -29,9 +29,6 @@ current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
 
-global gate_str
-gate_str = {}
-
 
 def get_text(key):
     if key == "lost_key":
@@ -1632,12 +1629,12 @@ def get_response_infinite(url_from, name):
             sleep(1)  # 等待1秒后重试
 
 
-
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
                    label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
                    source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
-    global suya_config
+    global suya_config, gate_str
+    gate_str = {}
     try:
         suya_config = get_config(False)
     except:
