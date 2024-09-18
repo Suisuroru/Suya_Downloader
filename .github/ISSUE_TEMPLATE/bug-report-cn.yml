@@ -12,7 +12,6 @@ body:
           required: true
         - label: "我确认在Issues中并无其他相同问题"
           required: true
-        - label: "如果你尝试过最新的dev版本的代码，请选择此选项"
         - label: "该问题在最新dev版本中仍然存在"
   - type: textarea
     id: "yml-1"
