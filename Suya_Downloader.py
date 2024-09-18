@@ -21,7 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.3.5"
+Suya_Downloader_Version = "1.0.3.6"
 Dev_Version = ""
 
 # 获取运行目录并配置初始参数
