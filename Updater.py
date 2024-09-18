@@ -11,7 +11,7 @@ from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.4"
+Suya_Updater_Version = "1.0.3.5"
 Dev_Version = ""
 
 
