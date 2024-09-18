@@ -11,7 +11,7 @@ from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.5"
+Suya_Updater_Version = "1.0.3.6"
 Dev_Version = ""
 
 
@@ -124,7 +124,7 @@ if suya_config["Updater_Method"] == "read_version":
         json.dump(suya_config, file, ensure_ascii=False, indent=4)
     sys.exit()
 
-# 创建或覆盖版本文件
+# 修改并写入版本信息文件
 suya_config["Updater_Version"] = Suya_Updater_Version
 with open(suya_config_path, "w", encoding="utf-8") as file:
     json.dump(suya_config, file, ensure_ascii=False, indent=4)
