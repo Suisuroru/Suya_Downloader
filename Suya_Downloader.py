@@ -21,7 +21,7 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.3.4"
+Suya_Downloader_Version = "1.0.3.5"
 Dev_Version = ""
 
 # 获取运行目录并配置初始参数
@@ -38,7 +38,7 @@ def get_text(key):
             try:
                 text = spare_lang_json[key]
             except:
-                text = "文本已丢失，丢失的文本的键值为"
+                text = "Key lost,lost key: "
         return text
     else:
         try:
@@ -81,13 +81,14 @@ def export_system_info(msg_box):
     import platform
     # 输出系统信息到文本框
     msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
+    msg_box.insert(tk.END, f"Running Directory: {current_working_dir}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
     if Dev_Version != "":
         msg_box.insert(tk.END, f"-{Dev_Version}\n")
-    msg_box.insert(tk.END, f"Running Path: {current_working_dir}\n")
     try:
-        msg_box.insert(tk.END, "\n\n--------------Settings Information--------------\n")
-        msg_box.insert(tk.END, f"\n{json.dumps(global_json, ensure_ascii=False, indent=4)}\n")
+        msg_box.insert(tk.END, f"Updater Version: {suya_config["Updater_Version"]}\n")
+        msg_box.insert(tk.END, "\n\n-------------Used Config Information-------------\n")
+        msg_box.insert(tk.END, f"\n{json.dumps(suya_config, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
         msg_box.insert(tk.END, "Settings Information: Not initialized\n")
@@ -267,99 +268,108 @@ def merge_jsons(default_json_or_path, file_or_json):
 def get_config(initialize_tag):
     try:
         with open(default_api_setting_path, "r", encoding="utf-8") as file:
-            default_global_config = {"default_api_settings": json.load(file)}
-        print("读取到初始参数：", default_global_config)
+            default_suya_config = {"default_api_settings": json.load(file)}
+        print("读取到初始参数：", default_suya_config)
     except:
         get_admin()
     if os.name == "nt":
         try:
-            default_global_config["initialize_path"] = (fr"C:\Users\{getuser()}\AppData\Local\Suya_Downloader\\"
-                                                        fr"{default_global_config["default_api_settings"]["Server_Name"]}")
+            default_suya_config["initialize_path"] = os.path.join(
+                f"C:\\Users\\{getuser()}\\AppData\\Local\\Suya_Downloader",
+                default_suya_config["default_api_settings"]["Server_Name"])
         except:
             print("出现异常：" + str(Exception))
-        print("最终initialize_path：", default_global_config["initialize_path"])
+        print("最终initialize_path：", default_suya_config["initialize_path"])
     elif os.name == "posix":
         try:
-            default_global_config[
-                "initialize_path"] = fr"{os.getcwd()}\{default_global_config["default_api_settings"]["Server_Name"]}"
+            default_suya_config[
+                "initialize_path"] = fr"{os.getcwd()}\{default_suya_config["default_api_settings"]["Server_Name"]}"
         except:
             print("异常错误")
     try:
-        final_global_config = merge_jsons(suya_config_path, default_global_config)
-        print("初次合并结果:", final_global_config)
+        final_suya_config = merge_jsons(suya_config_path, default_suya_config)
+        print("初次合并结果:", final_suya_config)
     except:
-        final_global_config = default_global_config
+        final_suya_config = default_suya_config
         print("出现异常：" + str(Exception))
     try:
-        if final_global_config["debug"]:
+        if final_suya_config["debug"]:
             pass
     except:
-        final_global_config["debug"] = False
+        final_suya_config["debug"] = False
     try:
-        if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
+        if final_suya_config["cf_mirror_enabled"]:
             print("使用CF镜像")
         else:
             print("使用Github镜像")
     except:
-        final_global_config["default_api_settings"]["cf_mirror_enabled"] = True
+        try:
+            if final_suya_config["default_api_settings"]["cf_mirror_enabled"]:
+                final_suya_config["cf_mirror_enabled"] = final_suya_config["default_api_settings"]["cf_mirror_enabled"]
+                print("使用CF镜像")
+            else:
+                final_suya_config["cf_mirror_enabled"] = final_suya_config["default_api_settings"]["cf_mirror_enabled"]
+                print("使用Github镜像")
+        except:
+            final_suya_config["cf_mirror_enabled"] = True
     try:
         if initialize_tag:
             try:
-                final_global_config["Used_Server_url_get"]
+                final_suya_config["Used_Server_url_get"]
             except:
-                final_global_config["Used_Server_url_get"] = {}
-            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                    final_global_config["default_api_settings"]["server_api_url"]
-            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_server_api_url"] = \
-                    final_global_config["default_api_settings"]["server_api_url_gh"]
+                final_suya_config["Used_Server_url_get"] = {}
+            if final_suya_config["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_suya_config["default_api_settings"]["server_api_url"]
+            elif not final_suya_config["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_server_api_url"] = \
+                    final_suya_config["default_api_settings"]["server_api_url_gh"]
         else:
             try:
-                api_content = requests.get(final_global_config["Used_Server_url_get"]["latest_server_api_url"]).json()
+                api_content = requests.get(final_suya_config["Used_Server_url_get"]["latest_server_api_url"]).json()
                 print("获取到API信息: ", api_content)
                 api_content_new = {"All_Server_url_get": api_content}
-                final_global_config = merge_jsons(final_global_config, api_content_new)
-                print("合并全局配置：", final_global_config)
+                final_suya_config = merge_jsons(final_suya_config, api_content_new)
+                print("合并全局配置：", final_suya_config)
             except:
                 print("出现异常：" + str(Exception))
                 dupe_crash_report()
             try:
-                final_global_config["All_Server_url_get"]
+                final_suya_config["All_Server_url_get"]
             except:
-                final_global_config["All_Server_url_get"] = {}
-            if final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
-                    final_global_config["All_Server_url_get"]["api_url"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
-                    final_global_config["All_Server_url_get"]["update_url"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
-                    final_global_config["All_Server_url_get"]["announcement_url"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
-                    final_global_config["All_Server_url_get"]["important_notice_url"]
-            elif not final_global_config["default_api_settings"]["cf_mirror_enabled"]:
-                final_global_config["Used_Server_url_get"]["latest_api_url"] = \
-                    final_global_config["api_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_update_url"] = \
-                    final_global_config["update_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_announcement_url"] = \
-                    final_global_config["announcement_url_gh"]
-                final_global_config["Used_Server_url_get"]["latest_important_notice_url"] = \
-                    final_global_config["important_notice_url_gh"]
+                final_suya_config["All_Server_url_get"] = {}
+            if final_suya_config["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_suya_config["All_Server_url_get"]["api_url"]
+                final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_suya_config["All_Server_url_get"]["update_url"]
+                final_suya_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_suya_config["All_Server_url_get"]["announcement_url"]
+                final_suya_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_suya_config["All_Server_url_get"]["important_notice_url"]
+            elif not final_suya_config["cf_mirror_enabled"]:
+                final_suya_config["Used_Server_url_get"]["latest_api_url"] = \
+                    final_suya_config["api_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_update_url"] = \
+                    final_suya_config["update_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_announcement_url"] = \
+                    final_suya_config["announcement_url_gh"]
+                final_suya_config["Used_Server_url_get"]["latest_important_notice_url"] = \
+                    final_suya_config["important_notice_url_gh"]
     except:
         msgbox.showinfo("错误", str(Exception))
-    print("最终全局配置：", final_global_config)
+    print("最终全局配置：", final_suya_config)
     with open(suya_config_path, "w", encoding="utf-8") as file:
-        json.dump(final_global_config, file, indent=4)
-    if final_global_config["default_api_settings"]["server_api_url"] == "" and \
-            final_global_config["default_api_settings"]["server_api_url_gh"] == "":
+        json.dump(final_suya_config, file, indent=4)
+    if final_suya_config["default_api_settings"]["server_api_url"] == "" and \
+            final_suya_config["default_api_settings"]["server_api_url_gh"] == "":
         msgbox.showinfo(get_text("error"), get_text("no_api"))
         dupe_crash_report()
-    return final_global_config
+    return final_suya_config
 
 
 try:
-    global_json = get_config(True)
+    suya_config = get_config(True)
 except:
     get_admin()
 
@@ -371,7 +381,7 @@ def is_admin():
         return False
 
 
-if global_json["debug"]:
+if suya_config["debug"]:
     print("非管理员模式运行")
 elif os.name == "nt" and not is_admin():
     # 如果当前没有管理员权限且处于非调试模式，则重新启动脚本并请求管理员权限
@@ -391,12 +401,12 @@ def get_language():
             exit(1)
 
     try:
-        language = global_json["language"]
+        language = suya_config["language"]
     except:
-        language = set_lang(global_json)
-        global_json["language"] = language
+        language = set_lang(suya_config)
+        suya_config["language"] = language
         with open(suya_config_path, "w", encoding="utf-8") as file_w:
-            json.dump(global_json, file_w, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file_w, ensure_ascii=False, indent=4)
 
 
 def open_updater(window):
@@ -414,7 +424,6 @@ def open_updater(window):
                     window.destroy()  # 关闭Tkinter窗口
                 except:
                     print("Tkinter窗口可能未开启或关闭失败。")
-            sys.exit(0)  # 退出Python进程
         else:
             print("Updater未找到。")
     except:
@@ -423,14 +432,15 @@ def open_updater(window):
 
 def pull_files(window, way):
     if os.name == "nt":
-        global_json["Update_Partner"] = way
+        global suya_config
+        suya_config["Updater_Method"] = way
         if way == "Resources":
             try:
-                global_json["Pull_Resources_Count"] += 1
+                suya_config["Pull_Resources_Count"] += 1
             except:
-                global_json["Pull_Resources_Count"] = 1
+                suya_config["Pull_Resources_Count"] = 1
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
         open_updater(window)
 
 
@@ -490,7 +500,7 @@ def initialize_languages(tag):
         lang_path = os.path.join("./Resources-Downloader/Languages", "en_us.json")
     else:
         lang_path = os.path.join("./Resources-Downloader/Languages", "zh_hans.json")
-        global_json["language"] = "zh_hans"
+        suya_config["language"] = "zh_hans"
         with open(suya_config_path, "w", encoding="utf-8") as file:
             json.dump(suya_config_path, file, ensure_ascii=False, indent=4)
     try:
@@ -500,6 +510,7 @@ def initialize_languages(tag):
             spare_lang_json = json.load(file)
     except:
         pull_files(None, "Resources")
+        sys.exit(0)
 
 
 def export_info(event):
@@ -570,13 +581,13 @@ def export_info(event):
 
 
 def initialize_settings():
-    path_from_file = os.path.join(global_json["initialize_path"], "DownloadedFiles")
+    path_from_file = os.path.join(suya_config["initialize_path"], "Downloaded")
     try:
-        path_from_file = global_json["Client_dir"]
+        path_from_file = suya_config["Client_dir"]
     except:
-        global_json["Client_dir"] = path_from_file
+        suya_config["Client_dir"] = path_from_file
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
     ensure_directory_exists(path_from_file)
     print("格式化处理后的路径：" + path_from_file)
     return path_from_file
@@ -597,7 +608,7 @@ def update_version_info(new_version):
     :param new_version: 最新的版本号
     """
     try:
-        with open(os.path.join(global_json["initialize_path"], "client_version.txt"), "w", encoding="utf-8") as file:
+        with open(os.path.join(suya_config["initialize_path"], "client_version.txt"), "w", encoding="utf-8") as file:
             file.write(new_version)
         print(f"版本信息已更新至{new_version}")
     except IOError as e:
@@ -606,7 +617,7 @@ def update_version_info(new_version):
 
 def read_client_version_from_file():
     """从本地文件读取客户端版本号，如文件不存在则创建并写入默认版本号。"""
-    file_path = os.path.join(global_json["initialize_path"], "client_version.txt")
+    file_path = os.path.join(suya_config["initialize_path"], "client_version.txt")
 
     try:
         with open(file_path, "r", encoding="utf-8") as file:
@@ -745,14 +756,14 @@ def create_setting_window(event):
             entry.insert(0, path_user)  # 插入用户选择的路径
         else:
             if not entry.get():  # 如果文本框为空
-                path_user = global_json["initialize_path"]
+                path_user = suya_config["initialize_path"]
                 entry.delete(0, tk.END)  # 如果没有选择，清除当前文本框内容
                 entry.insert(0, path_user)  # 插入默认路径
             else:
                 path_user = entry.get()
-        global_json["Client_dir"] = path_user
+        suya_config["Client_dir"] = path_user
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
         ensure_directory_exists(path_user)
 
     # 创建新窗口作为设置界面
@@ -777,7 +788,7 @@ def create_setting_window(event):
     choose_button.pack(pady=10)
 
     # 定义一个变量来追踪复选框的状态
-    cf_mirror_enabled = tk.BooleanVar(value=global_json["default_api_settings"]["cf_mirror_enabled"])
+    cf_mirror_enabled = tk.BooleanVar(value=suya_config["cf_mirror_enabled"])
 
     # 添加描述性标签
     description_label = tk.Label(setting_win, text=get_text("cf_mirror_description"))
@@ -789,9 +800,9 @@ def create_setting_window(event):
 
     # 更新保存设置的逻辑，确保新的设置被保存
     def save_settings():
-        global_json["default_api_settings"]["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
+        suya_config["cf_mirror_enabled"] = cf_mirror_enabled.get()  # 保存复选框的状态
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
 
     # 确保在关闭窗口前调用save_settings函数来保存所有设置
     setting_win.protocol("WM_DELETE_WINDOW", lambda: [save_settings(), setting_win.destroy()])
@@ -832,9 +843,9 @@ def create_setting_window(event):
         if lang_new != language:
             answer = msgbox.askyesno(get_text("tip"), get_text("reload_tip"))
             if answer:
-                global_json["language"] = lang_new
+                suya_config["language"] = lang_new
                 with open(suya_config_path, "w", encoding="utf-8") as file:
-                    json.dump(global_json, file, ensure_ascii=False, indent=4)
+                    json.dump(suya_config, file, ensure_ascii=False, indent=4)
                 os.execl(sys.executable, sys.executable, *sys.argv)
             else:
                 initialize_languages(lang_old)
@@ -979,19 +990,19 @@ def start_download_in_new_window(download_link):
 def direct_download_client(download_link):
     # 这里编写客户端直接拉取文件的逻辑
     try:
-        confirm_tag = global_json["Confirm_tag"]
+        confirm_tag = suya_config["Confirm_tag"]
     except:
         confirm_tag = "No"
-        global_json["Confirm_tag"] = confirm_tag
+        suya_config["Confirm_tag"] = confirm_tag
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
     if confirm_tag == "No":
         if msgbox.askyesno(get_text("tip"), get_text("path_tip1") + initialize_settings() + "，" +
                                             get_text("path_tip2")):
             confirm_tag = "Yes"
-            global_json["Confirm_tag"] = confirm_tag
+            suya_config["Confirm_tag"] = confirm_tag
             with open(suya_config_path, "w", encoding="utf-8") as file:
-                json.dump(global_json, file, ensure_ascii=False, indent=4)
+                json.dump(suya_config, file, ensure_ascii=False, indent=4)
         else:
             create_setting_window(1)
             pass
@@ -1004,10 +1015,10 @@ def direct_download_client(download_link):
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
     try:
         # 检查请求是否成功
-        if response_client.status_code == 200:
-            response_client_new = response_client
+        if gate_str["response_client"].status_code == 200:
+            response_client_new = gate_str["response_client"]
         else:
-            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
+            response_client_new = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
         if response_client_new.status_code == 200:
             info_json_str = response_client_new.text.strip()
             update_info = json.loads(info_json_str)
@@ -1046,7 +1057,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     latest_version = update_info["version_alist"][1:]
 
             # 比较版本号并决定是否提示用户更新
-            if compare_client_versions(latest_version, current_version_inner) == 1:
+            if compare_versions(latest_version, current_version_inner) == 1:
                 # 如果有新版本，提示用户并提供下载链接
                 user_response = msgbox.askyesno(get_text("update_available"), get_text("update_available_msg1") +
                                                 latest_version + get_text("update_available_msg2"))
@@ -1056,7 +1067,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
                     elif tag_download == "direct":
                         direct_download_client(download_link)  # 下载器直接下载
                     update_version_info(latest_version)
-            elif compare_client_versions(latest_version, current_version_inner) == 0:
+            elif compare_versions(latest_version, current_version_inner) == 0:
                 user_response = msgbox.askyesno(get_text("update_unable"), get_text("update_unable_msg") +
                                                 latest_version)
                 if user_response:
@@ -1078,7 +1089,7 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
             print(f"无法获取下载源信息: {response_client_new.status_code}")
             msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
     except:
-        print("无法获取下载源信息")
+        print(f"无法获取下载源信息: {Exception}")
         msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
@@ -1111,33 +1122,13 @@ def new_compare_versions(versionlist, namelist):
     return newest_version, namelist_new
 
 
-def compare_client_versions(version1, version2):
-    """比较两个版本号，返回1表示version1大于version2，0表示相等，-1表示小于"""
-    try:
-        v1_parts = list(map(int, version1.split(".")))
-        v2_parts = list(map(int, version2.split(".")))
-
-        for i in range(max(len(v1_parts), len(v2_parts))):
-            part1 = v1_parts[i] if i < len(v1_parts) else 0
-            part2 = v2_parts[i] if i < len(v2_parts) else 0
-
-            if part1 > part2:
-                return 1
-            elif part1 < part2:
-                return -1
-        else:
-            return 0
-    except:
-        return 100
-
-
 def get_client_status(current_version_inner, latest_version):
     """根据版本比较结果返回状态、颜色和消息"""
     if current_version_inner == "0.0.0.0":
         # 当前版本号为"0.0.0.0"即未发现本地客户端版本，提示用户需要下载客户端
         print("未发现客户端")
         return "未发现客户端版本", "#FF0000", get_text("no_client")  # 红色
-    comparison_result = compare_client_versions(current_version_inner, latest_version)
+    comparison_result = compare_versions(current_version_inner, latest_version)
     if comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         return "预发布或测试版本", "#0066CC", get_text("dev_client") + current_version_inner  # 蓝色
@@ -1152,16 +1143,14 @@ def get_client_status(current_version_inner, latest_version):
 def check_for_updates_with_confirmation(current_version_inner, window):
     """检查更新并在发现新版本时弹窗询问用户是否下载更新"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         update_url = data["url_downloader"]
         latest_version = data["version_downloader"]
 
         def update(answer, window):
             if answer:  # 用户选择是
-                global_json["Update_Partner"] = "Full"
-                with open(suya_config_path, "w", encoding="utf-8") as file:
-                    json.dump(global_json, file, ensure_ascii=False, indent=4)
-                open_updater(window)
+                pull_files(window, "Full")
+                sys.exit(0)
 
         if current_version_inner == "url":
             return update_url
@@ -1195,18 +1184,31 @@ def check_for_updates_with_confirmation(current_version_inner, window):
 
 def compare_versions(version1, version2):
     """比较两个版本号"""
-    if [int(v) for v in version1.split(".")] > [int(v) for v in version2.split(".")]:
-        return 1
-    elif [int(v) for v in version1.split(".")] < [int(v) for v in version2.split(".")]:
-        return -1
-    else:
-        return 0
+    try:
+        # 将版本号字符串按'.'分割并转换为整数列表
+        v1_parts = [int(v) for v in version1.split(".")]
+        v2_parts = [int(v) for v in version2.split(".")]
+
+        # 补齐较短的版本号列表，使其长度与较长的一致
+        max_length = max(len(v1_parts), len(v2_parts))
+        v1_parts += [0] * (max_length - len(v1_parts))
+        v2_parts += [0] * (max_length - len(v2_parts))
+
+        # 比较两个版本号列表
+        if v1_parts > v2_parts:
+            return 1
+        elif v1_parts < v2_parts:
+            return -1
+        else:
+            return 0
+    except:
+        return 100
 
 
 def check_for_updates_and_create_version_strip(version_strip_frame, version_label, current_version_inner):
     """检查更新并更新版本状态色带"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         latest_version = data["version_downloader"]
 
         update_strip(version_strip_frame, version_label, current_version_inner, latest_version, 0)
@@ -1217,36 +1219,30 @@ def check_for_updates_and_create_version_strip(version_strip_frame, version_labe
 
 def check_client_update():
     try:
-        if response_client.status_code == 200:
-            response_client_new = response_client
-        else:
-            response_client_new = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
-        # 检查请求是否成功
-        if response_client_new.status_code == 200:
-            info_json_str = response_client_new.text.strip()
-            update_info = json.loads(info_json_str)
-            print("获取到相关信息:" + str(update_info))
-            latest_version_123 = update_info["version_123"][1:]
-            latest_version_onedrive = update_info["version_onedrive"][1:]
-            latest_version_alist = update_info["version_alist"][1:]
-            versionlist = [latest_version_123, latest_version_onedrive, latest_version_alist]
-            name_list = ["123", "onedrive", "alist"]
-            latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
-            try:
-                debug_url = update_info["debug_url"]
-                if update_info["debug_tag"]:
-                    print("Unzip_Debug已启用")
-                    return latest_version, newest_version_list, debug_url
-            except:
-                pass
-            print("Unzip_Debug已禁用")
-            return latest_version, newest_version_list, "NoDebug"
+        info_json_str = gate_str["response_client"]
+        update_info = json.loads(info_json_str)
+        print("获取到相关信息:" + str(update_info))
+        latest_version_123 = update_info["version_123"][1:]
+        latest_version_onedrive = update_info["version_onedrive"][1:]
+        latest_version_alist = update_info["version_alist"][1:]
+        versionlist = [latest_version_123, latest_version_onedrive, latest_version_alist]
+        name_list = ["123", "onedrive", "alist"]
+        latest_version, newest_version_list = new_compare_versions(versionlist, name_list)
+        try:
+            debug_url = update_info["debug_url"]
+            if update_info["debug_tag"]:
+                print("Unzip_Debug已启用")
+                return latest_version, newest_version_list, debug_url
+        except:
+            pass
+        print("Unzip_Debug已禁用")
+        return latest_version, newest_version_list, "NoDebug"
     except:
         msgbox.showerror(get_text("error"), get_text("update_question_unknown") + f"{Exception}")
 
 
 def pull_suya_announcement(version_strip_frame, version_label):
-    data = json.loads(api_json_str)
+    data = json.loads(gate_str["api_json_str"])
 
     def try_to_get_suya_announcement(key):
         try:
@@ -1303,7 +1299,7 @@ def get_version_status(current_version_inner, latest_version):
     if comparison_result != 1:
         try:
             def check_update_for_updater():
-                if not global_json["debug"]:
+                if not suya_config["debug"]:
                     if version_check_for_updater(fetch_update_info()[0]):
                         # 如果有新版本，启动新线程执行更新操作
                         print("启动更新线程...")
@@ -1318,18 +1314,20 @@ def get_version_status(current_version_inner, latest_version):
             check_thread = threading.Thread(target=check_update_for_updater)
             check_thread.start()
         except requests.RequestException as e:
-            print("Updater更新拉取失败，错误代码：{e}")
+            print(f"Updater更新拉取失败，错误代码：{e}")
         if comparison_result == -1:  # 这里是当本地版本低于在线版本时的情况
             return "旧版本", "#FFCC00", get_text("old_downloader") + current_version_inner  # 黄色
         elif comparison_result == 0:
             return "最新正式版", "#009900", get_text("release_downloader") + current_version_inner  # 绿色
         else:
             return "未知", "#FF0000", get_text("unknown_downloader")  # 红色
-    if comparison_result == 1:
+    elif comparison_result == 1:
         # 当前版本号高于在线版本号，我们这里假设这意味着是测试或预发布版本
         if Dev_Version != "":
             current_version_inner = current_version_inner + "-" + Dev_Version
         return "预发布或测试版本", "#0066CC", get_text("dev_downloader") + current_version_inner  # 浅蓝
+    elif comparison_result == 100:
+        return "无法检查版本信息", "#CC6600", get_text("check_error4") + current_version_inner  # 橙色
 
 
 def update_notice_from_queue(queue, notice_text_area):
@@ -1345,7 +1343,7 @@ def update_notice_from_queue(queue, notice_text_area):
 def fetch_notice_in_thread(queue, notice_text_area, notice_queue):
     """在线获取公告内容的线程函数"""
     try:
-        response = requests.get(global_json["Used_Server_url_get"]["latest_announcement_url"])
+        response = requests.get(suya_config["Used_Server_url_get"]["latest_announcement_url"])
         response.raise_for_status()
         notice_content = response.text
         queue.put(notice_content)
@@ -1377,7 +1375,7 @@ def check_notice_queue(queue, notice_text_area):
 def fetch_update_info():
     """从API获取版本信息和下载链接"""
     try:
-        data = json.loads(api_json_str)
+        data = json.loads(gate_str["api_json_str"])
         updater_upgrade_url = data["url_updater"]
         version = data["version_updater"]
         return version, updater_upgrade_url
@@ -1420,9 +1418,9 @@ def download_and_install(update_url, version):
         os.remove(temp_zip_file)
 
         # 更新设置文件
-        global_json["Updater_Version"] = version
+        suya_config["Updater_Version"] = version
         with open(suya_config_path, "w", encoding="utf-8") as file:
-            json.dump(global_json, file, ensure_ascii=False, indent=4)
+            json.dump(suya_config, file, ensure_ascii=False, indent=4)
         print("更新安装完成")
     except:
         print(f"下载或解压错误: {Exception}")
@@ -1454,7 +1452,7 @@ def rgb_to_hex(rgb_string):
 
 
 def get_important_notice():
-    important_notice_url = global_json["Used_Server_url_get"]["latest_important_notice_url"]
+    important_notice_url = suya_config["Used_Server_url_get"]["latest_important_notice_url"]
     try:
         # 发送GET请求
         response = requests.get(important_notice_url)
@@ -1515,7 +1513,7 @@ def version_check_for_updater(online_version):
     # 确保文件存在，如果不存在则创建并写入默认版本信息
     try:
         try:
-            updater_version = global_json["Updater_Version"]
+            updater_version = suya_config["Updater_Version"]
         except:
             updater_version = "0.0.0.0"
     except:
@@ -1586,8 +1584,8 @@ def start_select_thread(selected_source, source_combobox_select):
 def select_download_way_source(way_selected_source, source_combobox2):
     # 检查请求是否成功
     try:
-        if response_client.status_code == 200:
-            info_json_str = response_client.text.strip()
+        if gate_str["response_client"].status_code == 200:
+            info_json_str = gate_str["response_client"].text.strip()
             update_info = json.loads(info_json_str)
             if not update_info["self_unzip_able"]:
                 way_sources = [get_text("url_direct"), get_text("url_origin"), get_text("downloader_direct")]
@@ -1612,53 +1610,41 @@ def start_select_way_thread(way_selected_source, source_combobox2):
     thread.start()
 
 
-def initialize_client_api():
-    """初始化客户端地址API"""
-    global response_client
-    count_num = 0
-    while count_num < 3:
+def get_response_infinite(url_from, name):
+    """初始化API"""
+    global gate_str
+    while True:
         try:
-            response_client = requests.get(global_json["Used_Server_url_get"]["latest_update_url"])
-            if response_client.status_code == 200:
+            # 发起GET请求
+            response = requests.get(suya_config["Used_Server_url_get"][url_from])
+
+            # 检查HTTP状态码
+            if response.status_code == 200:
+                gate_str[name] = response.text.strip()
+                print(f"已获取的全部信息: {gate_str}")
                 return
             else:
-                count_num += 1
-                sleep(1)
-        except:
-            count_num += 1
-            sleep(1)
-
-
-def initialize_api_str():
-    """初始化Suya API"""
-    global api_json_str
-    count_num = 0
-    while count_num < 3:
-        try:
-            api_json_str = requests.get(global_json["Used_Server_url_get"]["latest_api_url"]).text.strip()
-            if response_client.status_code == 200:
-                return
-            else:
-                count_num += 1
-                sleep(1)
-        except:
-            count_num += 1
-            sleep(1)
+                print(f"失败，{name}的响应状态码: {response.status_code}")
+                sleep(1)  # 等待1秒后重试
+        except Exception as e:
+            print(f"失败，{name}的请求发生异常: {type(e)} - {e}")
+            sleep(1)  # 等待1秒后重试
 
 
 def initialize_api(selected_source, source_combobox, notice_text_area, strip_downloader, label_downloader, strip_client,
                    label_client, strip_suya_announcement, label_suya_announcement, way_selected_source,
                    source_combobox2):
     # 将部分操作移动至此处以减少启动时卡顿
+    global suya_config, gate_str
+    gate_str = {}
     try:
-        global global_json
-        global_json = get_config(False)
+        suya_config = get_config(False)
     except:
         msgbox.showerror(get_text("warn"), get_text("config_fault"))
 
     def client_api_function(strip_client, label_client, client_version, selected_source, source_combobox,
                             way_selected_source, source_combobox2):
-        initialize_client_api()
+        get_response_infinite("latest_update_url", "response_client")
         try:
             start_select_way_thread(way_selected_source, source_combobox2)
         except:
@@ -1674,7 +1660,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             client_update_thread.daemon = True
             client_update_thread.start()
         except:
-            print("客户端更新检查失败，错误代码：{e}")
+            print(f"客户端更新检查失败，错误代码：{Exception}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                          get_text("check_error2"))
 
@@ -1684,29 +1670,24 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
     client_api_thread.daemon = True
     client_api_thread.start()
 
+    if not suya_config["debug"]:
+        try:
+            pull_files(None, "read_version")
+        except requests.RequestException as e:
+            print(f"更新拉取失败，错误代码：{e}")
+        sleep(10)
+        suya_config = get_config(True)
+
     def api_function(strip_downloader, label_downloader, Suya_Downloader_Version, strip_suya_announcement,
                      label_suya_announcement):
-        initialize_api_str()
-        if not global_json["debug"]:
-            try:
-                def read_version():
-                    read_version_thread = threading.Thread(target=pull_files(None, "read_version"))
-                    read_version_thread.daemon = True
-                    read_version_thread.start()
-                    sleep(10)
-                    get_config(True)
-
-                read_thread = threading.Thread(target=read_version)
-                read_thread.start()
-            except requests.RequestException as e:
-                print("更新拉取失败，错误代码：{e}")
+        get_response_infinite("latest_api_url", "api_json_str")
         try:
             update_thread_args = (strip_downloader, label_downloader, Suya_Downloader_Version)
             update_thread = threading.Thread(target=check_for_updates_and_create_version_strip, args=update_thread_args)
             update_thread.daemon = True
             update_thread.start()
         except:
-            print("下载器更新检查失败，错误代码：{e}")
+            print(f"下载器更新检查失败，错误代码：{Exception}")
             update_strip(strip_downloader, label_downloader, "未知", "FF0000",
                          get_text("check_error1"))
         try:
@@ -1716,7 +1697,7 @@ def initialize_api(selected_source, source_combobox, notice_text_area, strip_dow
             pull_suya_announcement_thread.daemon = True
             pull_suya_announcement_thread.start()
         except:
-            print("Suya公告拉取失败，错误代码：{e}")
+            print(f"Suya公告拉取失败，错误代码：{Exception}")
             update_strip(strip_suya_announcement, label_suya_announcement,
                          "失败", "A00000", "check_error3")
 
@@ -1773,7 +1754,7 @@ def create_gui():
     music_playing = False
     window_main = tk.Tk()
     window_main.title(
-        get_text("main_title") + global_json["default_api_settings"]["Server_Name"] + get_text("sub_title"))
+        get_text("main_title") + suya_config["default_api_settings"]["Server_Name"] + get_text("sub_title"))
     window_main.protocol("WM_DELETE_WINDOW", on_closing)
 
     # 设置窗口图标
@@ -1928,14 +1909,14 @@ def create_gui():
 
         # 在蓝色色带上添加文字
         welcome_label = tk.Label(blue_strip,
-                                 text=get_text("welcome1") + global_json["default_api_settings"][
+                                 text=get_text("welcome1") + suya_config["default_api_settings"][
                                      "Server_Name"] + get_text("welcome2"),
                                  font=("Microsoft YaHei", 30, "bold"), fg="white", bg="#0060C0")
         welcome_label.pack(pady=20)  # 设置垂直填充以居中显示
 
         # 第二行文字
         second_line_label = tk.Label(blue_strip,
-                                     text=get_text("description1") + global_json["default_api_settings"][
+                                     text=get_text("description1") + suya_config["default_api_settings"][
                                          "Server_Name"] + get_text(
                                          "description2"),
                                      font=("Microsoft YaHei", 15), fg="white", bg="#0060C0")

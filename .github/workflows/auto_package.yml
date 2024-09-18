@@ -114,6 +114,7 @@ jobs:
           # Extract the first 8 characters of the commit SHA
           COMMIT_SHA_SHORT=$(echo ${{ github.sha }} | cut -c1-8)
           # Build the file names
+
           Suya_Downloader_FILE_NAME=Suya_Downloader-Linux-${Suya_Downloader_VERSION}-${COMMIT_SHA_SHORT}
           UPDATER_FILE_NAME=Updater-Linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           FULL_FILES_NAME=Suya-Downloader-FULL-FILES-Linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
@@ -261,9 +262,11 @@ jobs:
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
+
           set Suya_Downloader_FILE_NAME=Suya_Downloader-Windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-Windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
           set FULL_FILES_NAME=Suya-Downloader-FULL-FILES-Windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
+
           cd dist
           ren Suya_Downloader.exe %Suya_Downloader_FILE_NAME%
           ren Updater.exe %UPDATER_FILE_NAME%
@@ -280,6 +283,7 @@ jobs:
           $Suya_Downloader_FILE_NAME="Suya_Downloader-Windows-${env:Suya_Downloader_VERSION}-${env:SHA_SHORT}.exe"
           $UPDATER_FILE_NAME="Updater-Windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe"
           $FULL_FILES_NAME="Suya-Downloader-FULL-FILES-Windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
+
           # Upload the files
           gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}

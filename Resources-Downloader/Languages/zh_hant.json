@@ -10,6 +10,7 @@
     "check_error1": "下載器更新檢查失敗",
     "check_error2": "用戶端更新檢查失敗",
     "check_error3": "嘗試拉取Suya下載器公告失敗",
+    "check_error4": "檢查版本信息失敗，當前版本信息：",
     "checking_client_update": "檢查BC用戶端更新中…",
     "checking_downloader_update": "檢查下載器更新中…",
     "choose_folders": "選擇資料夾",
