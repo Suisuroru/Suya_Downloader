@@ -86,7 +86,7 @@ def export_system_info(msg_box):
     if Dev_Version != "":
         msg_box.insert(tk.END, f"-{Dev_Version}\n")
     try:
-        msg_box.insert(tk.END, f"Updater Version: {suya_config["Updater_Version"]}\n")
+        msg_box.insert(tk.END, f"\nUpdater Version: {suya_config["Updater_Version"]}\n")
         msg_box.insert(tk.END, "\n\n-------------Used Config Information-------------\n")
         msg_box.insert(tk.END, f"\n{json.dumps(suya_config, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
