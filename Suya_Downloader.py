@@ -81,6 +81,7 @@ def export_system_info(msg_box):
     import platform
     # 输出系统信息到文本框
     msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
+    msg_box.insert(tk.END, f"Timestamp: {time()}\n")
     msg_box.insert(tk.END, f"Running Directory: {current_working_dir}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
     if Dev_Version != "":
