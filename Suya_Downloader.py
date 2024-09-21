@@ -66,13 +66,17 @@ def get_admin():
 print("运行目录:", current_working_dir)
 
 
-def generate_current_time(tag):
+def generate_time(tag):
     from datetime import datetime
     # 使用strftime方法将当前时间格式化为指定的格式
     if tag == 0:
         export_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
-    else:
+    elif tag == 1:
         export_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
+    elif tag == 2:
+        export_time = time()
+    else:
+        export_time = "Unknown request"
     return export_time
 
 
@@ -80,8 +84,8 @@ def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
-    msg_box.insert(tk.END, f"Unix timestamp: {time()}\n")
+    msg_box.insert(tk.END, f"Report Export Time: {generate_time(1)}\n")
+    msg_box.insert(tk.END, f"Unix timestamp: {generate_time(2)}\n")
     msg_box.insert(tk.END, f"Running Directory: {current_working_dir}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
     if Dev_Version != "":
@@ -228,7 +232,7 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_name = generate_current_time(0) + "_CrashReport"
+    file_name = generate_time(0) + "_CrashReport"
     file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
@@ -520,7 +524,7 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_name = generate_current_time(0) + "_InfoExport"
+                file_name = generate_time(0) + "_InfoExport"
                 file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 msgbox.showinfo(get_text("export_information"),
                                 get_text("export_information_success") + f"{file_path}")
