@@ -29,6 +29,12 @@ if os.name == "nt":
         sys.exit()
 
 
+def check_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("已创建文件夹:", path)
+
+
 def show_message(partner, partner_en):
     """
     定义一个显示消息框的函数
@@ -204,9 +210,7 @@ def download_and_install(downloader_update_url, updater_method_inner):
             # 构建完整的目录路径，基于当前工作目录
             pull_dir = os.path.join(current_working_dir, "Resources-Downloader")
             # 确保"Resource"目录存在，如果不存在则创建
-            if not os.path.exists(pull_dir):
-                print(f"Resources目录不存在，将进行重新创建")
-                os.makedirs(pull_dir, exist_ok=True)
+            check_folder(pull_dir)
         else:
             pull_dir = current_working_dir
         # 创建ZipFile对象，从临时文件中读取
@@ -218,7 +222,7 @@ def download_and_install(downloader_update_url, updater_method_inner):
                 if not member_path.startswith(pull_dir):
                     raise Exception("Zip file contains invalid path.")
                 if member.endswith("/"):
-                    os.makedirs(member_path, exist_ok=True)
+                    check_folder(member_path)
                 else:
                     with open(member_path, "wb", encoding="utf-8") as f:
                         f.write(zip_file.read(member))
