@@ -5,7 +5,6 @@ import shutil
 import sys
 import threading
 import tkinter as tk
-import uuid
 from errno import EEXIST
 from getpass import getuser
 from queue import Queue
@@ -13,6 +12,7 @@ from socket import AF_INET
 from tempfile import mkdtemp, NamedTemporaryFile
 from time import time, sleep
 from tkinter import scrolledtext, ttk, filedialog, messagebox as msgbox
+from uuid import uuid4 as uuid
 from webbrowser import open as webopen
 from winreg import OpenKey, HKEY_CURRENT_USER, QueryValueEx
 from zipfile import ZipFile, BadZipFile
@@ -1398,7 +1398,7 @@ def download_and_install(update_url, version):
         temp_dir = mkdtemp()
 
         # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
-        random_filename = str(uuid.uuid4()) + ".zip"
+        random_filename = str(uuid()) + ".zip"
         temp_zip_file = os.path.join(temp_dir, random_filename)
 
         # 将响应内容写入临时文件
