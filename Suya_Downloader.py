@@ -67,12 +67,16 @@ print("运行目录:", current_working_dir)
 
 
 def generate_time(tag):
-    from datetime import datetime
     # 使用strftime方法将当前时间格式化为指定的格式
+    from datetime import datetime
     if tag == 0:
         export_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
     elif tag == 1:
-        export_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
+        local_tz = datetime.now().astimezone().tzinfo
+        formatted_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
+        tz_offset = local_tz.utcoffset(datetime.now()).total_seconds() / 3600
+        tz_str = f"|UTC{tz_offset:+.0f}"
+        export_time = f"{formatted_time}{tz_str}"
     elif tag == 2:
         export_time = time()
     else:
