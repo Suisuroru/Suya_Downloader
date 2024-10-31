@@ -43,7 +43,10 @@ jobs:
         with:
           tag_name: newest-build
           release_name: 最新开发构建版本(自动创建的版本)
-          body: "此预发布版本由Github Action自动构建。请注意，此版本为测试版，并不代表最终版本。"
+          body: |
+            此预发布版本由Github Action自动构建。
+            请注意，此版本为测试版，并不代表最终版本。
+            正常发布成功将同时发布Windows，MacOS，以及Linux的版本，如未发现所需版本，可能是自动构建失败造成。
           draft: false
           prerelease: true
         continue-on-error: true
