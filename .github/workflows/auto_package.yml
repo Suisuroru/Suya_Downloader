@@ -29,6 +29,7 @@ jobs:
           TAG_DELETE_URL="https://api.github.com/repos/$OWNER/$REPO/git/refs/tags/newest-build"
           curl -X DELETE -H "Authorization: token ${{ secrets.GH_TOKEN }}" $TAG_DELETE_URL
           echo "Deleted the tag 'newest-build'"
+        continue-on-error: true
 
       - name: Set Release Version
         id: set_version
@@ -42,9 +43,13 @@ jobs:
         with:
           tag_name: newest-build
           release_name: 最新开发构建版本(自动创建的版本)
-          body: "此预发布版本由Github Action自动构建。请注意，此版本为测试版，并不代表最终版本。"
+          body: |
+            此预发布版本由Github Action自动构建。
+            请注意，此版本为测试版，并不代表最终版本。
+            正常发布成功将同时发布Windows，MacOS，以及Linux的版本，如未发现所需版本，可能是自动构建失败造成。
           draft: false
           prerelease: true
+        continue-on-error: true
 
   build-and-release-on-linux:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -57,12 +62,13 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
+        continue-on-error: true
 
       - name: Update Dev_Version in Suya_Downloader.py
         run: |
@@ -70,6 +76,7 @@ jobs:
           SHORT_SHA="${GITHUB_SHA:0:8}"
           sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Suya_Downloader.py
         shell: bash
+        continue-on-error: true
 
       - name: Update Dev_Version in Updater.py
         run: |
@@ -77,16 +84,19 @@ jobs:
           SHORT_SHA="${GITHUB_SHA:0:8}"
           sed -i "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
         shell: bash
+        continue-on-error: true
 
       - name: Build Suya_Downloader with PyInstaller
         id: build-Suya_Downloader
         run: |
           pyinstaller --onefile --distpath=./dist Suya_Downloader.py
+        continue-on-error: true
 
       - name: Build Updater with PyInstaller
         id: build-updater
         run: |
           pyinstaller --onefile --distpath=./dist Updater.py
+        continue-on-error: true
 
       - name: Move needed files to dist
         run: |
@@ -95,12 +105,14 @@ jobs:
           mv LICENSE-APACHE ./dist/
           mv LICENSE-AGPL ./dist/
           mv default_api_setting.json ./dist/
+        continue-on-error: true
 
       - name: Compress dist folder into app.zip
         run: |
           cd dist
           zip -r ../app.zip .
           cd ..
+        continue-on-error: true
 
       - name: Upload assets to pre-release
         id: upload-assets-to-pre-release
@@ -128,6 +140,7 @@ jobs:
           gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
           gh release upload newest-build ./${FULL_FILES_NAME}.zip
+        continue-on-error: true
 
   build-and-release-on-windows:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -143,44 +156,51 @@ jobs:
           move .\sign\* .
           rmdir /s /q .\sign
         shell: cmd
+        continue-on-error: true
 
       - name: Display file structure
         run: dir /s /b
         shell: cmd
+        continue-on-error: true
 
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
+        continue-on-error: true
 
       - name: Update Dev_Version in Suya_Downloader.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Suya_Downloader.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Suya_Downloader.py
         shell: powershell
+        continue-on-error: true
 
       - name: Update Dev_Version in Updater.py
         run: |
           $SHORT_SHA = "${{ github.sha }}".Substring(0,8)
           (Get-Content Updater.py) | ForEach-Object { $_ -replace '^Dev_Version = .*$',"Dev_Version = ""$SHORT_SHA"""} | Set-Content Updater.py
         shell: powershell
+        continue-on-error: true
 
       - name: Build Suya_Downloader with PyInstaller
         id: build-Suya_Downloader
         run: |
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Suya_Downloader.py
+        continue-on-error: true
 
       - name: Build Updater with PyInstaller
         id: build-updater
         run: |
           # Build the executable
           pyinstaller -F -w -i ./Resources-Downloader/Pictures/Suya.ico --distpath=./dist Updater.py
+        continue-on-error: true
 
       - name: Sign Suya_Downloader executable
         run: |
@@ -197,6 +217,7 @@ jobs:
 
           "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Suya Downloader" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Suya_Downloader.exe"
         shell: cmd
+        continue-on-error: true
 
       - name: Sign Updater executable
         run: |
@@ -213,6 +234,7 @@ jobs:
 
           "%SIGN_TOOL_PATH%" sign /f "%PFX_PATH%" /v /d "Updater" /tr http://timestamp.digicert.com /td SHA256 "%GITHUB_WORKSPACE%\dist\Updater.exe"
         shell: cmd
+        continue-on-error: true
 
       - name: Zip the dist directory
         run: |
@@ -225,12 +247,14 @@ jobs:
           # Return to the root directory
           cd ..
         shell: cmd
+        continue-on-error: true
 
       - name: Set short commit SHA as environment variable
         run: |
           $Env:SHA_SHORT = "${{ github.sha }}".Substring(0,8)
           echo "SHA_SHORT=$Env:SHA_SHORT" >> $env:GITHUB_ENV
         shell: powershell
+        continue-on-error: true
 
       - name: Extract Suya_Downloader version
         id: extract_Suya_Downloader_version
@@ -245,6 +269,7 @@ jobs:
               }
           }
         shell: powershell
+        continue-on-error: true
 
       - name: Extract Updater version
         id: extract_updater_version
@@ -259,10 +284,10 @@ jobs:
               }
           }
         shell: powershell
+        continue-on-error: true
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
-
           set Suya_Downloader_FILE_NAME=Suya_Downloader-Windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
           set UPDATER_FILE_NAME=Updater-Windows-%UPDATER_VERSION%-%SHA_SHORT%.exe
           set FULL_FILES_NAME=Suya-Downloader-FULL-FILES-Windows-%Suya_Downloader_VERSION%-%UPDATER_VERSION%-%SHA_SHORT%.zip
@@ -273,6 +298,7 @@ jobs:
           cd ..
           ren app.zip %FULL_FILES_NAME%
         shell: cmd
+        continue-on-error: true
 
       - name: Upload assets to latest pre-release
         id: upload-assets-to-pre-release
@@ -288,6 +314,7 @@ jobs:
           gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
           gh release upload newest-build ./${FULL_FILES_NAME}.zip
+        continue-on-error: true
 
   build-and-release-on-macos:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -300,36 +327,41 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: '3.13'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install pyinstaller psutil pygame requests Pillow
+        continue-on-error: true
 
       - name: Update Dev_Version in Suya_Downloader.py
         run: |
           SHORT_SHA="${GITHUB_SHA:0:8}"
           sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Suya_Downloader.py
         shell: bash
+        continue-on-error: true
 
       - name: Update Dev_Version in Updater.py
         run: |
           SHORT_SHA="${GITHUB_SHA:0:8}"
           sed -i '' "s/^Dev_Version = .*/Dev_Version = \"$SHORT_SHA\"/" Updater.py
         shell: bash
+        continue-on-error: true
 
       - name: Build Suya_Downloader with PyInstaller
         id: build-Suya_Downloader
         run: |
           # Build the macOS app bundle
           pyinstaller --onefile --windowed --distpath=./dist Suya_Downloader.py
+        continue-on-error: true
 
       - name: Build Updater with PyInstaller
         id: build-updater
         run: |
           # Build the macOS app bundle
           pyinstaller --onefile --windowed --distpath=./dist Updater.py
+        continue-on-error: true
 
       - name: Move needed files to dist
         run: |
@@ -338,6 +370,7 @@ jobs:
           mv ./LICENSE-APACHE ./dist/LICENSE-APACHE
           mv ./LICENSE-AGPL ./dist/LICENSE-AGPL
           mv ./default_api_setting.json ./dist/default_api_setting.json
+        continue-on-error: true
 
       - name: Package dist files into a zip archive
         run: |
@@ -346,30 +379,15 @@ jobs:
           
           # Create a zip archive of the contents in the dist directory
           zip -r ../app.zip .
-
+        continue-on-error: true
 
       - name: Package Suya_Downloader.app into a zip archive
         id: package-Suya_Downloader
-        run: |          # Navigate to the dist directory
-          cd ./dist
-          
-          # Create a zip archive for Suya_Downloader.app
-          zip -r ../Suya_Downloader.zip Suya_Downloader.app
-
-      - name: Package Updater.app into a zip archive
-        id: package-updater
-        run: |          # Navigate to the dist directory
-          cd ./dist
-          
-          # Create a zip archive for Updater.app
-          zip -r ../Updater.zip Updater.app
-
-      - name: Extract Suya_Downloader version
-        id: extract_Suya_Downloader_version
         run: |
           VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           echo "Suya_Downloader_VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
+        continue-on-error: true
 
       - name: Extract Updater version
         id: extract_updater_version
@@ -377,12 +395,13 @@ jobs:
           VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           echo "UPDATER_VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
-
+        continue-on-error: true
 
       - name: Set short commit SHA as environment variable
         run: |
           SHORT_SHA="${GITHUB_SHA::8}"
           echo "SHORT_SHA=${SHORT_SHA}" >> $GITHUB_ENV
+        continue-on-error: true
 
       - name: Upload assets to pre-release
         id: upload-assets-to-pre-release
@@ -403,3 +422,4 @@ jobs:
           gh release upload newest-build "./${Suya_Downloader_FILE_NAME}.zip"
           gh release upload newest-build "./${UPDATER_FILE_NAME}.zip"
           gh release upload newest-build "./${FULL_FILES_NAME}"
+        continue-on-error: true

@@ -4,14 +4,14 @@ import os
 import shutil
 import sys
 import threading
-import uuid
 from tempfile import mkdtemp
 from tkinter import messagebox as msgbox
+from uuid import uuid4 as uuid
 from zipfile import ZipFile
 
 import requests
 
-Suya_Updater_Version = "1.0.3.5"
+Suya_Updater_Version = "1.0.3.6"
 Dev_Version = ""
 
 
@@ -29,6 +29,12 @@ if os.name == "nt":
         sys.exit()
 
 
+def check_folder(path):
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("已创建文件夹:", path)
+
+
 def show_message(partner, partner_en):
     """
     定义一个显示消息框的函数
@@ -39,7 +45,7 @@ def show_message(partner, partner_en):
                     f"automatically, please wait for the automatic reboot, the type of this update is {partner_en}")
 
 
-# 获取运行目录并配置初始参数
+# 获取运行目录并设置默认API设置的文件目录
 current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
@@ -124,7 +130,7 @@ if suya_config["Updater_Method"] == "read_version":
         json.dump(suya_config, file, ensure_ascii=False, indent=4)
     sys.exit()
 
-# 创建或覆盖版本文件
+# 修改并写入版本信息文件
 suya_config["Updater_Version"] = Suya_Updater_Version
 with open(suya_config_path, "w", encoding="utf-8") as file:
     json.dump(suya_config, file, ensure_ascii=False, indent=4)
@@ -194,7 +200,7 @@ def download_and_install(downloader_update_url, updater_method_inner):
         # 定义临时目录和临时文件
         temp_dir = mkdtemp()
         # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
-        random_filename = str(uuid.uuid4()) + ".zip"
+        random_filename = str(uuid()) + ".zip"
         temp_zip_file = os.path.join(temp_dir, random_filename)
         # 将响应内容写入临时文件
         with open(temp_zip_file, "wb", encoding="utf-8") as f:
@@ -204,9 +210,7 @@ def download_and_install(downloader_update_url, updater_method_inner):
             # 构建完整的目录路径，基于当前工作目录
             pull_dir = os.path.join(current_working_dir, "Resources-Downloader")
             # 确保"Resource"目录存在，如果不存在则创建
-            if not os.path.exists(pull_dir):
-                print(f"Resources目录不存在，将进行重新创建")
-                os.makedirs(pull_dir, exist_ok=True)
+            check_folder(pull_dir)
         else:
             pull_dir = current_working_dir
         # 创建ZipFile对象，从临时文件中读取
@@ -218,7 +222,7 @@ def download_and_install(downloader_update_url, updater_method_inner):
                 if not member_path.startswith(pull_dir):
                     raise Exception("Zip file contains invalid path.")
                 if member.endswith("/"):
-                    os.makedirs(member_path, exist_ok=True)
+                    check_folder(member_path)
                 else:
                     with open(member_path, "wb", encoding="utf-8") as f:
                         f.write(zip_file.read(member))

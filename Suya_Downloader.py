@@ -5,7 +5,6 @@ import shutil
 import sys
 import threading
 import tkinter as tk
-import uuid
 from errno import EEXIST
 from getpass import getuser
 from queue import Queue
@@ -13,6 +12,7 @@ from socket import AF_INET
 from tempfile import mkdtemp, NamedTemporaryFile
 from time import time, sleep
 from tkinter import scrolledtext, ttk, filedialog, messagebox as msgbox
+from uuid import uuid4 as uuid
 from webbrowser import open as webopen
 from winreg import OpenKey, HKEY_CURRENT_USER, QueryValueEx
 from zipfile import ZipFile, BadZipFile
@@ -21,10 +21,10 @@ import pygame
 import requests
 from PIL import Image, ImageTk
 
-Suya_Downloader_Version = "1.0.3.5"
+Suya_Downloader_Version = "1.0.3.6"
 Dev_Version = ""
 
-# 获取运行目录并配置初始参数
+# 获取运行目录并设置默认API设置的文件目录
 current_working_dir = os.getcwd()
 suya_config_path = os.path.join(".", "suya_config.json")
 default_api_setting_path = os.path.join(".", "default_api_setting.json")
@@ -66,13 +66,21 @@ def get_admin():
 print("运行目录:", current_working_dir)
 
 
-def generate_current_time(tag):
-    from datetime import datetime
+def generate_time(tag):
     # 使用strftime方法将当前时间格式化为指定的格式
+    from datetime import datetime
     if tag == 0:
         export_time = datetime.now().strftime("%Y_%m_%d_%H_%M_%S")
+    elif tag == 1:
+        local_tz = datetime.now().astimezone().tzinfo
+        formatted_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
+        tz_offset = local_tz.utcoffset(datetime.now()).total_seconds() / 3600
+        tz_str = f"|UTC{tz_offset:+.0f}"
+        export_time = f"{formatted_time}{tz_str}"
+    elif tag == 2:
+        export_time = time()
     else:
-        export_time = datetime.now().strftime("%Y/%m/%d|%H:%M:%S")
+        export_time = "Unknown request"
     return export_time
 
 
@@ -80,18 +88,19 @@ def export_system_info(msg_box):
     import psutil
     import platform
     # 输出系统信息到文本框
-    msg_box.insert(tk.END, f"Report Export Time: {generate_current_time(1)}\n")
+    msg_box.insert(tk.END, f"Report Export Time: {generate_time(1)}\n")
+    msg_box.insert(tk.END, f"Unix timestamp: {generate_time(2)}\n")
     msg_box.insert(tk.END, f"Running Directory: {current_working_dir}\n")
     msg_box.insert(tk.END, f"Suya Downloader Version: {Suya_Downloader_Version}")
     if Dev_Version != "":
         msg_box.insert(tk.END, f"-{Dev_Version}\n")
     try:
-        msg_box.insert(tk.END, f"Updater Version: {suya_config["Updater_Version"]}\n")
+        msg_box.insert(tk.END, f"\nUpdater Version: {suya_config["Updater_Version"]}\n")
         msg_box.insert(tk.END, "\n\n-------------Used Config Information-------------\n")
         msg_box.insert(tk.END, f"\n{json.dumps(suya_config, ensure_ascii=False, indent=4)}\n")
         msg_box.insert(tk.END, "\n-------------------------------------------------\n")
     except:
-        msg_box.insert(tk.END, "Settings Information: Not initialized\n")
+        msg_box.insert(tk.END, "\nSettings Information: Not initialized\n")
     msg_box.insert(tk.END, "\n\n---------------System Information---------------\n")
     msg_box.insert(tk.END, f"OS: {platform.platform(terse=True)}\n")
     msg_box.insert(tk.END, f"OS Detailed: {platform.platform()}\n")
@@ -227,7 +236,7 @@ def dupe_crash_report(error_message=None):
 
     # 输出系统信息并写入文件
     export_system_info(msg_box)
-    file_name = generate_current_time(0) + "_CrashReport"
+    file_name = generate_time(0) + "_CrashReport"
     file_path = write_to_file(msg_box, file_name)
     open_directory(file_path)
 
@@ -519,7 +528,7 @@ def export_info(event):
 
         def on_export_button_click():
             try:
-                file_name = generate_current_time(0) + "_InfoExport"
+                file_name = generate_time(0) + "_InfoExport"
                 file_path = write_to_file(system_info_box, file_name)  # 返回文件的完整路径
                 msgbox.showinfo(get_text("export_information"),
                                 get_text("export_information_success") + f"{file_path}")
@@ -1393,7 +1402,7 @@ def download_and_install(update_url, version):
         temp_dir = mkdtemp()
 
         # 生成一个随机的 UUID 字符串，并转换为纯数字的子串作为文件名
-        random_filename = str(uuid.uuid4()) + ".zip"
+        random_filename = str(uuid()) + ".zip"
         temp_zip_file = os.path.join(temp_dir, random_filename)
 
         # 将响应内容写入临时文件

@@ -32,7 +32,6 @@ body:
     attributes:
       label: 如何重现（若知道）
       placeholder: "-（请在这里回答）-"
-    validations:
   - type: textarea
     id: "yml-4"
     attributes:
