@@ -2,6 +2,8 @@
 
 ## Developed by Suisuroru
 
+## 该项目已无限期停止维护
+
 ### 欢迎您使用Suya Downloader！
 
 ### 这里是测试版的部署标签
