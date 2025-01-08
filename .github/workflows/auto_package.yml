@@ -317,7 +317,7 @@ jobs:
       - name: Extract Suya_Downloader version
         id: extract_suya_downloader_version
         run: |
-          VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           echo "Suya_Downloader_VERSION=$VERSION" >> $GITHUB_ENV
         shell: bash
 
