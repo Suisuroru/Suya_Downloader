@@ -369,12 +369,14 @@ jobs:
       - name: Package Suya_Downloader.app into a zip archive
         id: package-Suya_Downloader
         run: |
+          cd dist
           zip -r ../Suya_Downloader.zip ./Suya_Downloader.app
         shell: bash
 
       - name: Package Updater.app into a zip archive
         id: package-updater
         run: |
+          cd dist
           zip -r ../Updater.zip ./Updater.app
         shell: bash
 
