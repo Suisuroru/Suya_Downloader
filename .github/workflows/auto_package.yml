@@ -147,10 +147,6 @@ jobs:
           rmdir /s /q .\sign
         shell: cmd
 
-      - name: Display file structure
-        run: dir /s /b
-        shell: cmd
-
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
