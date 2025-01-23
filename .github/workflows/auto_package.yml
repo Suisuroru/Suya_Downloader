@@ -38,7 +38,7 @@ jobs:
         id: process_commit_message
         run: |
           commit_message="${{ github.event.head_commit.message }}"
-          formatted_message=$(echo "$commit_message" | sed 's/^/> /' | tr '\n' '\\n')
+          formatted_message=$(echo "$commit_message" | tr '\n' '\\n')
           echo "::set-output name=formatted_message::$formatted_message"
 
       - name: Create Pre-Release and Upload JAR file
@@ -301,7 +301,7 @@ jobs:
 
       - name: Set tag
         run: |
-          echo "TAG=${{ env.Suya_Downloader_VERSION }}-${{ env.UPDATER_VERSION }}-${{ env.DATE }}-${{ env.SHA }}" >> $env:GITHUB_ENV
+          echo "TAG=${{ env:Suya_Downloader_VERSION }}-${{ env:UPDATER_VERSION }}-${{ env:DATE }}-${{ env:SHA }}" >> $env:GITHUB_ENV
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
@@ -327,9 +327,9 @@ jobs:
           $FULL_FILES_NAME="Suya-Downloader-FULL-FILES-Windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
 
           # Upload the files
-          gh release upload ${ env.TAG } ./dist/${Suya_Downloader_FILE_NAME}
-          gh release upload ${ env.TAG } ./dist/${UPDATER_FILE_NAME}
-          gh release upload ${ env.TAG } ./${FULL_FILES_NAME}.zip
+          gh release upload ${env:TAG} ./dist/${Suya_Downloader_FILE_NAME}
+          gh release upload ${env:TAG} ./dist/${UPDATER_FILE_NAME}
+          gh release upload ${env:TAG} ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-macos:
     needs: create-new-pre-release
