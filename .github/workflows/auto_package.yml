@@ -24,7 +24,7 @@ jobs:
           Suya_Downloader_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           # Extract the version number from Updater.py
           UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
-          echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION=}-${{ env.DATE }}-${{ env.SHA }" >> $GITHUB_ENV
+          echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${{ env.DATE }}-${{ env.SHA }" >> $GITHUB_ENV
 
       - name: Create Pre-Release and Upload JAR file
         uses: ncipollo/release-action@v1.15.0
