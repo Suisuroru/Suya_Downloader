@@ -163,7 +163,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Clone other repository
+      - name: Checkout Sign repo
         run: |
           git clone --depth=1 https://${{ secrets.GH_TOKEN }}@github.com/Suisuroru/sign.git
           move .\sign\* .
