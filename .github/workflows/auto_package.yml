@@ -10,6 +10,14 @@ jobs:
   create-new-pre-release:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.13'
+
       - name: Read version from Suya_Downloader.py and Updater.py
         run: |
           # Extract the version number from Suya_Downloader.py
