@@ -57,7 +57,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-on-linux:
-    needs: clear-old-pre-release-and-create-new-pre-release
+    needs: create-new-pre-release
     runs-on: ubuntu-latest
 
     steps:
@@ -140,7 +140,7 @@ jobs:
           gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-windows:
-    needs: clear-old-pre-release-and-create-new-pre-release
+    needs: create-new-pre-release
     runs-on: windows-latest
 
     steps:
@@ -295,7 +295,7 @@ jobs:
           gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-macos:
-    needs: clear-old-pre-release-and-create-new-pre-release
+    needs: create-new-pre-release
     runs-on: macos-latest
 
     steps:
