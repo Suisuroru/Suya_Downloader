@@ -38,14 +38,14 @@ jobs:
         id: process_commit_message
         run: |
           commit_message="${{ github.event.head_commit.message }}"
-          formatted_message=$(echo "$commit_message" | sed 's/^/> /')
-          echo "::set-output name=formatted_message::$(echo "$formatted_message" | sed ':a;N;$!ba;s/\n/\\n/g')"
+          formatted_message=$(echo "$commit_message" | sed 's/^/> /' | tr '\n' '\\n')
+          echo "::set-output name=formatted_message::$formatted_message"
 
       - name: Create Pre-Release and Upload JAR file
         uses: ncipollo/release-action@v1.15.0
         with:
           tag: ${{ env.TAG }}
-          name: "版本 ${{ env.Tag }} (自动创建的版本)"
+          name: "版本 ${{ env.TAG }} (自动创建的版本)"
           body: |
             此预发布版本由Github Action自动构建。
             请注意，此版本为测试版，并不代表最终版本。
