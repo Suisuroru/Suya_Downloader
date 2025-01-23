@@ -26,7 +26,7 @@ jobs:
         id: get_sha
         run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
-      - name: Read version from Suya_Downloader.py and Updater.py
+      - name: Set tag
         run: |
           # Extract the version number from Suya_Downloader.py
           Suya_Downloader_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
@@ -111,6 +111,22 @@ jobs:
           cd dist
           zip -r ../app.zip .
           cd ..
+
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Set tag
+        run: |
+          # Extract the version number from Suya_Downloader.py
+          Suya_Downloader_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          # Extract the version number from Updater.py
+          UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${{ env.DATE }}-${{ env.SHA }}" >> $GITHUB_ENV
 
       - name: Upload assets to pre-release
         id: upload-assets-to-pre-release
@@ -266,6 +282,18 @@ jobs:
           }
         shell: powershell
 
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=%date:~2,2%%date:~5,2%%date:~8,2%" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=%COMMIT_SHA%" >> $GITHUB_ENV
+
+      - name: Set tag
+        run: |
+          echo "TAG=${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${{env:DATE}}-${{env:SHA}}" >> $GITHUB_ENV
+
       - name: Rename Suya_Downloader and Updater Executables
         run: |
           set Suya_Downloader_FILE_NAME=Suya_Downloader-Windows-%Suya_Downloader_VERSION%-%SHA_SHORT%.exe
@@ -382,6 +410,18 @@ jobs:
           cd dist
           zip -r ../Updater.zip ./Updater.app
         shell: bash
+
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
+      - name: Set tag
+        run: |
+          echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${DATE}-${SHA}" >> $GITHUB_ENV
 
       - name: Upload assets to pre-release
         id: upload-assets-to-pre-release
