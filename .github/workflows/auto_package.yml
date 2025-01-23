@@ -38,8 +38,8 @@ jobs:
         id: process_commit_message
         run: |
           commit_message="${{ github.event.head_commit.message }}"
-          formatted_message=$(echo "$commit_message" | tr '\n' '\\n')
-          echo "::set-output name=formatted_message::$formatted_message"
+          formatted_message=$(printf '%s' "$commit_message" | tr '\n' '\\n')
+          echo "formatted_message=$formatted_message" >> $GITHUB_ENV
 
       - name: Create Pre-Release and Upload JAR file
         uses: ncipollo/release-action@v1.15.0
