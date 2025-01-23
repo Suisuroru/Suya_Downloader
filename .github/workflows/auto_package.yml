@@ -284,15 +284,15 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=%date:~2,2%%date:~5,2%%date:~8,2%" >> $GITHUB_ENV
+        run: echo "DATE=%date:~2,2%%date:~5,2%%date:~8,2%" >> $env:GITHUB_ENV
 
       - name: Get Git SHA
         id: get_sha
-        run: echo "SHA=%COMMIT_SHA%" >> $GITHUB_ENV
+        run: echo "SHA=%COMMIT_SHA%" >> $env:GITHUB_ENV
 
       - name: Set tag
         run: |
-          echo "TAG=${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${{env:DATE}}-${{env:SHA}}" >> $GITHUB_ENV
+          echo "TAG=${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${{env:DATE}}-${{env:SHA}}" >> $env:GITHUB_ENV
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
