@@ -39,7 +39,7 @@ jobs:
         run: |
           commit_message="${{ github.event.head_commit.message }}"
           formatted_message=$(echo "$commit_message" | sed 's/^/> /')
-          echo "::set-output name=formatted_message::$formatted_message"
+          echo "::set-output name=formatted_message::$(echo "$formatted_message" | sed ':a;N;$!ba;s/\n/\\n/g')"
 
       - name: Create Pre-Release and Upload JAR file
         uses: ncipollo/release-action@v1.15.0
@@ -291,17 +291,17 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=%date:~2,2%%date:~5,2%%date:~8,2%" >> $env:GITHUB_ENV
+        run: echo "DATE=$(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
         shell: powershell
 
       - name: Get Git SHA
         id: get_sha
-        run: echo "SHA=%COMMIT_SHA%" >> $env:GITHUB_ENV
+        run: echo "SHA=${{ github.sha }}" >> $env:GITHUB_ENV
         shell: powershell
 
       - name: Set tag
         run: |
-          echo "TAG=${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:DATE}-${env:SHA}" >> $env:GITHUB_ENV
+          echo "TAG=${{ env.Suya_Downloader_VERSION }}-${{ env.UPDATER_VERSION }}-${{ env.DATE }}-${{ env.SHA }}" >> $env:GITHUB_ENV
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
