@@ -142,7 +142,7 @@ jobs:
 
       - name: Clone other repository
         run: |
-          git clone --depth=1 https://${{ secrets.GITHUB_TOKEN }}@github.com/Suisuroru/sign.git
+          git clone --depth=1 https://${{ secrets.GH_TOKEN }}@github.com/Suisuroru/sign.git
           move .\sign\* .
           rmdir /s /q .\sign
         shell: cmd
