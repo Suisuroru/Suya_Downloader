@@ -301,7 +301,7 @@ jobs:
 
       - name: Set tag
         run: |
-          echo "TAG=${{ env:Suya_Downloader_VERSION }}-${{ env:UPDATER_VERSION }}-${{ env:DATE }}-${{ env:SHA }}" >> $env:GITHUB_ENV
+          echo "TAG=${ env:Suya_Downloader_VERSION }-${ env:UPDATER_VERSION }-${ env:DATE }-${ env:SHA }" >> $env:GITHUB_ENV
 
       - name: Rename Suya_Downloader and Updater Executables
         run: |
