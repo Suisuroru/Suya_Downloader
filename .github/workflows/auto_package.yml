@@ -318,9 +318,9 @@ jobs:
           $FULL_FILES_NAME="Suya-Downloader-FULL-FILES-Windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
 
           # Upload the files
-          gh release upload ${{ env.TAG }} ./dist/${Suya_Downloader_FILE_NAME}
-          gh release upload ${{ env.TAG }} ./dist/${UPDATER_FILE_NAME}
-          gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
+          gh release upload ${ env.TAG } ./dist/${Suya_Downloader_FILE_NAME}
+          gh release upload ${ env.TAG } ./dist/${UPDATER_FILE_NAME}
+          gh release upload ${ env.TAG } ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-macos:
     needs: create-new-pre-release
