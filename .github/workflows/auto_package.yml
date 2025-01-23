@@ -292,10 +292,12 @@ jobs:
       - name: Get current date
         id: get_date
         run: echo "DATE=%date:~2,2%%date:~5,2%%date:~8,2%" >> $env:GITHUB_ENV
+        shell: powershell
 
       - name: Get Git SHA
         id: get_sha
         run: echo "SHA=%COMMIT_SHA%" >> $env:GITHUB_ENV
+        shell: powershell
 
       - name: Set tag
         run: |
