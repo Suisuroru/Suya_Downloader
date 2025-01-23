@@ -34,13 +34,6 @@ jobs:
           UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
           echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${{ env.DATE }}-${{ env.SHA }}" >> $GITHUB_ENV
 
-      - name: Process commit message
-        id: process_commit_message
-        run: |
-          commit_message="${{ github.event.head_commit.message }}"
-          formatted_message=$(printf '%s' "$commit_message" | tr '\n' '\\n')
-          echo "formatted_message=$formatted_message" >> $GITHUB_ENV
-
       - name: Create Pre-Release and Upload JAR file
         uses: ncipollo/release-action@v1.15.0
         with:
@@ -57,7 +50,7 @@ jobs:
             #### 提交时间:
             > ${{ github.event.head_commit.timestamp }}
             #### 提交消息:
-            ${{ steps.process_commit_message.outputs.formatted_message }}
+            > ${{ github.event.head_commit.message }}
           draft: false
           prerelease: true
           generateReleaseNotes: true
