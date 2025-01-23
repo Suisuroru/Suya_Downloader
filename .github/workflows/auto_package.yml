@@ -18,6 +18,14 @@ jobs:
         with:
           python-version: '3.13'
 
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Read version from Suya_Downloader.py and Updater.py
         run: |
           # Extract the version number from Suya_Downloader.py
