@@ -7,47 +7,38 @@ on:
   workflow_dispatch:
 
 jobs:
-  clear-old-pre-release-and-create-new-pre-release:
+  create-new-pre-release:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Delete Release with Tag 'newest-build'
+      - name: Read version from Suya_Downloader.py and Updater.py
         run: |
-          GITHUB_REPOSITORY="${{ github.repository }}"
-          OWNER=$(echo $GITHUB_REPOSITORY | cut -d'/' -f1)
-          REPO=$(echo $GITHUB_REPOSITORY | cut -d'/' -f2)
+          # Extract the version number from Suya_Downloader.py
+          Suya_Downloader_VERSION=$(python -c "import re; match = re.search(r'Suya_Downloader_Version\s*=\s*\"([^\"]+)\"', open('Suya_Downloader.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          # Extract the version number from Updater.py
+          UPDATER_VERSION=$(python -c "import re; match = re.search(r'Suya_Updater_Version\s*=\s*\"([^\"]+)\"', open('Updater.py').read()); print(match.group(1) if match else 'UNKNOWN')")
+          echo "TAG=${Suya_Downloader_VERSION}-${UPDATER_VERSION=}-${{ env.DATE }}-${{ env.SHA }" >> $GITHUB_ENV
 
-          # 删除预发布版本
-          LATEST_RELEASE_WITH_TAG=$(curl -s -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/$OWNER/$REPO/releases/tags/newest-build)
-          if [ ! -z "$LATEST_RELEASE_WITH_TAG" ]; then
-            RELEASE_ID=$(echo $LATEST_RELEASE_WITH_TAG | jq -r '.id')
-            curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" https://api.github.com/repos/$OWNER/$REPO/releases/$RELEASE_ID
-            echo "Deleted the release with tag 'newest-build'"
-          fi
-
-          # 删除标签
-          TAG_DELETE_URL="https://api.github.com/repos/$OWNER/$REPO/git/refs/tags/newest-build"
-          curl -X DELETE -H "Authorization: token ${{ secrets.GITHUB_TOKEN }}" $TAG_DELETE_URL
-          echo "Deleted the tag 'newest-build'"
-
-      - name: Set Release Version
-        id: set_version
-        run: echo ::set-output name=VERSION::newest-build
-
-      - name: Create Pre-Release
-        id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Create Pre-Release and Upload JAR file
+        uses: ncipollo/release-action@v1.15.0
         with:
-          tag_name: newest-build
-          release_name: 最新开发构建版本(自动创建的版本)
+          tag: ${{ env.TAG }}
+          name: "版本 ${{ env.VERSION }} (自动创建的版本)"
           body: |
             此预发布版本由Github Action自动构建。
             请注意，此版本为测试版，并不代表最终版本。
-            正常发布成功将同时发布Windows，MacOS，以及Linux的版本，如未发现所需版本，可能是自动构建失败造成。
+            ### 最后一次提交信息
+            #### 提交SHA:
+            > ${{ github.sha }}
+            #### 提交作者:
+            > ${{ github.event.head_commit.author.username }} 
+            #### 提交时间:
+            > ${{ github.event.head_commit.timestamp }}
+            #### 提交消息:
+            > ${{ github.event.head_commit.message }}
           draft: false
           prerelease: true
+          generateReleaseNotes: true
+          token: ${{ secrets.GITHUB_TOKEN }}
 
   build-and-release-on-linux:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -128,9 +119,9 @@ jobs:
           mv ./app.zip ./${FULL_FILES_NAME}.zip
           
           # Upload the files
-          gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
-          gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
-          gh release upload newest-build ./${FULL_FILES_NAME}.zip
+          gh release upload ${{ env.TAG }} ./dist/${Suya_Downloader_FILE_NAME}
+          gh release upload ${{ env.TAG }} ./dist/${UPDATER_FILE_NAME}
+          gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-windows:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -283,9 +274,9 @@ jobs:
           $FULL_FILES_NAME="Suya-Downloader-FULL-FILES-Windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}"
 
           # Upload the files
-          gh release upload newest-build ./dist/${Suya_Downloader_FILE_NAME}
-          gh release upload newest-build ./dist/${UPDATER_FILE_NAME}
-          gh release upload newest-build ./${FULL_FILES_NAME}.zip
+          gh release upload ${{ env.TAG }} ./dist/${Suya_Downloader_FILE_NAME}
+          gh release upload ${{ env.TAG }} ./dist/${UPDATER_FILE_NAME}
+          gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-macos:
     needs: clear-old-pre-release-and-create-new-pre-release
@@ -392,6 +383,6 @@ jobs:
           mv "./app.zip" "./${FULL_FILES_NAME}"
           
           # Upload the files
-          gh release upload newest-build "./${Suya_Downloader_FILE_NAME}"
-          gh release upload newest-build "./${UPDATER_FILE_NAME}"
-          gh release upload newest-build "./${FULL_FILES_NAME}"
+          gh release upload ${{ env.TAG }} "./${Suya_Downloader_FILE_NAME}"
+          gh release upload ${{ env.TAG }} "./${UPDATER_FILE_NAME}"
+          gh release upload ${{ env.TAG }} "./${FULL_FILES_NAME}"
