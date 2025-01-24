@@ -19,7 +19,7 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
 
       - name: Get Git SHA
         id: get_sha
@@ -113,7 +113,7 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
 
       - name: Get Git SHA
         id: get_sha
@@ -283,7 +283,7 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=$(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
+        run: echo "DATE = $(Get-Date -Format 'yyMMdd' -UFormat '%y%m%d' -TimeZone 'China Standard Time'" >> $env:GITHUB_ENV
         shell: powershell
 
       - name: Get Git SHA
@@ -414,7 +414,7 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE=$(date +'%y%m%d')" >> $GITHUB_ENV
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
 
       - name: Get Git SHA
         id: get_sha
