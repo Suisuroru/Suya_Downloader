@@ -284,7 +284,9 @@ jobs:
 
       - name: Get current date
         id: get_date
-        run: echo "DATE = $(Get-Date -Format 'yyMMdd' -TimeZone 'China Standard Time')" >> $env:GITHUB_ENV
+        run: |
+          Set-TimeZone -Id "China Standard Time"
+          echo "DATE = $(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
         shell: powershell
 
       - name: Get Git SHA
