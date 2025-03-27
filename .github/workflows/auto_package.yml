@@ -65,12 +65,12 @@ jobs:
         id: get_date
         run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Get Git SHA
         id: get_sha
         run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
@@ -167,13 +167,13 @@ jobs:
           echo "DATE=$(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
         shell: powershell
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Get Git SHA
         id: get_sha
         run: echo "SHA=${{ github.sha }}" >> $env:GITHUB_ENV
         shell: powershell
-
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Checkout Sign repo
         run: |
@@ -335,12 +335,12 @@ jobs:
         id: get_date
         run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
 
+      - name: Checkout code
+        uses: actions/checkout@v4
+
       - name: Get Git SHA
         id: get_sha
         run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-
-      - name: Checkout code
-        uses: actions/checkout@v4
 
       - name: Set up Python
         uses: actions/setup-python@v5
