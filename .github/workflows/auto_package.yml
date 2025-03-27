@@ -61,6 +61,14 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -112,14 +120,6 @@ jobs:
           zip -r ../app.zip .
           cd ..
 
-      - name: Get current date
-        id: get_date
-        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
-
-      - name: Get Git SHA
-        id: get_sha
-        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
-
       - name: Set tag
         run: |
           # Extract the version number from Suya_Downloader.py
@@ -160,6 +160,18 @@ jobs:
     runs-on: windows-latest
 
     steps:
+      - name: Get current date
+        id: get_date
+        run: |
+          Set-TimeZone -Id "China Standard Time"
+          echo "DATE=$(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
+        shell: powershell
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=${{ github.sha }}" >> $env:GITHUB_ENV
+        shell: powershell
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -282,18 +294,6 @@ jobs:
           }
         shell: powershell
 
-      - name: Get current date
-        id: get_date
-        run: |
-          Set-TimeZone -Id "China Standard Time"
-          echo "DATE=$(Get-Date -Format 'yyMMdd')" >> $env:GITHUB_ENV
-        shell: powershell
-
-      - name: Get Git SHA
-        id: get_sha
-        run: echo "SHA=${{ github.sha }}" >> $env:GITHUB_ENV
-        shell: powershell
-
       - name: Set tag
         run: |
           echo "TAG=${{ env.Suya_Downloader_VERSION }}-${{ env.UPDATER_VERSION }}-${{ env.DATE }}-${{ env.SHA }}" >> $env:GITHUB_ENV
@@ -331,6 +331,14 @@ jobs:
     runs-on: macos-latest
 
     steps:
+      - name: Get current date
+        id: get_date
+        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
+
+      - name: Get Git SHA
+        id: get_sha
+        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
+
       - name: Checkout code
         uses: actions/checkout@v4
 
@@ -414,14 +422,6 @@ jobs:
           cd dist
           zip -r ../Updater.zip ./Updater.app
         shell: bash
-
-      - name: Get current date
-        id: get_date
-        run: echo "DATE=$(TZ=Asia/Shanghai date +'%y%m%d')" >> $GITHUB_ENV
-
-      - name: Get Git SHA
-        id: get_sha
-        run: echo "SHA=$(git rev-parse HEAD)" >> $GITHUB_ENV
 
       - name: Set tag
         run: |
