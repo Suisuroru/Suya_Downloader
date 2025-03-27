@@ -154,6 +154,15 @@ jobs:
           gh release upload ${{ env.TAG }} ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload ${{ env.TAG }} ./dist/${UPDATER_FILE_NAME}
           gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
+          
+      - name: Upload Artifact
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "Linux"
+          path: |
+            ./dist/${Suya_Downloader_FILE_NAME}
+            ./dist/${UPDATER_FILE_NAME}
+            ./${FULL_FILES_NAME}.zip
 
   build-and-release-on-windows:
     needs: create-new-pre-release
@@ -326,6 +335,15 @@ jobs:
           gh release upload ${env:TAG} ./dist/${UPDATER_FILE_NAME}
           gh release upload ${env:TAG} ./${FULL_FILES_NAME}.zip
 
+      - name: Upload Artifact
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "Windows"
+          path: |
+            ./dist/${Suya_Downloader_FILE_NAME}
+            ./dist/${UPDATER_FILE_NAME}
+            ./${FULL_FILES_NAME}.zip
+
   build-and-release-on-macos:
     needs: create-new-pre-release
     runs-on: macos-latest
@@ -446,3 +464,12 @@ jobs:
           gh release upload ${{ env.TAG }} "./${Suya_Downloader_FILE_NAME}"
           gh release upload ${{ env.TAG }} "./${UPDATER_FILE_NAME}"
           gh release upload ${{ env.TAG }} "./${FULL_FILES_NAME}"
+
+      - name: Upload Artifact
+        uses: "actions/upload-artifact@v4"
+        with:
+          name: "MacOS"
+          path: |
+            ./dist/${Suya_Downloader_FILE_NAME}
+            ./dist/${UPDATER_FILE_NAME}
+            ./${FULL_FILES_NAME}.zip
