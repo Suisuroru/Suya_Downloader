@@ -474,6 +474,6 @@ jobs:
         with:
           name: "MacOS"
           path: |
-            ./Suya_Downloader-MacOS-${Suya_Downloader_VERSION}-${SHORT_SHA}.zip
-            ./Updater-MacOS-${UPDATER_VERSION}-${SHORT_SHA}.zip
-            ./Suya-Downloader-FULL-FILES-MacOS-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
+            "./Suya_Downloader-MacOS-${Suya_Downloader_VERSION}-${SHORT_SHA}.zip"
+            "./Updater-MacOS-${UPDATER_VERSION}-${SHORT_SHA}.zip"
+            "./Suya-Downloader-FULL-FILES-MacOS-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip"
