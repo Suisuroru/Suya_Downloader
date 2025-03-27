@@ -145,6 +145,10 @@ jobs:
           UPDATER_FILE_NAME=Updater-Linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           FULL_FILES_NAME=Suya-Downloader-FULL-FILES-Linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}
           
+          echo "Suya_Downloader_FILE_NAME=Suya_Downloader-Linux-${Suya_Downloader_VERSION}-${COMMIT_SHA_SHORT}" >> $GITHUB_ENV
+          echo "UPDATER_FILE_NAME=Updater-Linux-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}" >> $GITHUB_ENV
+          echo "FULL_FILES_NAME=Suya-Downloader-FULL-FILES-Linux-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${COMMIT_SHA_SHORT}" >> $GITHUB_ENV
+
           # Rename the files
           mv ./dist/Suya_Downloader ./dist/${Suya_Downloader_FILE_NAME}
           mv ./dist/Updater ./dist/${UPDATER_FILE_NAME}
@@ -154,15 +158,15 @@ jobs:
           gh release upload ${{ env.TAG }} ./dist/${Suya_Downloader_FILE_NAME}
           gh release upload ${{ env.TAG }} ./dist/${UPDATER_FILE_NAME}
           gh release upload ${{ env.TAG }} ./${FULL_FILES_NAME}.zip
-          
+
       - name: Upload Artifact
         uses: "actions/upload-artifact@v4"
         with:
           name: "Linux"
           path: |
-            ./dist/${Suya_Downloader_FILE_NAME}
-            ./dist/${UPDATER_FILE_NAME}
-            ./${FULL_FILES_NAME}.zip
+            ./dist/${{ env.Suya_Downloader_FILE_NAME }}
+            ./dist/${{ env.UPDATER_FILE_NAME }}
+            ./${{ env.FULL_FILES_NAME }}
 
   build-and-release-on-windows:
     needs: create-new-pre-release
@@ -340,9 +344,9 @@ jobs:
         with:
           name: "Windows"
           path: |
-            ./dist/${Suya_Downloader_FILE_NAME}
-            ./dist/${UPDATER_FILE_NAME}
-            ./${FULL_FILES_NAME}.zip
+            ./dist/Suya_Downloader-Windows-${env:Suya_Downloader_VERSION}-${env:SHA_SHORT}.exe
+            ./dist/Updater-Windows-${env:UPDATER_VERSION}-${env:SHA_SHORT}.exe
+            ./Suya-Downloader-FULL-FILES-Windows-${env:Suya_Downloader_VERSION}-${env:UPDATER_VERSION}-${env:SHA_SHORT}.zip
 
   build-and-release-on-macos:
     needs: create-new-pre-release
@@ -470,6 +474,6 @@ jobs:
         with:
           name: "MacOS"
           path: |
-            ./dist/${Suya_Downloader_FILE_NAME}
-            ./dist/${UPDATER_FILE_NAME}
-            ./${FULL_FILES_NAME}.zip
+            ./Suya_Downloader-MacOS-${Suya_Downloader_VERSION}-${SHORT_SHA}.zip
+            ./Updater-MacOS-${UPDATER_VERSION}-${SHORT_SHA}.zip
+            ./Suya-Downloader-FULL-FILES-MacOS-${Suya_Downloader_VERSION}-${UPDATER_VERSION}-${SHORT_SHA}.zip
