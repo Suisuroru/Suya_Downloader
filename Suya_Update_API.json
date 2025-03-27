@@ -1,9 +1,9 @@
 {
     "version_downloader": "1.0.3.6",
-    "url_downloader": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EVMa6JOFoD1OqZJDVJfWpC4BLWlHSOZsVQqfDdd2M-Dsfw",
+    "url_downloader": "https://github.com/Suisuroru/Suya_Downloader_Release_Final/raw/refs/heads/main/Resources-Downloader.zip",
     "version_updater": "1.0.3.6",
-    "url_updater": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EV5VlZBJcBxPmF9XWZ6UBSwBedZL5KiLc0Y42MtInJx78A",
-    "url_resource": "https://tpod14077-my.sharepoint.com/personal/gong1gong4_tpod14077_onmicrosoft_com/_layouts/52/download.aspx?share=EZIaBxlvvtFHlrf813wISBEBRwUrgD2U-pN7XjrqYFBHuQ",
+    "url_updater": "https://github.com/Suisuroru/Suya_Downloader_Release_Final/raw/refs/heads/main/Updater.zip",
+    "url_resource": "https://github.com/Suisuroru/Suya_Downloader_Release_Final/raw/refs/heads/main/Suya_Downloader.zip",
     "suya_announcement_message": "该项目已被无限期搁置",
     "suya_announcement_message_zh_hant": "該專案已被無限期擱置",
     "suya_announcement_message_en_us": "The project has been shelved indefinitely",
