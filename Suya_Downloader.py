@@ -1022,14 +1022,13 @@ def direct_download_client(download_link):
 
 
 def check_for_client_updates(current_version_inner, selected_source, way_selected_source):
-    try:
         # 检查请求是否成功
-        if gate_str["response_client"].status_code == 200:
+        if len(gate_str["response_client"]) > 0:
             response_client_new = gate_str["response_client"]
         else:
             response_client_new = requests.get(suya_config["Used_Server_url_get"]["latest_update_url"])
-        if response_client_new.status_code == 200:
-            info_json_str = response_client_new.text.strip()
+        if len(response_client_new) > 0:
+            info_json_str = response_client_new.strip()
             update_info = json.loads(info_json_str)
             print("获取到相关信息:" + str(update_info))
             # 获取selected_source的当前值
@@ -1097,9 +1096,6 @@ def check_for_client_updates(current_version_inner, selected_source, way_selecte
         else:
             print(f"无法获取下载源信息: {response_client_new.status_code}")
             msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
-    except:
-        print(f"无法获取下载源信息: {Exception}")
-        msgbox.showinfo(get_text("error"), get_text("unable_to_get_source"))
 
 
 def threaded_check_for_updates(current_version_inner, selected_source, way_selected_source):
